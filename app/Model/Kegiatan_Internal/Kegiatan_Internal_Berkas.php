@@ -1,0 +1,175 @@
+<?php
+
+namespace App\Model\Kegiatan_Internal;
+
+use App\Model\Umum\URL_Model;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Auth;
+use Webpatser\Uuid\Uuid;
+
+class Kegiatan_Internal_Berkas extends Model
+{
+    use SoftDeletes;
+
+    protected $table = 'siakip2_kegiatan_internal_berkas';
+    public $incrementing = false;
+    protected $keyType = 'string';
+    public $timestamps = true;
+
+    protected $fillable = ['id', 'kegiatan_internal_master_id', 'bulan', 'tahun'
+        , 'kegiatan_internal_kegiatan_id', 'username_pengirim', 'username_approval', 'status_approval'
+        , 'type_berkas', 'text', 'nilai_baru', 'file_id'];
+
+    protected $casts = [
+        'nilai_baru' => 'array',
+    ];
+
+    protected $appends = ['updated_at_tulis'];
+
+    public function getUpdatedAtTulisAttribute()
+    {
+        return \Carbon\Carbon::parse($this->attributes['updated_at'])
+            ->format('d M Y, H:i');
+    }
+
+    public static function helper_tambah(Kegiatan_Internal_Kegiatan $kegiatan_Prov_Kegiatan, $data, $have_auth){
+        $baru =  new Kegiatan_Internal_Berkas;
+
+        $baru->id =  (string) Uuid::generate();
+        $baru->kegiatan_internal_master_id = $kegiatan_Prov_Kegiatan->kegiatan_internal_master_id;
+        $baru->bulan = $kegiatan_Prov_Kegiatan->bulan;
+        $baru->tahun = $kegiatan_Prov_Kegiatan->tahun;
+        $baru->kegiatan_internal_kegiatan_id = $kegiatan_Prov_Kegiatan->id;
+
+
+        $baru->username_pengirim = Auth::user()->username;
+        $baru->username_approval = null;
+
+        $baru->type_berkas = $data->type_berkas;
+
+        if($baru->type_berkas == 'text'){
+            if(!$have_auth['text']){
+                abort(403);
+            }
+            $baru->text = $data->text;
+        }else if($baru->type_berkas == 'url'){
+            if(!$have_auth['text']){
+                abort(403);
+            }
+            if(!$data->file){
+                abort(400, 'input kurang');
+            }
+            $url_baru = URL_Model::helper_tambah($data);
+            $baru->file_id = $url_baru->id;
+        }else if($baru->type_berkas == 'realisasi'){
+            $time_now_carbon = \Carbon\Carbon::today();
+
+            if(!($have_auth['pengajuan'] && (
+                    (\Carbon\Carbon::parse($kegiatan_Prov_Kegiatan->tanggal_awal) <= $time_now_carbon && $time_now_carbon <= \Carbon\Carbon::parse($kegiatan_Prov_Kegiatan->tanggal_akhir))
+                    || (\Carbon\Carbon::parse($kegiatan_Prov_Kegiatan->master->realisasi_tanggal_awal) <= $time_now_carbon && $time_now_carbon <= \Carbon\Carbon::parse($kegiatan_Prov_Kegiatan->master->realisasi_tanggal_akhir))
+                ))
+                && !$have_auth['persetujuan']){
+                    abort(403);
+            }
+
+            if(!($kegiatan_Prov_Kegiatan->status == 'belum' || $kegiatan_Prov_Kegiatan->status == 'tolak')){
+                abort(403);
+            }
+
+            if(!$data->nilai_baru){
+                abort(400);
+            }
+
+            if(!(array_key_exists('realisasi', $data->nilai_baru))){
+                abort(400);
+            }
+            $baru->nilai_baru = $data->nilai_baru;
+
+            $kegiatan_Prov_Kegiatan->realisasi =  $data->nilai_baru['realisasi'];
+            $kegiatan_Prov_Kegiatan->reload_nilai();
+        }else if($baru->type_berkas == 'pengajuan'){
+            $time_now_carbon = \Carbon\Carbon::today();
+
+            if(!($have_auth['pengajuan'] && (
+                    (\Carbon\Carbon::parse($kegiatan_Prov_Kegiatan->tanggal_awal) <= $time_now_carbon && $time_now_carbon <= \Carbon\Carbon::parse($kegiatan_Prov_Kegiatan->tanggal_akhir))
+                    || (\Carbon\Carbon::parse($kegiatan_Prov_Kegiatan->master->realisasi_tanggal_awal) <= $time_now_carbon && $time_now_carbon <= \Carbon\Carbon::parse($kegiatan_Prov_Kegiatan->master->realisasi_tanggal_akhir))
+                ))
+                 && !$have_auth['persetujuan']){
+                    abort(403);
+            }
+
+            if(!$data->nilai_baru){
+                abort(400);
+            }
+
+            if(!(array_key_exists('realisasi', $data->nilai_baru) && array_key_exists('tanggal_realisasi', $data->nilai_baru))){
+                abort(400);
+            }
+            $baru->nilai_baru = $data->nilai_baru;
+
+            Kegiatan_Internal_Berkas::where('type_berkas', 'pengajuan')
+                ->where('kegiatan_internal_kegiatan_id', $kegiatan_Prov_Kegiatan->id)
+                ->update(['status_approval' => 3]);
+
+            if($data->type_berkas == 'pengajuan'){
+                $kegiatan_Prov_Kegiatan->status = 'pengajuan';
+                $kegiatan_Prov_Kegiatan->save();
+            }
+
+        }else if($baru->type_berkas == 'bukti'){
+            $time_now_carbon = \Carbon\Carbon::today();
+            if(!($have_auth['pengajuan'] && (
+                    (\Carbon\Carbon::parse($kegiatan_Prov_Kegiatan->tanggal_awal) <= $time_now_carbon && $time_now_carbon <= \Carbon\Carbon::parse($kegiatan_Prov_Kegiatan->tanggal_akhir))
+                    || (\Carbon\Carbon::parse($kegiatan_Prov_Kegiatan->master->realisasi_tanggal_awal) <= $time_now_carbon && $time_now_carbon <= \Carbon\Carbon::parse($kegiatan_Prov_Kegiatan->master->realisasi_tanggal_akhir))
+                ))
+                && !$have_auth['persetujuan']){
+                    abort(403);
+            }
+
+            if(!$data->nilai_baru){
+                abort(400);
+            }
+            if(!(array_key_exists('url', $data->nilai_baru) )){
+                abort(400);
+            }
+            $baru->nilai_baru = $data->nilai_baru;
+
+            $kegiatan_Prov_Kegiatan->bukti_url = $data->nilai_baru['url'];
+            $kegiatan_Prov_Kegiatan->save();
+        }else{
+            abort(400);
+        }
+
+        $baru->save();
+
+        return $baru;
+    }
+
+    public function helper_approval($kualitas){
+        if(!(is_numeric($kualitas) && 0 <= $kualitas && $kualitas <= 100)){
+            abort(400);
+        }
+        $this->nilai_baru = ['realisasi' => $this->nilai_baru['realisasi']
+            , 'tanggal_realisasi' => $this->nilai_baru['tanggal_realisasi']
+            , 'kualitas' => $kualitas];
+        $this->username_approval = Auth::user()->username;
+        $this->status_approval = 2;
+        $this->save();
+    }
+
+    public function helper_hapus(){
+        $this->delete();
+    }
+
+    public function file()
+    {
+        return $this->hasOne(URL_Model::class, 'id', 'file_id');
+    }
+
+    public function kegiatan_prov_kegiatan()
+    {
+        return $this->hasOne(Kegiatan_Internal_Kegiatan::class, 'id', 'kegiatan_internal_kegiatan_id');
+    }
+
+}
