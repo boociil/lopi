@@ -51,11 +51,11 @@ export default function Login({ tahun_array, tahun_default, status }: LoginProps
 
     return (
          <div className="flex min-h-svh flex-col items-center justify-center gap-6 bg-background md:p-10">
-            <Head title="Login - SiAKIP" >
+            <Head title="Login" >
                 <link id="favicon" rel="icon" href="{{ asset('public/img/favicon.ico') }}" type="image/x-icon" />
             </Head>
             <div className="w-full max-w-sm">
-                <Card className="flex flex-col gap-8 p-6">
+                <Card className="bg-accent flex flex-col gap-8 p-6">
                     <CardHeader>
                         <div className="flex flex-col items-center gap-4">
                             <div className="flex flex-col items-center gap-2 font-medium">
