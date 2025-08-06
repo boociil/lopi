@@ -3,7 +3,8 @@
 use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\Auth\LoginController;
-
+use App\Http\Controllers\Umum\Profil_Controller;
+use App\Http\Controllers\Umum\Beranda_Controller;
 
 /*
 |--------------------------------------------------------------------------
@@ -28,3 +29,15 @@ Route::get('/logout', [LoginController::class, 'logout'])->name('logout');
 Route::get('/maintenance', function(){
     return view("maintenance");
 })->middleware('auth');
+
+
+Route::get('/', [Beranda_Controller::class, 'redirect_func'])->middleware('auth');
+
+//beranda
+Route::group(
+[
+    'prefix' => 'beranda',
+    'middleware' => ['auth', 'check_maintenance', 'statistik'],
+], function () {
+    Route::get('/', [Beranda_Controller::class, 'beranda']);
+});

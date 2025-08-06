@@ -45,9 +45,6 @@ export default function Login({ tahun_array, tahun_default, status }: LoginProps
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
         post(route('login'), {
-            onSuccess: (data) => {
-                console.log(data)
-            },
             onFinish: () => reset('password'),
         });
     };
@@ -62,8 +59,8 @@ export default function Login({ tahun_array, tahun_default, status }: LoginProps
                     <CardHeader>
                         <div className="flex flex-col items-center gap-4">
                             <div className="flex flex-col items-center gap-2 font-medium">
-                                <div className="mb-1 flex h-24 w-56 items-center justify-center rounded-md">
-                                    <img className="object-cover  h-24 w-56  rounded" src="public/img/depan_nobg.png"></img>
+                                <div className="mb-1 flex h-24 w-24 items-center justify-center rounded-md">
+                                    <img className="object-cover  h-24 w-24  rounded" src="public/img/logo.png"></img>
                                 </div>
                                 <span className="sr-only">SiAKIP</span>
                             </div>

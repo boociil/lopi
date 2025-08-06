@@ -58,6 +58,7 @@ class LoginController extends Controller
         // $request->merge(['remember' => true]);
 
         if (Auth::attempt(['username'=>$request->username, 'password' => $request->password], true)) {
+            session()->put('tahun_active', $request->tahun_active);
             return redirect()->intended(RouteServiceProvider::HOME);
         }
 

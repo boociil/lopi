@@ -13,6 +13,8 @@ use App\Model\Umum\Tim;
 use App\Model\Umum\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use Inertia\Inertia;
 
 class Beranda_Controller extends Controller
 {
@@ -98,6 +100,16 @@ class Beranda_Controller extends Controller
                     ->orderBy('tanggal_akhir')
                     ->get()];
 
+    }
+
+    public function redirect_func(Request $request)
+    {
+        return redirect('/beranda');
+    }
+
+    public function beranda(Request $request)
+    {
+        return Inertia::render('beranda');
     }
 
 }
