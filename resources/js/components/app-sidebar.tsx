@@ -9,8 +9,13 @@ import AppLogo from './app-logo';
 
 const mainNavItems: NavItem[] = [
     {
-        title: 'Dashboard',
-        href: '/dashboard',
+        title: 'Beranda',
+        href: '/lopi/beranda',
+        icon: LayoutGrid,
+    },
+    {
+        title: 'Jadwal',
+        href: '/lopi/jadwal',
         icon: LayoutGrid,
     },
 ];
@@ -35,7 +40,7 @@ export function AppSidebar() {
                 <SidebarMenu>
                     <SidebarMenuItem>
                         <SidebarMenuButton size="lg" asChild>
-                            <Link href="/dashboard" prefetch>
+                            <Link href="./beranda" prefetch>
                                 <AppLogo />
                             </Link>
                         </SidebarMenuButton>
@@ -48,7 +53,7 @@ export function AppSidebar() {
             </SidebarContent>
 
             <SidebarFooter>
-                <NavFooter items={footerNavItems} className="mt-auto" />
+                {/* <NavFooter items={footerNavItems} className="mt-auto" /> */}
                 <NavUser />
             </SidebarFooter>
         </Sidebar>
