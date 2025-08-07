@@ -3,6 +3,7 @@
 namespace App\Model\Jadwal;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Jadwal extends Model
@@ -18,5 +19,8 @@ class Jadwal extends Model
     protected $fillable = ['id', 'title', 'description', 'start_date', 'end_date', 'event_type'
         , 'ruang', 'url_daftar_hadir', 'url_notulensi', 'url_dokumentasi', 'url_undangan'];
 
-
+    public function peserta(): HasMany
+    {
+        return $this->hasMany(Jadwal_Peserta::class, 'jadwal_id', 'id');
+    }
 }

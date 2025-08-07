@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Umum\Profil_Controller;
 use App\Http\Controllers\Umum\Beranda_Controller;
+use App\Http\Controllers\Jadwal\Jadwal_Controller;
 
 use Inertia\Inertia;
 
@@ -42,6 +43,14 @@ Route::get('/tampilan', function () {
 Route::group(
 [
     'prefix' => 'beranda',
+    'middleware' => ['auth', 'check_maintenance', 'statistik'],
+], function () {
+    Route::get('/', [Beranda_Controller::class, 'beranda']);
+});
+
+Route::group(
+[
+    'prefix' => 'jadwal',
     'middleware' => ['auth', 'check_maintenance', 'statistik'],
 ], function () {
     Route::get('/', [Beranda_Controller::class, 'beranda']);
