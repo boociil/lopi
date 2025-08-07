@@ -6,6 +6,8 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Umum\Profil_Controller;
 use App\Http\Controllers\Umum\Beranda_Controller;
 
+use Inertia\Inertia;
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -32,6 +34,9 @@ Route::get('/maintenance', function(){
 
 
 Route::get('/', [Beranda_Controller::class, 'redirect_func'])->middleware('auth');
+Route::get('/tampilan', function () {
+    return Inertia::render('tampilan');
+})->name('tampilan')->middleware('auth');
 
 //beranda
 Route::group(
