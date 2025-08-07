@@ -53,5 +53,9 @@ Route::group(
     'prefix' => 'jadwal',
     'middleware' => ['auth', 'check_maintenance', 'statistik'],
 ], function () {
-    Route::get('/', [Beranda_Controller::class, 'beranda']);
+    Route::get('/', [Jadwal_Controller::class, 'index']);
+    Route::get('/tambah', [Jadwal_Controller::class, 'tambah']);
+    Route::get('/{jadwal_id}/ubah', [Jadwal_Controller::class, 'ubah']);
+    Route::get('/{jadwal_id}/ubah', [Jadwal_Controller::class, 'ubah']);
+    Route::get('/{jadwal_id}/hapus', [Jadwal_Controller::class, 'hapus']);
 });
