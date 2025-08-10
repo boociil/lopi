@@ -15,11 +15,11 @@ class Jadwal extends Model
     protected $keyType = 'string';
     public $timestamps = true;
 
+    protected $fillable = ['id', 'pembuat_username', 'pemilik_tipe_str', 'pemilik_type', 'pemilik_id', 'tanggal'
+        , 'title', 'tipe_jadwal', 'description', 'ruang'
+        , 'url_zoom', 'url_daftar_hadir', 'url_notulensi', 'url_dokumentasi', 'url_undangan'];
 
-    protected $fillable = ['id', 'title', 'description', 'start_date', 'end_date', 'event_type'
-        , 'ruang', 'url_daftar_hadir', 'url_notulensi', 'url_dokumentasi', 'url_undangan'];
-
-    public function peserta(): HasMany
+    public function pemilik(): HasMany
     {
         return $this->hasMany(Jadwal_Peserta::class, 'jadwal_id', 'id');
     }
