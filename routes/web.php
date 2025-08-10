@@ -8,7 +8,7 @@ use App\Http\Controllers\Umum\Beranda_Controller;
 use App\Http\Controllers\Jadwal\Jadwal_Controller;
 use App\Http\Controllers\Jadwal\Ruang_Controller;
 use App\Http\Controllers\Jadwal\Zoom_Controller;
-
+use App\Model\Umum\Peran;
 use Inertia\Inertia;
 
 /*
@@ -38,7 +38,9 @@ Route::get('/maintenance', function(){
 
 Route::get('/', [Beranda_Controller::class, 'redirect_func'])->middleware('auth');
 Route::get('/tampilan', function () {
-    return Inertia::render('tampilan');
+    return Inertia::render('tampilan', [
+        "peran"=> fn () => Peran::get_my_peran(),
+    ]);
 })->name('tampilan')->middleware('auth');
 
 //beranda
@@ -60,6 +62,14 @@ Route::group(
     Route::get('/{jadwal_id}/ubah', [Jadwal_Controller::class, 'ubah']);
     Route::get('/{jadwal_id}/ubah', [Jadwal_Controller::class, 'ubah']);
     Route::get('/{jadwal_id}/hapus', [Jadwal_Controller::class, 'hapus']);
+    Route::group(
+    [
+        'prefix' => 'ruang',
+    ], function () {
+        Route::get('/', [Jadwal_Controller::class, 'index']);
+        Route::get('/{ruang}/approve', [Jadwal_Controller::class, 'approve']);
+        Route::get('/{ruang}/reject', [Jadwal_Controller::class, 'reject']);
+    });
 });
 
 Route::group(
@@ -71,16 +81,5 @@ Route::group(
     Route::get('/tambah', [Zoom_Controller::class, 'tambah']);
     Route::get('/{jadwal_id}/ubah', [Zoom_Controller::class, 'ubah']);
     Route::get('/{jadwal_id}/hapus', [Zoom_Controller::class, 'hapus']);
-});
-
-
-Route::group(
-[
-    'prefix' => 'ruang',
-    'middleware' => ['auth', 'check_maintenance', 'statistik'],
-], function () {
-    Route::get('/', [Jadwal_Controller::class, 'index']);
-    Route::get('/{ruang}/approve', [Jadwal_Controller::class, 'approve']);
-    Route::get('/{ruang}/reject', [Jadwal_Controller::class, 'reject']);
 });
 

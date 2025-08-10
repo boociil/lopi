@@ -8,9 +8,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Zoom extends Model
 {
-    use SoftDeletes;
 
-    protected $table = 'siakip2_jadwal';
+    protected $table = 'siakip2_zoom';
     public $incrementing = false;
     protected $keyType = 'string';
     public $timestamps = true;

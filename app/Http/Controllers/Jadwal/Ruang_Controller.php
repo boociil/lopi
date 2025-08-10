@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Jadwal;
 
 use App\Http\Controllers\Controller;
 use App\Model\Jadwal\Jadwal;
+use App\Model\Umum\Peran;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -37,6 +38,7 @@ class Ruang_Controller extends Controller
             });
         })->get();
         return Inertia::render('jadwal/index', [
+            "peran"=> fn () => Peran::get_my_peran(),
             "jadwal" => $jadwal_bulan,
         ]);
     }

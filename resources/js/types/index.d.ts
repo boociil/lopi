@@ -10,6 +10,15 @@ export interface BreadcrumbItem {
     href: string;
 }
 
+export interface NavGeneral {
+    type: string; //group | item
+    title: string;
+    href: string;
+    icon?: LucideIcon | null;
+    isActive?: boolean;
+    subItems?: NavItem[];
+}
+
 export interface NavGroup {
     title: string;
     items: NavItem[];
@@ -41,4 +50,15 @@ export interface User {
     jabatan: string;
     golonagan: string;
     [key: string]: unknown; // This allows for additional properties...
+}
+
+export interface Peran {
+    id: string;
+    tipe_peran: string;
+    parent_id: string?;
+    pemilik_username: string?;
+    pemilik_tim_id: string?;
+    pemilik_satuan_kerja_tahun_id: string?;
+    tahun: string;
+    peran: string;
 }

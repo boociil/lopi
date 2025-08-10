@@ -1,6 +1,6 @@
 import { PlaceholderPattern } from '@/components/ui/placeholder-pattern';
 import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem } from '@/types';
+import { type Peran, type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/react';
 
 import { useState } from 'react'
@@ -15,7 +15,7 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-export default function Dashboard() {
+export default function Index(peran : Peran[]) {
     const [events, setEvents] = useState<CalendarEvent[]>(generateMockEvents())
     const [mode, setMode] = useState<Mode>('month')
     const [date, setDate] = useState<Date>(new Date())

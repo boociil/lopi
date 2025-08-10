@@ -2,38 +2,44 @@ import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
-import { type NavItem } from '@/types';
+import { type Peran, type NavGeneral } from '@/types';
 import { Link } from '@inertiajs/react';
-import { BookOpen, Folder, LayoutGrid } from 'lucide-react';
+import { LayoutGrid, CalendarDays, Video } from 'lucide-react';
 import AppLogo from './app-logo';
+import { type PropsWithChildren } from 'react';
 
-const mainNavItems: NavItem[] = [
-    {
-        title: 'Beranda',
-        href: '/lopi/beranda',
-        icon: LayoutGrid,
-    },
-    {
-        title: 'Jadwal',
-        href: '/lopi/jadwal',
-        icon: LayoutGrid,
-    },
-];
+export function AppSidebar({peran=[]}: PropsWithChildren<{ peran?: Peran[]}>) {
+    const mainNavItems: NavGeneral[] = [
+        {
+            type: 'item',
+            title: 'Beranda',
+            href: '/lopi/beranda',
+            icon: LayoutGrid,
+        },
+        {
+            type: 'group',
+            title: 'Jadwal',
+            href: '/lopi/jadwal',
+            icon: CalendarDays,
+            subItems: [
+                {
+                    title: 'Kalender',
+                    href: '/lopi/jadwal',
+                },
+                {
+                    title: 'Ruang',
+                    href: '/lopi/jadwal/ruang',
+                },
+            ]
+        },
+        {
+            type: 'item',
+            title: 'Zoom',
+            href: '/lopi/zoom',
+            icon: Video,
+        },
+    ];
 
-const footerNavItems: NavItem[] = [
-    {
-        title: 'Repository',
-        href: 'https://github.com/laravel/react-starter-kit',
-        icon: Folder,
-    },
-    {
-        title: 'Documentation',
-        href: 'https://laravel.com/docs/starter-kits#react',
-        icon: BookOpen,
-    },
-];
-
-export function AppSidebar() {
     return (
         <Sidebar collapsible="icon" variant="inset">
             <SidebarHeader>
@@ -53,7 +59,6 @@ export function AppSidebar() {
             </SidebarContent>
 
             <SidebarFooter>
-                {/* <NavFooter items={footerNavItems} className="mt-auto" /> */}
                 <NavUser />
             </SidebarFooter>
         </Sidebar>

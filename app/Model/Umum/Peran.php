@@ -120,4 +120,12 @@ class Peran extends Model
         return $this->hasOne(User::class, 'username', 'pemilik_username');
     }
 
+    public static function get_my_peran ()
+    {
+        return Peran::where(function($query){
+                    $query->where('tahun', session('tahun_active'))
+                        ->orWhere('tahun', null);
+                })->where('pemilik_username', Auth::user()->username)->get();
+    }
+
 }

@@ -109,7 +109,9 @@ class Beranda_Controller extends Controller
 
     public function beranda(Request $request)
     {
-        return Inertia::render('beranda');
+        return Inertia::render('beranda', [
+            "peran"=> fn () => Peran::get_my_peran(),
+        ]);
     }
 
 }

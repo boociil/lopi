@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Jadwal;
 use App\Http\Controllers\Controller;
 use App\Model\Jadwal\Jadwal;
 use App\Model\Jadwal\Zoom;
+use App\Model\Umum\Peran;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use GuzzleHttp\Client;
@@ -47,6 +48,7 @@ class Zoom_Controller extends Controller
         $zoom_sp2020 = $this->getAllMeeting('sp2020', $month_start->format('Y-m-d'), $month_end->format('Y-m-d'));
 
         return Inertia::render('jadwal/index', [
+            "peran"=> fn () => Peran::get_my_peran(),
             "zoom_bulan_daftar" => $zoom_bulan_daftar,
             "zoom_statsulbar" => $zoom_statsulbar,
             "zoom_sp2020" => $zoom_sp2020,

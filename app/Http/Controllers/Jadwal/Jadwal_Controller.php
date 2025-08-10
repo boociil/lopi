@@ -4,12 +4,18 @@ namespace App\Http\Controllers\Jadwal;
 
 use App\Http\Controllers\Controller;
 use App\Model\Jadwal\Jadwal;
+use App\Model\Umum\Peran;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Inertia\Inertia;
 
+use App\Traits\Menu;
+
 class Jadwal_Controller extends Controller
 {
+
+    use Menu;
+
     public function __construct(Request $request)
     {
 
@@ -36,6 +42,8 @@ class Jadwal_Controller extends Controller
             });
         })->get();
         return Inertia::render('jadwal/index', [
+            "peran"=> fn () => Peran::get_my_peran(),
+            "peran"=> fn () => Peran::get_my_peran(),
             "jadwal" => $jadwal_bulan,
         ]);
     }

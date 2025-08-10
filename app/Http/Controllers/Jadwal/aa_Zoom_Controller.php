@@ -91,6 +91,7 @@ class Zoom_Controller extends Controller
             });
         })->get();
         return Inertia::render('jadwal/index', [
+            "peran"=> fn () => Peran::get_my_peran(),
             "jadwal" => $jadwal_bulan,
         ]);
     }
