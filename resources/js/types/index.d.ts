@@ -35,6 +35,7 @@ export interface SharedData {
     name: string;
     quote: { message: string; author: string };
     auth: Auth;
+    tahun_active: number;
     ziggy: Config & { location: string };
     sidebarOpen: boolean;
     [key: string]: unknown;
@@ -61,4 +62,18 @@ export interface Peran {
     pemilik_satuan_kerja_tahun_id: string?;
     tahun: string;
     peran: string;
+}
+
+export interface zoom {
+    topic: string;
+    start_time: string;
+    start_time_penyesuaian: number;
+    pembuat_username: string?;
+    zoom_status: number?;
+    zoom_akun: string?;
+    zoom_meeting_id: bigint?;
+    zoom_start_url: string?;
+    zoom_join_url: string?;
+    zoom_app_prop: any?;
+    zoom_int_prop: any?;
 }

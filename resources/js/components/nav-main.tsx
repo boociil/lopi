@@ -11,7 +11,7 @@ export function NavMain({ items = [] }: { items: NavGeneral[] }) {
             <SidebarGroupLabel>Menu</SidebarGroupLabel>
             <SidebarMenu>
                 {items.map((item) => (
-                    <NavGeneral item={item}></NavGeneral>
+                    <NavGeneral key={item.href} item={item}></NavGeneral>
                 ))}
             </SidebarMenu>
         </SidebarGroup>

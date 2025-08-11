@@ -2,6 +2,7 @@
 
 namespace App\Model\Jadwal;
 
+use App\Model\Umum\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -21,5 +22,9 @@ class Zoom extends Model
     protected $fillable = ['id', 'agenda', 'topic', 'password', 'start_time', 'duration'
         , 'pembuat_username', 'approve_username', 'is_recurrence', 'recurrence_opt'
         , 'zoom_status', 'zoom_akun', 'zoom_meeting_id', 'zoom_start_url', 'zoom_join_url', 'jadwal_id'];
+
+    public function pembuat(){
+        return $this->hasOne(User::class, 'username', 'pembuat_username');
+    }
 
 }

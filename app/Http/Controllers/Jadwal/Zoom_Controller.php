@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Illuminate\Support\Str;
 
@@ -38,16 +39,20 @@ class Zoom_Controller extends Controller
 
     public function index(Request $request)
     {
+        $month =  Carbon::today()->month;
+        if($request->has('bulan')){
+            $month = $request->input('bulan');
+        }
 
-        $today =  Carbon::today();
-        $month_start = $today->startOfMonth();
-        $month_end = $today->endOfMonth();
+        $date = Carbon::create(session('tahun_active'), $month, 1);
+        $month_start = Carbon::create(session('tahun_active'), $month, 1)->startOfMonth();
+        $month_end =  Carbon::create(session('tahun_active'), $month, 1)->endOfMonth();
 
-        $zoom_bulan_daftar = Zoom::whereMonth("start_time", $today->format('Y-m-d'))->get();
+        $zoom_bulan_daftar = Zoom::with(['pembuat'])->whereMonth("start_time", $month)->whereYear("start_time", $date->year)->get();
         $zoom_statsulbar = $this->getAllMeeting('statsulbar', $month_start->format('Y-m-d'), $month_end->format('Y-m-d'));
         $zoom_sp2020 = $this->getAllMeeting('sp2020', $month_start->format('Y-m-d'), $month_end->format('Y-m-d'));
 
-        return Inertia::render('jadwal/index', [
+        return Inertia::render('zoom/index', [
             "peran"=> fn () => Peran::get_my_peran(),
             "zoom_bulan_daftar" => $zoom_bulan_daftar,
             "zoom_statsulbar" => $zoom_statsulbar,
@@ -110,7 +115,7 @@ class Zoom_Controller extends Controller
 
         $client = new Client([
             'headers' => [
-                'Authorization' => 'Basic ' . base64_encode($this->zoom_config[$path]['client_id '] . ':' . $this->zoom_config[$path]['client_secret ']),
+                'Authorization' => 'Basic ' . base64_encode($this->zoom_config[$path]['client_id'] . ':' . $this->zoom_config[$path]['client_secret']),
                 'Host' => 'zoom.us',
             ],
         ]);
@@ -118,7 +123,7 @@ class Zoom_Controller extends Controller
         $response = $client->request('POST', "https://zoom.us/oauth/token", [
             'form_params' => [
                 'grant_type' => 'account_credentials',
-                'account_id' =>$this->zoom_config[$path]['account_id '],
+                'account_id' =>$this->zoom_config[$path]['account_id'],
             ],
         ]);
 
@@ -128,7 +133,7 @@ class Zoom_Controller extends Controller
 
      protected function zoom_getClient($path)
     {
-        $accessToken = $this->getAccessToken($path);
+        $accessToken = $this->zoom_getAccessToken($path);
 
         $client = new Client([
             'base_uri' => 'https://api.zoom.us/v2/',
@@ -145,11 +150,13 @@ class Zoom_Controller extends Controller
     {
         try {
             $client = $this->zoom_getClient($path);
-            $response = $client->request('GET', 'users/me/meetings', [
-                'page_size' => 300,
-                'from' => $from,
-                'to' => $to,
-                'timezone', env('TIMEZONE'),
+            $response = $client->request('GET', 'users/me/meetings',
+                ['json' => [
+                    'page_size' => 300,
+                    'from' => $from,
+                    'to' => $to,
+                    'timezone', 'Asia/Singapore',
+                ]
             ]);
             $data = json_decode($response->getBody(), true);
             return [
