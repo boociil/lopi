@@ -58,6 +58,10 @@ export function addHoursToDate(date: Date, hours: number): Date {
   return new Date(new Date(date).setHours(date.getHours() + hours));
 }
 
+export function addMinutesToDate(date: Date, minute: number): Date {
+  return new Date(new Date(date).setMinutes(date.getMinutes() + minute));
+}
+
 
 export function get_time_from_date_time (tanggal: string, penyesuian = 0) : string{
     if(tanggal == null || tanggal == ''){

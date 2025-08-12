@@ -24,6 +24,7 @@ import { Input } from '@/components/ui/input';
 import { zoom } from '../types';
 import { useZoomContext } from '../context';
 import { useEffect, useState } from 'react';
+import InputError from '@/components/input-error';
 
 type ZoomForm = {
     topic: string;
@@ -72,20 +73,16 @@ export default function DialogFormAdd () {
                 },
             });
         }
-
     };
-
-
 
   return (
      <Dialog open={newEventDialogOpen} onOpenChange={setNewEventDialogOpen}>
         <DialogContent className="sm:max-w-[425px]">
             <form className="flex flex-col gap-6"  onSubmit={submit}>
                 <DialogHeader>
-                    <DialogTitle>Edit profile</DialogTitle>
+                    <DialogTitle>Tambah Jadwal Zoom</DialogTitle>
                     <DialogDescription>
-                        Make changes to your profile here. Click save when you&apos;re
-                        done.
+                        Isi isian diatas. Klik Simpan Jika Selesai.
                     </DialogDescription>
                 </DialogHeader>
                 <div className="grid gap-4">
@@ -103,19 +100,14 @@ export default function DialogFormAdd () {
                     </div>
                     <div className="grid gap-3">
                         <Label htmlFor="starttime-1">Mulai</Label>
-                        <DateTimePicker24h
+                        <DateTimePicker24h value={data.start_time}
                             setDateTime={(e) => {setData('start_time', e); calculateSum(new Date(e));}}
                         />
+
                          {error ?
-                            <p
-                                data-slot="form-message"
-                                id="starttime-1-error"
-                                className={"text-destructive text-sm"}
-                                >
-                                Tanggal Waktu harus lebih atau sama dengan tanggal ini
-                            </p> :
-                         <>
-                         </>}
+                            <InputError message="Tanggal Waktu harus lebih atau sama dengan tanggal ini"></InputError>
+                           :<></>
+                        }
 
                     </div>
                     <div className="grid gap-3">
@@ -125,9 +117,9 @@ export default function DialogFormAdd () {
                 </div>
                 <DialogFooter>
                     <DialogClose asChild>
-                        <Button variant="outline">Cancel</Button>
+                        <Button variant="outline">Batal</Button>
                     </DialogClose>
-                    <Button type="submit">Save changes</Button>
+                    <Button type="submit">Simpan</Button>
                 </DialogFooter>
             </form>
         </DialogContent>

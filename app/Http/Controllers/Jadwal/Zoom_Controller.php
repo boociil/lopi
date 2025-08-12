@@ -49,10 +49,15 @@ class Zoom_Controller extends Controller
         $month_end =  Carbon::create(session('tahun_active'), $month, 1)->endOfMonth();
 
         $zoom_bulan_daftar = Zoom::with(['pembuat'])->whereMonth("start_time", $month)->whereYear("start_time", $date->year)->get();
-        // $zoom_statsulbar = $this->zoom_getAllMeeting('statsulbar', $month_start->format('Y-m-d'), $month_end->format('Y-m-d'));
-        // $zoom_sp2020 = $this->zoom_getAllMeeting('sp2020', $month_start->format('Y-m-d'), $month_end->format('Y-m-d'));
-        $zoom_statsulbar = ['status' => false];
-        $zoom_sp2020 = ['status' => false];
+        for($i=0; $i<count($zoom_bulan_daftar); $i++){
+            if($zoom_bulan_daftar[$i]->pembuat){
+                $zoom_bulan_daftar[$i]->pembuat_nama = $zoom_bulan_daftar[$i]->pembuat->nama;
+            }
+        }
+        $zoom_statsulbar = $this->zoom_getAllMeeting('statsulbar', $month_start->format('Y-m-d'), $month_end->format('Y-m-d'));
+        $zoom_sp2020 = $this->zoom_getAllMeeting('sp2020', $month_start->format('Y-m-d'), $month_end->format('Y-m-d'));
+        // $zoom_statsulbar = ['status' => false];
+        // $zoom_sp2020 = ['status' => false];
 
         return Inertia::render('zoom/index', [
             "bulan"=>$month,

@@ -26,10 +26,13 @@ import {
     TableRow,
 } from "@/components/ui/table"
 import HeadingSmall from '@/components/heading-small';
-import { date_format, get_time_from_date_time } from '@/lib/date';
+import { addHoursToDate, addMinutesToDate, date_format, get_time_from_date_time } from '@/lib/date';
 import { Badge } from '@/components/ui/badge';
 import ZommProvider from '@/props/zoom/provider';
 import DialogFormAdd from '@/props/zoom/dialog/form-add';
+import DialogFormEdit from '@/props/zoom/dialog/form-edit';
+import DialogFormDelete from '@/props/zoom/dialog/form-delete';
+import DialogFormApprove from '@/props/zoom/dialog/form-approve';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -45,9 +48,9 @@ export default function Index({bulan, peran,  zoom_bulan_daftar, zoom_statsulbar
         const item : zoom =  {
             topic: element.topic,
             password: element.password,
-            start_time: element.start_time,
-            start_time_penyesuaian: 0,
+            start_time: new Date(element.start_time).toISOString(),
             duration: element.duration,
+            end_time: addMinutesToDate(new Date(element.start_time), element.duration).toISOString(),
             pembuat_username: element.pembuat_username,
             pembuat_nama: element.pembuat_nama,
             zoom_status: element.zoom_status,
@@ -56,7 +59,7 @@ export default function Index({bulan, peran,  zoom_bulan_daftar, zoom_statsulbar
             zoom_start_url: element.zoom_start_url,
             zoom_join_url: element.zoom_join_url,
             zoom_app_prop: null,
-            zoom_int_id: element.zoom_int_id,
+            id: element.id,
         }
         data.push(item)
     });
@@ -74,9 +77,9 @@ export default function Index({bulan, peran,  zoom_bulan_daftar, zoom_statsulbar
                 const item : zoom =  {
                     topic: element.topic,
                     password: null,
-                    start_time: element.start_time,
-                    start_time_penyesuaian: 8,
+                    start_time: (new Date(element.start_time)).toISOString(),
                     duration: element.duration,
+                    end_time: addMinutesToDate(new Date(element.start_time), element.duration).toISOString(),
                     pembuat_username: null,
                     pembuat_nama: null,
                     zoom_status: null,
@@ -85,7 +88,7 @@ export default function Index({bulan, peran,  zoom_bulan_daftar, zoom_statsulbar
                     zoom_start_url: null,
                     zoom_join_url: element.zoom_join_url,
                     zoom_app_prop: element,
-                    zoom_int_id: null,
+                    id: null,
                 }
                 data.push(item)
             }
@@ -105,9 +108,9 @@ export default function Index({bulan, peran,  zoom_bulan_daftar, zoom_statsulbar
                 const item : zoom =  {
                     topic: element.topic,
                     password: null,
-                    start_time: element.start_time,
-                    start_time_penyesuaian: 8,
+                    start_time: (new Date(element.start_time)).toISOString(),
                     duration: element.duration,
+                    end_time: addMinutesToDate(new Date(element.start_time), element.duration).toISOString(),
                     pembuat_username: null,
                     pembuat_nama: null,
                     zoom_status: null,
@@ -116,7 +119,7 @@ export default function Index({bulan, peran,  zoom_bulan_daftar, zoom_statsulbar
                     zoom_start_url: null,
                     zoom_join_url: element.zoom_join_url,
                     zoom_app_prop: element,
-                    zoom_int_id: null,
+                    id: null,
                 }
                 data.push(item)
             }
@@ -132,13 +135,13 @@ export default function Index({bulan, peran,  zoom_bulan_daftar, zoom_statsulbar
         return 0
     })
 
-    console.log(data);
     const [zoom, setZoom] = React.useState(data);
-    const [filteredData, setFilterData] = React.useState(data);
     const [filterTopic, setFilterTopic] = React.useState("");
+    const [filteredData, setFilterData] = React.useState(data);
 
     const [newEventDialogOpen, setNewEventDialogOpen] = React.useState(false)
-    const [manageEventDialogOpen, setManageEventDialogOpen] = React.useState(false)
+    const [editEventDialogOpen, setEditEventDialogOpen] = React.useState(false)
+    const [seletedZoom, setSeletedZoom] = React.useState<zoom | null>(null)
 
     const tahun_active = usePage<SharedData>().props.tahun_active;
     const nama_bulan = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
@@ -161,7 +164,7 @@ export default function Index({bulan, peran,  zoom_bulan_daftar, zoom_statsulbar
             }
         })
         setFilterData(_filterData)
-    }, [filterTopic]);
+    }, [filterTopic, newEventDialogOpen]);
 
     return (
         <AppLayout breadcrumbs={breadcrumbs} peran={peran}>
@@ -171,9 +174,11 @@ export default function Index({bulan, peran,  zoom_bulan_daftar, zoom_statsulbar
                 setZoom={setZoom}
                 newEventDialogOpen={newEventDialogOpen}
                 setNewEventDialogOpen={setNewEventDialogOpen}
-                manageEventDialogOpen={manageEventDialogOpen}
-                setManageEventDialogOpen={setManageEventDialogOpen}>
-                <DialogFormAdd></DialogFormAdd>
+                editEventDialogOpen={editEventDialogOpen}
+                setEditEventDialogOpen={setEditEventDialogOpen}
+                seletedZoom={seletedZoom}
+                setSeletedZoom={setSeletedZoom}>
+
                 <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4 overflow-x-auto">
                     <div className="w-full">
                         <HeadingSmall title="Pengaturan Tampilam" description="Perbarui pengaturan tampilan akun Anda" />
@@ -183,7 +188,7 @@ export default function Index({bulan, peran,  zoom_bulan_daftar, zoom_statsulbar
                                 onChange={(event) =>
                                     setFilterTopic(event.target.value)
                                 }
-                                className="max-w-sm text-primary-foreground"
+                                className="max-w-sm text-secondary"
                             />
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
@@ -226,7 +231,7 @@ export default function Index({bulan, peran,  zoom_bulan_daftar, zoom_statsulbar
                                     {filteredData.map((item) => {
 
                                         let status = (<Badge variant="outline">Belum</Badge>)
-                                        if(item.zoom_app_prop != null && item.zoom_int_id != null){
+                                        if(item.id != null){
                                             if(item.zoom_status == 0){
                                                 status = (<Badge variant="outline">Belum</Badge>)
                                             }else if(item.zoom_status == 1){
@@ -234,9 +239,7 @@ export default function Index({bulan, peran,  zoom_bulan_daftar, zoom_statsulbar
                                             }else if(item.zoom_status == 2){
                                                 status = (<Badge variant="default">Diterima</Badge>)
                                             }
-                                        }else if(item.zoom_app_prop != null && item.zoom_int_id == null){
-                                            status = (<Badge variant="outline">Langsung</Badge>)
-                                        }else if(item.zoom_app_prop == null && item.zoom_int_id != null){
+                                        }else if(item.zoom_app_prop != null && item.id == null){
                                             status = (<Badge variant="outline">Langsung Di App</Badge>)
                                         }
 
@@ -248,20 +251,28 @@ export default function Index({bulan, peran,  zoom_bulan_daftar, zoom_statsulbar
                                         }
 
                                         let approval_button = (<div></div>)
-                                        if(item.zoom_app_prop == null){
-                                            let approval_button = (<Button>Approval</Button>)
+                                        if(item.zoom_app_prop == null && item.zoom_status == 0){
+                                            approval_button = (
+                                                <Button className='bg-secondary text-secondary-foreground hover:bg-secondary/80' size='sm'
+                                                 onClick={(event) => {
+                                                    setSeletedZoom(item);
+                                                    setEditEventDialogOpen(true);
+                                                }}>Approval
+                                                </Button>
+                                            )
                                         }
 
                                         return (
-                                            <TableRow key={"-"+item.zoom_int_id+"-"+item.zoom_meeting_id}>
+                                            <TableRow key={"-"+item.id+"-"+item.zoom_meeting_id}>
                                                 <TableCellWrap className="text-wrap whitespace-wrap w-80">
-                                                    {item.topic}<br></br>
-                                                    {date_format(item.start_time, item.start_time_penyesuaian)} - {get_time_from_date_time(item.start_time, item.start_time_penyesuaian)}
+                                                    {item.topic}<br/>
+                                                    {date_format(item.start_time)}<br/>
+                                                    {get_time_from_date_time(item.start_time)} - {get_time_from_date_time(item.end_time)}
                                                 </TableCellWrap>
                                                 <TableCell>{status}</TableCell>
                                                 <TableCell>{item.zoom_akun}</TableCell>
                                                 <TableCell>{pembuat_zoom}</TableCell>
-                                                <TableCell>Approval</TableCell>
+                                                <TableCell>{approval_button}</TableCell>
                                                 <TableCell>Aksi</TableCell>
                                             </TableRow>
                                         )
