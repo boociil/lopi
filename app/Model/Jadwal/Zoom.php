@@ -19,7 +19,7 @@ class Zoom extends Model
         'recurrence_opt' => 'array'
     ];
 
-    protected $fillable = ['id', 'agenda', 'topic', 'password', 'start_time', 'duration'
+    protected $fillable = ['id', 'topic', 'password', 'start_time', 'end_time', 'duration'
         , 'pembuat_username', 'approve_username', 'is_recurrence', 'recurrence_opt'
         , 'zoom_status', 'zoom_akun', 'zoom_meeting_id', 'zoom_start_url', 'zoom_join_url', 'jadwal_id'];
 

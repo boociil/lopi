@@ -77,9 +77,9 @@ Route::group(
     'prefix' => 'zoom',
     'middleware' => ['auth', 'check_maintenance', 'statistik'],
 ], function () {
-    Route::get('/', [Zoom_Controller::class, 'index']);
-    Route::get('/tambah', [Zoom_Controller::class, 'tambah']);
-    Route::get('/{jadwal_id}/ubah', [Zoom_Controller::class, 'ubah']);
-    Route::get('/{jadwal_id}/hapus', [Zoom_Controller::class, 'hapus']);
+    Route::get('/', [Zoom_Controller::class, 'index'])->name('zoom-index');
+    Route::post('/tambah', [Zoom_Controller::class, 'tambah'])->name('zoom-tambah');
+    Route::post('/{jadwal_id}/ubah', [Zoom_Controller::class, 'ubah'])->name('zoom-ubah');
+    Route::post('/{jadwal_id}/hapus', [Zoom_Controller::class, 'hapus'])->name('zoom-hapus');
 });
 

@@ -63,17 +63,3 @@ export interface Peran {
     tahun: string;
     peran: string;
 }
-
-export interface zoom {
-    topic: string;
-    start_time: string;
-    start_time_penyesuaian: number;
-    pembuat_username: string?;
-    zoom_status: number?;
-    zoom_akun: string?;
-    zoom_meeting_id: bigint?;
-    zoom_start_url: string?;
-    zoom_join_url: string?;
-    zoom_app_prop: any?;
-    zoom_int_prop: any?;
-}

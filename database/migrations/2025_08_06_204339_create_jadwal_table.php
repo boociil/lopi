@@ -22,7 +22,6 @@ return new class extends Migration
 
             $table->dateTime('tanggal_awal');
             $table->dateTime('tanggal_akhir');
-            $table->string('agenda'); //'upacara', 'meeting'
             $table->string('topic');
             $table->text('description')->nullable();
 
@@ -59,11 +58,11 @@ return new class extends Migration
         Schema::create('siakip2_zoom', function (Blueprint $table) {
             //peserta ruang mana tanggal, tautan daftar hadrir, notulensi, tautan dokumentasi, tautan undangan
             $table->string('id', 36)->primary();
-            $table->string('agenda', 2000);
             $table->string('topic', 2000);
             $table->string('password', 10);
             $table->dateTime('start_time');
             $table->unsignedInteger('duration');
+            $table->dateTime('end_time');
 
             $table->string('pembuat_username', 100);
             $table->string('approve_username', 100)->nullable();

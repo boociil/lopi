@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Jadwal extends Model
 {
+
     use SoftDeletes;
 
     protected $table = 'siakip2_jadwal';
@@ -15,9 +16,9 @@ class Jadwal extends Model
     protected $keyType = 'string';
     public $timestamps = true;
 
-    protected $fillable = ['id', 'pembuat_username', 'pemilik_tipe_str', 'pemilik_type', 'pemilik_id', 'tanggal'
-        , 'title', 'tipe_jadwal', 'description', 'ruang'
-        , 'url_zoom', 'url_daftar_hadir', 'url_notulensi', 'url_dokumentasi', 'url_undangan'];
+    protected $fillable = ['id', 'pembuat_username', 'pemilik_tipe_str', 'pemilik_type', 'pemilik_id', 'tanggal_awal', 'tanggal_akhir'
+        , 'topic', 'description', 'ruang_status', 'ruang', 'ruang_username_confirm'
+        , 'url_daftar_hadir', 'url_notulensi', 'url_dokumentasi', 'url_dokumentasi', 'url_undangan'];
 
     public function pemilik(): HasMany
     {

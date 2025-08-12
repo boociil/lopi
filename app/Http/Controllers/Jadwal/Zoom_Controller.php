@@ -49,10 +49,13 @@ class Zoom_Controller extends Controller
         $month_end =  Carbon::create(session('tahun_active'), $month, 1)->endOfMonth();
 
         $zoom_bulan_daftar = Zoom::with(['pembuat'])->whereMonth("start_time", $month)->whereYear("start_time", $date->year)->get();
-        $zoom_statsulbar = $this->getAllMeeting('statsulbar', $month_start->format('Y-m-d'), $month_end->format('Y-m-d'));
-        $zoom_sp2020 = $this->getAllMeeting('sp2020', $month_start->format('Y-m-d'), $month_end->format('Y-m-d'));
+        // $zoom_statsulbar = $this->zoom_getAllMeeting('statsulbar', $month_start->format('Y-m-d'), $month_end->format('Y-m-d'));
+        // $zoom_sp2020 = $this->zoom_getAllMeeting('sp2020', $month_start->format('Y-m-d'), $month_end->format('Y-m-d'));
+        $zoom_statsulbar = ['status' => false];
+        $zoom_sp2020 = ['status' => false];
 
         return Inertia::render('zoom/index', [
+            "bulan"=>$month,
             "peran"=> fn () => Peran::get_my_peran(),
             "zoom_bulan_daftar" => $zoom_bulan_daftar,
             "zoom_statsulbar" => $zoom_statsulbar,
@@ -64,18 +67,22 @@ class Zoom_Controller extends Controller
     {
         $zoom = new Zoom();
         $zoom->id = Str::uuid();
-        $zoom->agenda = $request->input('agenda');
         $zoom->topic = $request->input('topic');
         $zoom->password = $request->input('password');
-        $zoom->start_time = $request->input('start_time');
+        $zoom->start_time = Carbon::parse($request->input('start_time'))
+            ->addMinutes($request->input('start_time_penyesuaian')* -1)
+            ->toDateTimeString();
         $zoom->duration = $request->input('duration');
+        $zoom->end_time = Carbon::parse($request->input('start_time'))
+            ->addMinutes($request->input('start_time_penyesuaian') * -1)
+            ->addMinutes($request->input('duration'))
+            ->toDateTimeString();
         $zoom->pembuat_username = Auth::user()->username;
-        $zoom->is_recurrence = $request->input('is_recurrence');
-        $zoom->recurrence_opt = $request->input('recurrence_opt');
+        $zoom->is_recurrence = 0;
+        $zoom->recurrence_opt = null;
         $zoom->save();
-
         //redirect
-        return 1;
+        redirect('zoom');
     }
 
     public function ubah(Request $request)
@@ -146,12 +153,12 @@ class Zoom_Controller extends Controller
         return $client;
     }
 
-    public function getAllMeeting($path, $from, $to)
+    public function zoom_getAllMeeting($path, $from, $to)
     {
         try {
             $client = $this->zoom_getClient($path);
             $response = $client->request('GET', 'users/me/meetings',
-                ['json' => [
+                ['query' => [
                     'page_size' => 300,
                     'from' => $from,
                     'to' => $to,
@@ -169,6 +176,73 @@ class Zoom_Controller extends Controller
                 'message' => $th->getMessage(),
             ];
         }
+    }
+
+    public function zoom_createMeeting($path, array $data)
+    {
+        try {
+            $client = $this->zoom_getClient($path);
+            $response = $client->request('GET', 'users/me/meetings',
+                ['json' => $data]
+            );
+            $res = json_decode($response->getBody(), true);
+            return [
+                'status' => true,
+                'data' => $res,
+            ];
+        } catch (\Throwable $th) {
+            return [
+                'status' => false,
+                'message' => $th->getMessage(),
+            ];
+        }
+    }
+
+     // update meeting
+    public function zoom_updateMeeting(string $path, string $meetingId, array $data)
+    {
+        try {
+            $client = $this->zoom_getClient($path);
+            $response = $client->request('PATCH', 'meetings/' . $meetingId, [
+                'json' => $data,
+            ]);
+            $res = json_decode($response->getBody(), true);
+            return [
+                'status' => true,
+                'data' => $res,
+            ];
+        } catch (\Throwable $th) {
+            return [
+                'status' => false,
+                'message' => $th->getMessage(),
+            ];
+        }
+    }
+
+    // delete meeting
+    public function zoom_deleteMeeting(string $path, string $meetingId)
+    {
+        try {
+            $client = $this->zoom_getClient($path);
+            $response = $client->request('DELETE', 'meetings/' . $meetingId);
+            if ($response->getStatusCode() === 204) {
+                return [
+                    'status' => true,
+                    'message' => 'Meeting Deleted Successfully',
+                ];
+            } else {
+                return [
+                    'status' => false,
+                    'message' => 'Something went wrong',
+                ];
+            }
+        } catch (\Throwable $th) {
+            return [
+                'status' => false,
+                'message' => $th->getMessage(),
+            ];
+        }
+
     }
 
 

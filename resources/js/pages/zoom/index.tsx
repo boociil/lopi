@@ -1,13 +1,14 @@
 import AppLayout from '@/layouts/app-layout';
-import { type Peran, type BreadcrumbItem, type zoom } from '@/types';
-import { Head } from '@inertiajs/react';
+import { type Peran, type BreadcrumbItem, type SharedData } from '@/types';
+import { type zoom, type zoom_app, zoom_app_with_status } from '@/props/zoom/types'
+import { Head, useForm, usePage } from '@inertiajs/react';
 
 import * as React from "react"
-import { ChevronDown } from "lucide-react"
+import { ChevronDown, Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { Link } from '@inertiajs/react';
 import {
     DropdownMenu,
-    DropdownMenuCheckboxItem,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuLabel,
@@ -27,15 +28,8 @@ import {
 import HeadingSmall from '@/components/heading-small';
 import { date_format, get_time_from_date_time } from '@/lib/date';
 import { Badge } from '@/components/ui/badge';
-
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
+import ZommProvider from '@/props/zoom/provider';
+import DialogFormAdd from '@/props/zoom/dialog/form-add';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -44,23 +38,25 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-
-export default function Index({peran,  zoom_bulan_daftar, zoom_statsulbar, zoom_sp2020}) {
+export default function Index({bulan, peran,  zoom_bulan_daftar, zoom_statsulbar, zoom_sp2020}: React.PropsWithChildren<{bulan: number,  peran?: Peran[], zoom_bulan_daftar: zoom[], zoom_statsulbar: zoom_app_with_status, zoom_sp2020: zoom_app_with_status}>) {
 
     const data: zoom[] = []
     zoom_bulan_daftar.forEach(element => {
         const item : zoom =  {
             topic: element.topic,
+            password: element.password,
             start_time: element.start_time,
             start_time_penyesuaian: 0,
+            duration: element.duration,
             pembuat_username: element.pembuat_username,
+            pembuat_nama: element.pembuat_nama,
             zoom_status: element.zoom_status,
             zoom_akun: element.zoom_akun ? element.zoom_akun : '-',
             zoom_meeting_id: element.zoom_meeting_id,
             zoom_start_url: element.zoom_start_url,
             zoom_join_url: element.zoom_join_url,
             zoom_app_prop: null,
-            zoom_int_prop: element,
+            zoom_int_id: element.zoom_int_id,
         }
         data.push(item)
     });
@@ -77,16 +73,19 @@ export default function Index({peran,  zoom_bulan_daftar, zoom_statsulbar, zoom_
             if(!dapat){
                 const item : zoom =  {
                     topic: element.topic,
+                    password: null,
                     start_time: element.start_time,
                     start_time_penyesuaian: 8,
+                    duration: element.duration,
                     pembuat_username: null,
+                    pembuat_nama: null,
                     zoom_status: null,
                     zoom_akun: 'statsulbar',
                     zoom_meeting_id: element.id,
-                    zoom_start_url: element.zoom_start_url,
+                    zoom_start_url: null,
                     zoom_join_url: element.zoom_join_url,
                     zoom_app_prop: element,
-                    zoom_int_prop: null,
+                    zoom_int_id: null,
                 }
                 data.push(item)
             }
@@ -105,16 +104,19 @@ export default function Index({peran,  zoom_bulan_daftar, zoom_statsulbar, zoom_
             if(!dapat){
                 const item : zoom =  {
                     topic: element.topic,
+                    password: null,
                     start_time: element.start_time,
                     start_time_penyesuaian: 8,
+                    duration: element.duration,
                     pembuat_username: null,
+                    pembuat_nama: null,
                     zoom_status: null,
                     zoom_akun: 'sp2020',
                     zoom_meeting_id: element.id,
-                    zoom_start_url: element.zoom_start_url,
+                    zoom_start_url: null,
                     zoom_join_url: element.zoom_join_url,
                     zoom_app_prop: element,
-                    zoom_int_prop: null,
+                    zoom_int_id: null,
                 }
                 data.push(item)
             }
@@ -130,8 +132,26 @@ export default function Index({peran,  zoom_bulan_daftar, zoom_statsulbar, zoom_
         return 0
     })
 
+    console.log(data);
+    const [zoom, setZoom] = React.useState(data);
     const [filteredData, setFilterData] = React.useState(data);
     const [filterTopic, setFilterTopic] = React.useState("");
+
+    const [newEventDialogOpen, setNewEventDialogOpen] = React.useState(false)
+    const [manageEventDialogOpen, setManageEventDialogOpen] = React.useState(false)
+
+    const tahun_active = usePage<SharedData>().props.tahun_active;
+    const nama_bulan = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+    let nama_bulan_pilihan = []
+    let nama_bulan_sekarang = '';
+    for(let i=1; i<=12; i++){
+        nama_bulan_pilihan.push({'index': i, 'nama': nama_bulan[i-1]+' '+tahun_active})
+        if(bulan == i){
+            nama_bulan_sekarang = nama_bulan[i-1]+' '+tahun_active
+        }
+    }
+
+
     React.useEffect(() => {
         let _filterData = data.filter(item => {
             if(item.topic.toLowerCase().includes(filterTopic.toLowerCase())){
@@ -143,114 +163,118 @@ export default function Index({peran,  zoom_bulan_daftar, zoom_statsulbar, zoom_
         setFilterData(_filterData)
     }, [filterTopic]);
 
-
     return (
         <AppLayout breadcrumbs={breadcrumbs} peran={peran}>
             <Head title="Zoom" />
-            <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4 overflow-x-auto">
-                <div className="w-full">
-                    <HeadingSmall title="Pengaturan Tampilam" description="Perbarui pengaturan tampilan akun Anda" />
-                    <div className="flex items-center py-4">
-                        <Input
-                            placeholder="Filter topic..."
-                            onChange={(event) =>
-                                setFilterTopic(event.target.value)
-                            }
-                            className="max-w-sm"
-                        />
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="outline" className="ml-auto">
-                                Bulan <ChevronDown />
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
+            <ZommProvider
+                zoom={zoom}
+                setZoom={setZoom}
+                newEventDialogOpen={newEventDialogOpen}
+                setNewEventDialogOpen={setNewEventDialogOpen}
+                manageEventDialogOpen={manageEventDialogOpen}
+                setManageEventDialogOpen={setManageEventDialogOpen}>
+                <DialogFormAdd></DialogFormAdd>
+                <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4 overflow-x-auto">
+                    <div className="w-full">
+                        <HeadingSmall title="Pengaturan Tampilam" description="Perbarui pengaturan tampilan akun Anda" />
+                        <div className="flex items-center py-4 mt-1 gap-x-1.5">
+                            <Input
+                                placeholder="Filter topic..."
+                                onChange={(event) =>
+                                    setFilterTopic(event.target.value)
+                                }
+                                className="max-w-sm text-primary-foreground"
+                            />
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="outline" className="ml-auto">
+                                    {nama_bulan_sekarang} <ChevronDown />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                    {nama_bulan_pilihan.map((item) => (
+                                        <DropdownMenuItem asChild>
+                                            <Link className="block w-full" href={route('zoom-index')} data={{'bulan':item.index}}>
+                                                {item.nama}
+                                            </Link>
+                                        </DropdownMenuItem>
+                                    ))}
 
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                    </div>
-                    <div className="overflow-hidden rounded-md border">
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>Topic dan Waktu</TableHead>
-                                    <TableHead>Status</TableHead>
-                                    <TableHead>Akun</TableHead>
-                                    <TableHead>Pembuat</TableHead>
-                                    <TableHead>Approval</TableHead>
-                                    <TableHead>Aksi</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {filteredData.map((item) => {
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                            <Button
+                                className="flex items-center gap-1 bg-primary text-primary-foreground"
+                                    onClick={() => setNewEventDialogOpen(true)}
+                                >
+                                <Plus />
+                                Add Event
+                            </Button>
+                        </div>
+                        <div className="overflow-hidden rounded-md border">
+                            <Table>
+                                <TableHeader className="bg-accent">
+                                    <TableRow>
+                                        <TableHead>Topic dan Waktu</TableHead>
+                                        <TableHead>Status</TableHead>
+                                        <TableHead>Akun</TableHead>
+                                        <TableHead>Pembuat</TableHead>
+                                        <TableHead>Approval</TableHead>
+                                        <TableHead>Aksi</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody className='text-accent-foreground'>
+                                    {filteredData.map((item) => {
 
-                                    let status = (<Badge variant="outline">Belum</Badge>)
-                                    if(item.zoom_app_prop != null && item.zoom_int_prop != null){
-                                        if(item.zoom_status == 0){
-                                            status = (<Badge variant="outline">Belum</Badge>)
-                                        }else if(item.zoom_status == 1){
-                                            status = (<Badge variant="destructive">Ditolak</Badge>)
-                                        }else if(item.zoom_status == 2){
-                                            status = (<Badge variant="default">Diterima</Badge>)
+                                        let status = (<Badge variant="outline">Belum</Badge>)
+                                        if(item.zoom_app_prop != null && item.zoom_int_id != null){
+                                            if(item.zoom_status == 0){
+                                                status = (<Badge variant="outline">Belum</Badge>)
+                                            }else if(item.zoom_status == 1){
+                                                status = (<Badge variant="destructive">Ditolak</Badge>)
+                                            }else if(item.zoom_status == 2){
+                                                status = (<Badge variant="default">Diterima</Badge>)
+                                            }
+                                        }else if(item.zoom_app_prop != null && item.zoom_int_id == null){
+                                            status = (<Badge variant="outline">Langsung</Badge>)
+                                        }else if(item.zoom_app_prop == null && item.zoom_int_id != null){
+                                            status = (<Badge variant="outline">Langsung Di App</Badge>)
                                         }
-                                    }else if(item.zoom_app_prop != null && item.zoom_int_prop == null){
-                                        status = (<Badge variant="outline">Belum</Badge>)
-                                    }else if(item.zoom_app_prop == null && item.zoom_int_prop != null){
-                                        status = (<Badge variant="outline">Langsung Di App</Badge>)
-                                    }
 
-                                    let pembuat_zoom = ""
-                                    if(item.zoom_int_prop != null){
-                                        pembuat_zoom = item.zoom_int_prop.pembuat.nama
-                                    }else{
-                                        pembuat_zoom = '-'
-                                    }
+                                        let pembuat_zoom = ""
+                                        if(item.pembuat_nama != null){
+                                            pembuat_zoom = item.pembuat_nama
+                                        }else{
+                                            pembuat_zoom = '-'
+                                        }
 
-                                    let approval_button = (<div></div>)
-                                    if(item.zoom_app_prop == null){
-                                        let approval_button = (<Button>Approval</Button>)
-                                    }
+                                        let approval_button = (<div></div>)
+                                        if(item.zoom_app_prop == null){
+                                            let approval_button = (<Button>Approval</Button>)
+                                        }
 
-                                    return (
-                                        <TableRow>
-                                            <TableCellWrap className="text-wrap whitespace-wrap w-80">
-                                                {item.topic}<br></br>
-                                                {date_format(item.start_time, item.start_time_penyesuaian)} - {get_time_from_date_time(item.start_time, item.start_time_penyesuaian)}
-                                            </TableCellWrap>
-                                            <TableCell>{status}</TableCell>
-                                            <TableCell>{item.zoom_akun}</TableCell>
-                                            <TableCell>{pembuat_zoom}</TableCell>
-                                            <TableCell>Approval</TableCell>
-                                            <TableCell>Aksi</TableCell>
-                                        </TableRow>
-                                    )
-                                })}
-                            </TableBody>
-                        </Table>
+                                        return (
+                                            <TableRow key={"-"+item.zoom_int_id+"-"+item.zoom_meeting_id}>
+                                                <TableCellWrap className="text-wrap whitespace-wrap w-80">
+                                                    {item.topic}<br></br>
+                                                    {date_format(item.start_time, item.start_time_penyesuaian)} - {get_time_from_date_time(item.start_time, item.start_time_penyesuaian)}
+                                                </TableCellWrap>
+                                                <TableCell>{status}</TableCell>
+                                                <TableCell>{item.zoom_akun}</TableCell>
+                                                <TableCell>{pembuat_zoom}</TableCell>
+                                                <TableCell>Approval</TableCell>
+                                                <TableCell>Aksi</TableCell>
+                                            </TableRow>
+                                        )
+                                    })}
+                                </TableBody>
+                            </Table>
+                        </div>
                     </div>
-                    </div>
-            </div>
+                </div>
+            </ZommProvider>
+
         </AppLayout>
     );
 }
 
-export function Modal_Approve(props : boolean) {
-    const { open, onClose } = props;
-    if (!open) {
-        return <></>;
-    }
-    return (
-        <Dialog>
-  <DialogTrigger>Open</DialogTrigger>
-  <DialogContent>
-    <DialogHeader>
-      <DialogTitle>Are you absolutely sure?</DialogTitle>
-      <DialogDescription>
-        This action cannot be undone. This will permanently delete your account
-        and remove your data from our servers.
-      </DialogDescription>
-    </DialogHeader>
-  </DialogContent>
-</Dialog>
-    );
-}
+
