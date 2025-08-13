@@ -8,8 +8,6 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Jadwal_Peserta extends Model
 {
-    use SoftDeletes;
-
     protected $table = 'siakip2_jadwal_peserta';
     public $incrementing = false;
     protected $keyType = 'string';
@@ -22,6 +20,4 @@ class Jadwal_Peserta extends Model
     {
         return $this->morphTo();
     }
-
-
 }

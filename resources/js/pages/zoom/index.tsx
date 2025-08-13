@@ -1,18 +1,16 @@
 import AppLayout from '@/layouts/app-layout';
-import { type Peran, type BreadcrumbItem, type SharedData } from '@/types';
-import { type zoom, type zoom_app, zoom_app_with_status } from '@/props/zoom/types'
-import { Head, useForm, usePage } from '@inertiajs/react';
+import { type BreadcrumbItem, type SharedData } from '@/types';
+import { type zoom, type zoom_app, zoom_app_with_status, zoom_dialog_event } from '@/props/zoom/types'
+import { Head, usePage } from '@inertiajs/react';
 
 import * as React from "react"
-import { ChevronDown, Plus } from "lucide-react"
+import { ChevronDown, MoreHorizontal, Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Link } from '@inertiajs/react';
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
-    DropdownMenuLabel,
-    DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
@@ -37,7 +35,8 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-export default function Index({bulan,  zoom_bulan_daftar, zoom_statsulbar, zoom_sp2020}: React.PropsWithChildren<{bulan: number, zoom_bulan_daftar: zoom[], zoom_statsulbar: zoom_app_with_status, zoom_sp2020: zoom_app_with_status}>) {
+export default function Index({bulan,  zoom_bulan_daftar, zoom_statsulbar, zoom_sp2020}:
+    React.PropsWithChildren<{bulan: number, zoom_bulan_daftar: zoom[], zoom_statsulbar: zoom_app_with_status, zoom_sp2020: zoom_app_with_status}>) {
 
     const data: zoom[] = []
     zoom_bulan_daftar.forEach(element => {
@@ -135,9 +134,8 @@ export default function Index({bulan,  zoom_bulan_daftar, zoom_statsulbar, zoom_
     const [filterTopic, setFilterTopic] = React.useState("");
     const [filteredData, setFilterData] = React.useState(data);
 
-    const [newEventDialogOpen, setNewEventDialogOpen] = React.useState(false)
-    const [editEventDialogOpen, setEditEventDialogOpen] = React.useState(false)
-    const [seletedZoom, setSeletedZoom] = React.useState<zoom | null>(null)
+    const [eventDialog, setEventDialog] = React.useState<zoom_dialog_event>({status: null, data: null})
+
 
     const tahun_active = usePage<SharedData>().props.tahun_active;
     const nama_bulan = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
@@ -160,7 +158,7 @@ export default function Index({bulan,  zoom_bulan_daftar, zoom_statsulbar, zoom_
             }
         })
         setFilterData(_filterData)
-    }, [filterTopic, newEventDialogOpen]);
+    }, [filterTopic, eventDialog]);
 
     return (
         <AppLayout breadcrumbs={breadcrumbs} >
@@ -168,12 +166,8 @@ export default function Index({bulan,  zoom_bulan_daftar, zoom_statsulbar, zoom_
             <ZommProvider
                 zoom={zoom}
                 setZoom={setZoom}
-                newEventDialogOpen={newEventDialogOpen}
-                setNewEventDialogOpen={setNewEventDialogOpen}
-                editEventDialogOpen={editEventDialogOpen}
-                setEditEventDialogOpen={setEditEventDialogOpen}
-                seletedZoom={seletedZoom}
-                setSeletedZoom={setSeletedZoom}>
+                eventDialog={eventDialog}
+                setEventDialog={setEventDialog}>
 
                 <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4 overflow-x-auto">
                     <div className="w-full">
@@ -205,7 +199,7 @@ export default function Index({bulan,  zoom_bulan_daftar, zoom_statsulbar, zoom_
                             </DropdownMenu>
                             <Button
                                 className="flex items-center gap-1 bg-primary text-primary-foreground"
-                                    onClick={() => setNewEventDialogOpen(true)}
+                                    onClick={() => setEventDialog({status: 'tambah', data: null})}
                                 >
                                 <Plus />
                                 Add Event
@@ -219,7 +213,6 @@ export default function Index({bulan,  zoom_bulan_daftar, zoom_statsulbar, zoom_
                                         <TableHead>Status</TableHead>
                                         <TableHead>Akun</TableHead>
                                         <TableHead>Pembuat</TableHead>
-                                        <TableHead>Approval</TableHead>
                                         <TableHead>Aksi</TableHead>
                                     </TableRow>
                                 </TableHeader>
@@ -246,15 +239,41 @@ export default function Index({bulan,  zoom_bulan_daftar, zoom_statsulbar, zoom_
                                             pembuat_zoom = '-'
                                         }
 
-                                        let approval_button = (<div></div>)
+                                        let aksi_group = (<div></div>)
                                         if(item.zoom_app_prop == null && item.zoom_status == 0){
-                                            approval_button = (
-                                                <Button className='bg-secondary text-secondary-foreground hover:bg-secondary/80' size='sm'
-                                                 onClick={(event) => {
-                                                    setSeletedZoom(item);
-                                                    setEditEventDialogOpen(true);
-                                                }}>Approval
-                                                </Button>
+                                            aksi_group = (
+                                                 <DropdownMenu>
+                                                    <DropdownMenuTrigger asChild>
+                                                        <Button variant="ghost" className="h-8 w-8 p-0 border">
+                                                            <span className="sr-only">Buka Aksi</span>
+                                                            <MoreHorizontal />
+                                                        </Button>
+                                                    </DropdownMenuTrigger>
+                                                    <DropdownMenuContent className="w-56">
+                                                        <DropdownMenuItem
+                                                            onClick={() => setEventDialog({status: 'ubah', data: item})}>
+                                                            Edit
+                                                        </DropdownMenuItem>
+                                                        <DropdownMenuItem
+                                                            onClick={() => setEventDialog({status: 'hapus', data: item})}>
+                                                            Hapus
+                                                        </DropdownMenuItem>
+                                                        <DropdownMenuItem
+                                                            onClick={() => setEventDialog({status: 'approval', data: item})}>
+                                                            Approval
+                                                        </DropdownMenuItem>
+                                                        <DropdownMenuItem>
+                                                            <a className="w-full" href="/venues/" target="_blank">
+                                                                Start Zoom
+                                                            </a>
+                                                        </DropdownMenuItem>
+                                                        <DropdownMenuItem>
+                                                            <a className="w-full" href="/venues/" target="_blank">
+                                                                Join Zoom
+                                                            </a>
+                                                        </DropdownMenuItem>
+                                                    </DropdownMenuContent>
+                                                </DropdownMenu>
                                             )
                                         }
 
@@ -268,8 +287,7 @@ export default function Index({bulan,  zoom_bulan_daftar, zoom_statsulbar, zoom_
                                                 <TableCell>{status}</TableCell>
                                                 <TableCell>{item.zoom_akun}</TableCell>
                                                 <TableCell>{pembuat_zoom}</TableCell>
-                                                <TableCell>{approval_button}</TableCell>
-                                                <TableCell>Aksi</TableCell>
+                                                <TableCell>{aksi_group}</TableCell>
                                             </TableRow>
                                         )
                                     })}

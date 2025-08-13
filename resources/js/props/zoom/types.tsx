@@ -4,12 +4,8 @@ export type ZoomProps = {
 }
 
 export type ZoomContextType = ZoomProps & {
-  newEventDialogOpen: boolean
-  setNewEventDialogOpen: (open: boolean) => void
-  editEventDialogOpen: boolean
-  setEditEventDialogOpen: (open: boolean) => void
-  seletedZoom: zoom | null
-  setSeletedZoom: (seletedZoom: zoom) => void
+  eventDialog: zoom_dialog_event
+  setEventDialog: (eventDialog: zoom_dialog_event) => void
 }
 
 
@@ -45,4 +41,9 @@ export interface zoom_app {
     start_time_penyesuaian: number;
     duration: number;
     zoom_join_url: string | null;
+}
+
+export interface zoom_dialog_event {
+    status: null | 'tambah' | 'ubah' | 'hapus' | 'approval';
+    data: zoom | null;
 }

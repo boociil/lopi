@@ -54,10 +54,10 @@ class Zoom_Controller extends Controller
                 $zoom_bulan_daftar[$i]->pembuat_nama = $zoom_bulan_daftar[$i]->pembuat->nama;
             }
         }
-        $zoom_statsulbar = $this->zoom_getAllMeeting('statsulbar', $month_start->format('Y-m-d'), $month_end->format('Y-m-d'));
-        $zoom_sp2020 = $this->zoom_getAllMeeting('sp2020', $month_start->format('Y-m-d'), $month_end->format('Y-m-d'));
-        // $zoom_statsulbar = ['status' => false];
-        // $zoom_sp2020 = ['status' => false];
+        // $zoom_statsulbar = $this->zoom_getAllMeeting('statsulbar', $month_start->format('Y-m-d'), $month_end->format('Y-m-d'));
+        // $zoom_sp2020 = $this->zoom_getAllMeeting('sp2020', $month_start->format('Y-m-d'), $month_end->format('Y-m-d'));
+        $zoom_statsulbar = ['status' => false];
+        $zoom_sp2020 = ['status' => false];
 
         return Inertia::render('zoom/index', [
             "bulan"=>$month,

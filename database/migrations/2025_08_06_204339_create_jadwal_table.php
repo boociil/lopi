@@ -11,6 +11,52 @@ return new class extends Migration
      */
     public function up(): void
     {
+        Schema::create('siakip2_ruang', function (Blueprint $table) {
+            $table->string('id', 36)->primary();
+
+            $table->string('topic');
+            $table->string('status', 1)->default(0); // status penilaian => 0: belum, 1:tolak, 2:selesai
+            $table->string('ruang', 100);
+            $table->string('pembuat_username', 100);
+            $table->string('confirm_username', 100)->nullable();
+
+            $table->timestamps();
+            $table->softDeletes();
+            $table->engine = 'InnoDB';
+
+            $table->foreign('pembuat_username', 'ruang_fk_pembuat_username')->references('username')->on('siakip2_users');
+            $table->foreign('confirm_username', 'ruang_fk_confirm_username')->references('username')->on('siakip2_users');
+        });
+
+         Schema::create('siakip2_zoom', function (Blueprint $table) {
+            //peserta ruang mana tanggal, tautan daftar hadrir, notulensi, tautan dokumentasi, tautan undangan
+            $table->string('id', 36)->primary();
+            $table->string('topic', 2000);
+            $table->string('password', 10);
+            $table->dateTime('start_time');
+            $table->unsignedInteger('duration');
+            $table->dateTime('end_time');
+
+            $table->string('pembuat_username', 100);
+            $table->string('confirm_username', 100)->nullable();
+
+            $table->string('is_recurrence', 1)->default(0); // status penilaian => 0: tidak, 1: ya
+            $table->string('recurrence_opt')->nullable(); // status penilaian => 0: tidak, 1: ya
+
+            $table->string('zoom_status', 1)->default(0); // status penilaian => 0: belum, 1: pengajuan, 2:tolak, 3:selesai
+            $table->string('zoom_akun', 100)->nullable();
+            $table->unsignedBigInteger('zoom_meeting_id')->nullable();
+            $table->string('zoom_start_url', 2000)->nullable();
+            $table->string('zoom_join_url', 2000)->nullable();
+
+            $table->timestamps();
+            $table->softDeletes();
+            $table->engine = 'InnoDB';
+
+            $table->foreign('pembuat_username', 'zoom_fk_pembuat_username')->references('username')->on('siakip2_users');
+            $table->foreign('confirm_username', 'zoom_fk_confirm_username')->references('username')->on('siakip2_users');
+        });
+
         Schema::create('siakip2_jadwal', function (Blueprint $table) {
             //peserta ruang mana tanggal, tautan daftar hadrir, notulensi, tautan dokumentasi, tautan undangan
             $table->string('id', 36)->primary();
@@ -25,20 +71,21 @@ return new class extends Migration
             $table->string('topic');
             $table->text('description')->nullable();
 
-            $table->string('ruang_status', 1)->default(0); // status penilaian => 0: belum, 1:tolak, 2:selesai
-            $table->string('ruang', 100)->nullable();
-            $table->string('ruang_username_confirm', 100)->nullable();
-
             $table->string('url_daftar_hadir', 2048)->nullable();
             $table->string('url_notulensi', 2048)->nullable();
             $table->string('url_dokumentasi', 2048)->nullable();
             $table->string('url_undangan', 2048)->nullable();
+
+            $table->string('zoom_id', 36)->nullable();
+            $table->string('ruang_id', 36)->nullable();
 
             $table->timestamps();
             $table->softDeletes();
             $table->engine = 'InnoDB';
 
             $table->foreign('pembuat_username', 'jadwal_fk_pembuat_username')->references('username')->on('siakip2_users');
+            $table->foreign('zoom_id', 'jadwal_fk_zoom_id')->references('id')->on('siakip2_zoom');
+            $table->foreign('ruang_id', 'jadwal_fk_ruang_id')->references('id')->on('siakip2_ruang');
         });
 
 
@@ -54,38 +101,6 @@ return new class extends Migration
 
             $table->foreign('jadwal_id', 'jadwal_fk_jadwal_id')->references('id')->on('siakip2_jadwal');
         });
-
-        Schema::create('siakip2_zoom', function (Blueprint $table) {
-            //peserta ruang mana tanggal, tautan daftar hadrir, notulensi, tautan dokumentasi, tautan undangan
-            $table->string('id', 36)->primary();
-            $table->string('topic', 2000);
-            $table->string('password', 10);
-            $table->dateTime('start_time');
-            $table->unsignedInteger('duration');
-            $table->dateTime('end_time');
-
-            $table->string('pembuat_username', 100);
-            $table->string('approve_username', 100)->nullable();
-
-            $table->string('is_recurrence', 1)->default(0); // status penilaian => 0: tidak, 1: ya
-            $table->string('recurrence_opt')->nullable(); // status penilaian => 0: tidak, 1: ya
-
-            $table->string('zoom_status', 1)->default(0); // status penilaian => 0: belum, 1: pengajuan, 2:tolak, 3:selesai
-            $table->string('zoom_akun', 100)->nullable();
-            $table->unsignedBigInteger('zoom_meeting_id')->nullable();
-            $table->string('zoom_start_url', 2000)->nullable();
-            $table->string('zoom_join_url', 2000)->nullable();
-
-            $table->string('jadwal_id', 36)->nullable();
-
-            $table->timestamps();
-            $table->softDeletes();
-            $table->engine = 'InnoDB';
-
-            $table->foreign('pembuat_username', 'zoom_fk_pembuat_username')->references('username')->on('siakip2_users');
-            $table->foreign('approve_username', 'zoom_fk_approve_username')->references('username')->on('siakip2_users');
-            $table->foreign('jadwal_id', 'zoom_fk_jadwal_id')->references('id')->on('siakip2_jadwal');
-        });
     }
 
     /**
@@ -93,8 +108,9 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('siakip2_zoom');
         Schema::dropIfExists('siakip2_jadwal_peserta');
         Schema::dropIfExists('siakip2_jadwal');
+        Schema::dropIfExists('siakip2_zoom');
+        Schema::dropIfExists('siakip2_ruang');
     }
 };

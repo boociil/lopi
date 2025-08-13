@@ -4,11 +4,11 @@ namespace App\Model\Jadwal;
 
 use App\Model\Umum\User;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Zoom extends Model
 {
+    use SoftDeletes;
 
     protected $table = 'siakip2_zoom';
     public $incrementing = false;
@@ -20,11 +20,14 @@ class Zoom extends Model
     ];
 
     protected $fillable = ['id', 'topic', 'password', 'start_time', 'end_time', 'duration'
-        , 'pembuat_username', 'approve_username', 'is_recurrence', 'recurrence_opt'
-        , 'zoom_status', 'zoom_akun', 'zoom_meeting_id', 'zoom_start_url', 'zoom_join_url', 'jadwal_id'];
+        , 'pembuat_username', 'confirm_username', 'is_recurrence', 'recurrence_opt'
+        , 'zoom_status', 'zoom_akun', 'zoom_meeting_id', 'zoom_start_url', 'zoom_join_url'];
 
     public function pembuat(){
-        return $this->hasOne(User::class, 'username', 'pembuat_username');
+        return $this->hasOne(User::class, 'username', 'confirm_username');
     }
 
+    public function confirm(){
+        return $this->hasOne(User::class, 'username', 'pembuat_username');
+    }
 }

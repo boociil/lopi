@@ -16,20 +16,10 @@ export function AppSidebar() {
             icon: LayoutGrid,
         },
         {
-            type: 'group',
+            type: 'item',
             title: 'Jadwal',
             href: '/lopi/jadwal',
             icon: CalendarDays,
-            subItems: [
-                {
-                    title: 'Kalender',
-                    href: '/lopi/jadwal',
-                },
-                {
-                    title: 'Ruang',
-                    href: '/lopi/jadwal/ruang',
-                },
-            ]
         },
         {
             type: 'item',

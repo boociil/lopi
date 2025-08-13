@@ -8,7 +8,6 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Jadwal extends Model
 {
-
     use SoftDeletes;
 
     protected $table = 'siakip2_jadwal';
