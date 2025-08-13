@@ -13,9 +13,6 @@ use App\Traits\Menu;
 
 class Jadwal_Controller extends Controller
 {
-
-    use Menu;
-
     public function __construct(Request $request)
     {
 
@@ -42,8 +39,6 @@ class Jadwal_Controller extends Controller
             });
         })->get();
         return Inertia::render('jadwal/index', [
-            "peran"=> fn () => Peran::get_my_peran(),
-            "peran"=> fn () => Peran::get_my_peran(),
             "jadwal" => $jadwal_bulan,
         ]);
     }

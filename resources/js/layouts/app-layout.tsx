@@ -8,8 +8,8 @@ interface AppLayoutProps {
     peran? : Peran[];
 }
 
-export default ({ children, breadcrumbs, peran, ...props }: AppLayoutProps) => (
-    <AppLayoutTemplate peran={peran} breadcrumbs={breadcrumbs} {...props}>
+export default ({ children, breadcrumbs, ...props }: AppLayoutProps) => (
+    <AppLayoutTemplate breadcrumbs={breadcrumbs} {...props}>
         {children}
     </AppLayoutTemplate>
 );

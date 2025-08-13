@@ -16,7 +16,7 @@ export type ZoomContextType = ZoomProps & {
 export interface zoom {
     id: string | null;
     topic: string;
-    password: string | null;
+    password: string;
     start_time: string;
     duration: number;
     end_time: string;

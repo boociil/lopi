@@ -10,7 +10,7 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-export default function Beranda(peran : Peran[]) {
+export default function Beranda() {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Dashboard" />

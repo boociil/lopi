@@ -15,7 +15,7 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-export default function Index(peran : Peran[]) {
+export default function Index() {
     const [events, setEvents] = useState<CalendarEvent[]>(generateMockEvents())
     const [mode, setMode] = useState<Mode>('month')
     const [date, setDate] = useState<Date>(new Date())

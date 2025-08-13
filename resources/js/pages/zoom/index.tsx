@@ -26,13 +26,9 @@ import {
     TableRow,
 } from "@/components/ui/table"
 import HeadingSmall from '@/components/heading-small';
-import { addHoursToDate, addMinutesToDate, date_format, get_time_from_date_time } from '@/lib/date';
+import { addMinutesToDate, date_format, get_time_from_date_time } from '@/lib/date';
 import { Badge } from '@/components/ui/badge';
 import ZommProvider from '@/props/zoom/provider';
-import DialogFormAdd from '@/props/zoom/dialog/form-add';
-import DialogFormEdit from '@/props/zoom/dialog/form-edit';
-import DialogFormDelete from '@/props/zoom/dialog/form-delete';
-import DialogFormApprove from '@/props/zoom/dialog/form-approve';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -41,7 +37,7 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-export default function Index({bulan, peran,  zoom_bulan_daftar, zoom_statsulbar, zoom_sp2020}: React.PropsWithChildren<{bulan: number,  peran?: Peran[], zoom_bulan_daftar: zoom[], zoom_statsulbar: zoom_app_with_status, zoom_sp2020: zoom_app_with_status}>) {
+export default function Index({bulan,  zoom_bulan_daftar, zoom_statsulbar, zoom_sp2020}: React.PropsWithChildren<{bulan: number, zoom_bulan_daftar: zoom[], zoom_statsulbar: zoom_app_with_status, zoom_sp2020: zoom_app_with_status}>) {
 
     const data: zoom[] = []
     zoom_bulan_daftar.forEach(element => {
@@ -76,7 +72,7 @@ export default function Index({bulan, peran,  zoom_bulan_daftar, zoom_statsulbar
             if(!dapat){
                 const item : zoom =  {
                     topic: element.topic,
-                    password: null,
+                    password: '',
                     start_time: (new Date(element.start_time)).toISOString(),
                     duration: element.duration,
                     end_time: addMinutesToDate(new Date(element.start_time), element.duration).toISOString(),
@@ -107,7 +103,7 @@ export default function Index({bulan, peran,  zoom_bulan_daftar, zoom_statsulbar
             if(!dapat){
                 const item : zoom =  {
                     topic: element.topic,
-                    password: null,
+                    password: '',
                     start_time: (new Date(element.start_time)).toISOString(),
                     duration: element.duration,
                     end_time: addMinutesToDate(new Date(element.start_time), element.duration).toISOString(),
@@ -167,7 +163,7 @@ export default function Index({bulan, peran,  zoom_bulan_daftar, zoom_statsulbar
     }, [filterTopic, newEventDialogOpen]);
 
     return (
-        <AppLayout breadcrumbs={breadcrumbs} peran={peran}>
+        <AppLayout breadcrumbs={breadcrumbs} >
             <Head title="Zoom" />
             <ZommProvider
                 zoom={zoom}

@@ -3,7 +3,6 @@
 use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\Auth\LoginController;
-use App\Http\Controllers\Umum\Profil_Controller;
 use App\Http\Controllers\Umum\Beranda_Controller;
 use App\Http\Controllers\Jadwal\Jadwal_Controller;
 use App\Http\Controllers\Jadwal\Ruang_Controller;
@@ -38,9 +37,7 @@ Route::get('/maintenance', function(){
 
 Route::get('/', [Beranda_Controller::class, 'redirect_func'])->middleware('auth');
 Route::get('/tampilan', function () {
-    return Inertia::render('tampilan', [
-        "peran"=> fn () => Peran::get_my_peran(),
-    ]);
+    return Inertia::render('tampilan');
 })->name('tampilan')->middleware('auth');
 
 //beranda
@@ -57,19 +54,22 @@ Route::group(
     'prefix' => 'jadwal',
     'middleware' => ['auth', 'check_maintenance', 'statistik'],
 ], function () {
-    Route::get('/', [Jadwal_Controller::class, 'index']);
-    Route::get('/tambah', [Jadwal_Controller::class, 'tambah']);
-    Route::get('/{jadwal_id}/ubah', [Jadwal_Controller::class, 'ubah']);
-    Route::get('/{jadwal_id}/ubah', [Jadwal_Controller::class, 'ubah']);
-    Route::get('/{jadwal_id}/hapus', [Jadwal_Controller::class, 'hapus']);
-    Route::group(
-    [
-        'prefix' => 'ruang',
-    ], function () {
-        Route::get('/', [Jadwal_Controller::class, 'index']);
-        Route::get('/{ruang}/approve', [Jadwal_Controller::class, 'approve']);
-        Route::get('/{ruang}/reject', [Jadwal_Controller::class, 'reject']);
-    });
+    Route::get('/', [Jadwal_Controller::class, 'jadwal-index']);
+    Route::get('/tambah', [Jadwal_Controller::class, 'jadwal-tambah']);
+    Route::get('/{jadwal_id}/ubah', [Jadwal_Controller::class, 'jadwal-ubah']);
+    Route::get('/{jadwal_id}/hapus', [Jadwal_Controller::class, 'jadwal-hapus']);
+
+});
+
+ Route::group(
+[
+    'prefix' => 'ruang',
+], function () {
+    Route::get('/', [Ruang_Controller::class, 'index'])->name('ruang-index');
+    Route::post('/tambah', [Ruang_Controller::class, 'tambah'])->name('ruang-tambah');
+    Route::post('/{ruang_id}/ubah', [Ruang_Controller::class, 'ubah'])->name('ruang-ubah');
+    Route::post('/{ruang_id}/hapus', [Ruang_Controller::class, 'hapus'])->name('ruang-hapus');
+    Route::post('/{ruang_id}/approval', [Ruang_Controller::class, 'approval'])->name('ruang-approval');
 });
 
 Route::group(
@@ -81,5 +81,6 @@ Route::group(
     Route::post('/tambah', [Zoom_Controller::class, 'tambah'])->name('zoom-tambah');
     Route::post('/{jadwal_id}/ubah', [Zoom_Controller::class, 'ubah'])->name('zoom-ubah');
     Route::post('/{jadwal_id}/hapus', [Zoom_Controller::class, 'hapus'])->name('zoom-hapus');
+    Route::post('/{jadwal_id}/approval', [Jadwal_Controller::class, 'approval'])->name('zoom-approval');
 });
 

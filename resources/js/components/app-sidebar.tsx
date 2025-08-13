@@ -6,9 +6,8 @@ import { type Peran, type NavGeneral } from '@/types';
 import { Link } from '@inertiajs/react';
 import { LayoutGrid, CalendarDays, Video } from 'lucide-react';
 import AppLogo from './app-logo';
-import { type PropsWithChildren } from 'react';
 
-export function AppSidebar({peran=[]}: PropsWithChildren<{ peran?: Peran[]}>) {
+export function AppSidebar() {
     const mainNavItems: NavGeneral[] = [
         {
             type: 'item',

@@ -8,22 +8,14 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog"
 import { Label } from '@/components/ui/label';
-import { Calendar } from "@/components/ui/calendar"
+import { DateTimePicker } from '@/components/ui/datetime-picker';
 
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover"
-import { DateTimePicker24h } from '@/components/ui/date-time-picker-24h';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { zoom } from '../types';
 import { useZoomContext } from '../context';
-import { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import InputError from '@/components/input-error';
 
 type ZoomForm = {
@@ -47,6 +39,7 @@ export default function DialogFormAdd () {
     });
 
     const batas = new Date(new Date().setHours(0,0,0))
+    const [date24, setDate24] = useState<Date | undefined>(undefined);
     const [error, setError] = useState(false);
 
     const calculateSum = (pembanding: Date) => {
@@ -100,9 +93,7 @@ export default function DialogFormAdd () {
                     </div>
                     <div className="grid gap-3">
                         <Label htmlFor="starttime-1">Mulai</Label>
-                        <DateTimePicker24h value={data.start_time}
-                            setDateTime={(e) => {setData('start_time', e); calculateSum(new Date(e));}}
-                        />
+                        <DateTimePicker hourCycle={24} value={date24} onChange={setDate24} />
 
                          {error ?
                             <InputError message="Tanggal Waktu harus lebih atau sama dengan tanggal ini"></InputError>
@@ -112,7 +103,8 @@ export default function DialogFormAdd () {
                     </div>
                     <div className="grid gap-3">
                         <Label htmlFor="duration-1">Durasi</Label>
-                        <Input id="duration-1" name="duration" defaultValue={data.duration} required/>
+                        <Input type="number" id="duration-1" name="duration" defaultValue={data.duration} required
+                            onChange={(e) => setData('duration', parseInt(e.target.value))}/>
                     </div>
                 </div>
                 <DialogFooter>

@@ -15,7 +15,7 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-export default function Tampilan(peran : Peran[]) {
+export default function Tampilan() {
     const { appearance, updateAppearance } = useAppearance();
 
     const tabs: { value: Appearance; icon: LucideIcon; label: string }[] = [
@@ -25,7 +25,7 @@ export default function Tampilan(peran : Peran[]) {
     ];
 
     return (
-        <AppLayout breadcrumbs={breadcrumbs} peran={peran}>
+        <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Tampilan" />
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4 overflow-x-auto">
                 <div className="flex-1 md:max-w-2xl">

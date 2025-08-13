@@ -61,7 +61,6 @@ class Zoom_Controller extends Controller
 
         return Inertia::render('zoom/index', [
             "bulan"=>$month,
-            "peran"=> fn () => Peran::get_my_peran(),
             "zoom_bulan_daftar" => $zoom_bulan_daftar,
             "zoom_statsulbar" => $zoom_statsulbar,
             "zoom_sp2020" => $zoom_sp2020,
@@ -87,7 +86,7 @@ class Zoom_Controller extends Controller
         $zoom->recurrence_opt = null;
         $zoom->save();
         //redirect
-        redirect('zoom');
+        redirect()->route('zoom-index');
     }
 
     public function ubah(Request $request)
@@ -105,7 +104,7 @@ class Zoom_Controller extends Controller
         $zoom->is_recurrence = $request->input('is_recurrence');
         $zoom->recurrence_opt = $request->input('recurrence_opt');
         $zoom->save();
-        return 1;
+        redirect()->route('zoom-index');
     }
 
     public function hapus(Request $request)
@@ -117,7 +116,7 @@ class Zoom_Controller extends Controller
         $zoom->delete();
 
         //redirect
-        return 1;
+        redirect()->route('zoom-index');
     }
 
     // ------------------ ZOOM API ------------------

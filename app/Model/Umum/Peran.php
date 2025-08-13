@@ -122,6 +122,9 @@ class Peran extends Model
 
     public static function get_my_peran ()
     {
+        if(!Auth::check()){
+            return [];
+        }
         return Peran::where(function($query){
                     $query->where('tahun', session('tahun_active'))
                         ->orWhere('tahun', null);
