@@ -24,10 +24,10 @@ class Zoom extends Model
         , 'zoom_status', 'zoom_akun', 'zoom_meeting_id', 'zoom_start_url', 'zoom_join_url'];
 
     public function pembuat(){
-        return $this->hasOne(User::class, 'username', 'confirm_username');
+        return $this->hasOne(User::class, 'username', 'pembuat_username');
     }
 
     public function confirm(){
-        return $this->hasOne(User::class, 'username', 'pembuat_username');
+        return $this->hasOne(User::class, 'username', 'confirm_username');
     }
 }

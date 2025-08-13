@@ -241,6 +241,10 @@ export default function Index({bulan,  zoom_bulan_daftar, zoom_statsulbar, zoom_
 
                                         let aksi_group = (<div></div>)
                                         if(item.zoom_app_prop == null && item.zoom_status == 0){
+                                            let bisa_approval = false
+                                            let bisa_start_zoom = false
+                                            let bisa_join_zoom = false
+
                                             aksi_group = (
                                                  <DropdownMenu>
                                                     <DropdownMenuTrigger asChild>
@@ -258,20 +262,29 @@ export default function Index({bulan,  zoom_bulan_daftar, zoom_statsulbar, zoom_
                                                             onClick={() => setEventDialog({status: 'hapus', data: item})}>
                                                             Hapus
                                                         </DropdownMenuItem>
-                                                        <DropdownMenuItem
-                                                            onClick={() => setEventDialog({status: 'approval', data: item})}>
-                                                            Approval
-                                                        </DropdownMenuItem>
-                                                        <DropdownMenuItem>
-                                                            <a className="w-full" href="/venues/" target="_blank">
-                                                                Start Zoom
-                                                            </a>
-                                                        </DropdownMenuItem>
-                                                        <DropdownMenuItem>
-                                                            <a className="w-full" href="/venues/" target="_blank">
-                                                                Join Zoom
-                                                            </a>
-                                                        </DropdownMenuItem>
+                                                        {bisa_approval &&
+                                                            <DropdownMenuItem
+                                                                onClick={() => setEventDialog({status: 'approval', data: item})}>
+                                                                Approval
+                                                            </DropdownMenuItem>
+                                                        }
+
+                                                        {bisa_start_zoom &&
+                                                            <DropdownMenuItem>
+                                                                <a className="w-full" href="/venues/" target="_blank">
+                                                                    Start Zoom
+                                                                </a>
+                                                            </DropdownMenuItem>
+                                                        }
+
+                                                        {bisa_join_zoom &&
+                                                            <DropdownMenuItem>
+                                                                <a className="w-full" href="/venues/" target="_blank">
+                                                                    Join Zoom
+                                                                </a>
+                                                            </DropdownMenuItem>
+                                                        }
+
                                                     </DropdownMenuContent>
                                                 </DropdownMenu>
                                             )

@@ -1,4 +1,4 @@
-import { Head, useForm } from "@inertiajs/react";
+import {useForm } from "@inertiajs/react";
 
 import {
     Dialog,
@@ -9,13 +9,14 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
+
 import { Label } from "@/components/ui/label";
 import { DateTimePicker } from "@/components/ui/datetime-picker";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useZoomContext } from "../context";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import InputError from "@/components/input-error";
 
 type ZoomForm = {
@@ -29,68 +30,57 @@ type ZoomForm = {
 export default function DialogFormManage() {
     const { eventDialog, setEventDialog } = useZoomContext();
 
-    let topic = "Kegiatan";
-    let password = "BPS";
-    let start_time = new Date().toISOString();
-    let start_time_penyesuaian = 0;
-    let duration = 120;
-
-    if (eventDialog.data) {
-        topic = eventDialog.data.topic;
-        password = eventDialog.data.password;
-        start_time = eventDialog.data.start_time;
-        start_time_penyesuaian = 0;
-        duration = eventDialog.data.duration;
-    }
-
     const { data, setData, post, processing, errors, reset } = useForm<
         Required<ZoomForm>
     >({
-        topic: topic,
-        password: password,
-        start_time: start_time,
-        start_time_penyesuaian: start_time_penyesuaian,
+        topic: "Kegiatan",
+        password: "BPS",
+        start_time: new Date().toISOString(),
+        start_time_penyesuaian: (new Date()).getTimezoneOffset(),
         duration: 120,
     });
 
-    const batas = new Date(new Date().setHours(0, 0, 0));
-    const [date24, setDate24] = useState<Date | undefined>(
-        new Date(start_time),
-    );
-    const [error, setError] = useState(false);
+    const [date24, setDate24] = useState<Date | undefined>(new Date());
 
-    const calculateSum = (pembanding: Date) => {
-        if (batas > pembanding) {
-            setError(true);
+    useEffect(() => {
+        if(date24){
+            setData('start_time', date24.toISOString())
         }
-        setData("start_time_penyesuaian", pembanding.getTimezoneOffset());
-    };
+    }, [date24]);
+
+    useEffect(() => {
+        if(eventDialog.data){
+            setData("topic", eventDialog.data.topic);
+            setData("password", eventDialog.data.password);
+            setData("start_time", eventDialog.data.start_time);
+            setData("duration", eventDialog.data.duration);
+            setDate24(new Date(eventDialog.data.start_time))
+        }
+
+    }, [eventDialog]);
 
     const submit: React.FormEventHandler = (e) => {
         e.preventDefault();
-        if (error) {
-            return;
-        } else {
-            post(route("zoom-tambah"), {
-                onFinish: () => {
-                    setData("topic", "Kegiatan");
-                    setData("password", "BPS");
-                    setData("start_time", new Date().toISOString());
-                    setData("start_time_penyesuaian", 0);
-                    setData("duration", 120);
-                    setEventDialog({ status: null, data: null });
-                },
-            });
-        }
-    };
+        post(route("zoom-tambah"), {
+            onSuccess: () => {
+                setData("topic", "Kegiatan");
+                setData("password", "BPS");
+                setData("start_time", new Date().toISOString());
+                setData("start_time_penyesuaian", 0);
+                setData("duration", 120);
+                setEventDialog({ status: null, data: null });
+            },
+        });
 
-    if (eventDialog.status == null) {
-        return <></>;
-    }
+    };
 
     function close_dialog(){
         setEventDialog({ status: null, data: null })
         return true
+    }
+
+    if (eventDialog.status == null) {
+        return <></>;
     }
 
     return (
@@ -98,7 +88,13 @@ export default function DialogFormManage() {
             <DialogContent className="sm:max-w-[425px]">
                 <form className="flex flex-col gap-6" onSubmit={submit}>
                     <DialogHeader>
-                        <DialogTitle>Tambah Jadwal Zoom</DialogTitle>
+                        {eventDialog.status == 'tambah' &&
+                            <DialogTitle>Tambah Jadwal Zoom</DialogTitle>
+                        }
+                        {eventDialog.status == 'ubah' &&
+                            <DialogTitle>Ubah Jadwal Zoom</DialogTitle>
+                        }
+
                         <DialogDescription>
                             Isi isian diatas. Klik Simpan Jika Selesai.
                         </DialogDescription>
@@ -115,6 +111,7 @@ export default function DialogFormManage() {
                                     setData("topic", e.target.value)
                                 }
                             />
+                            <InputError message={errors.topic} />
                         </div>
                         <div className="grid gap-3">
                             <Label htmlFor="password-1">Password</Label>
@@ -127,20 +124,17 @@ export default function DialogFormManage() {
                                     setData("password", e.target.value)
                                 }
                             />
+                            <InputError message={errors.password} />
                         </div>
                         <div className="grid gap-3">
                             <Label htmlFor="starttime-1">Mulai</Label>
                             <DateTimePicker
                                 hourCycle={24}
+                                granularity="minute"
                                 value={date24}
                                 onChange={setDate24}
                             />
-
-                            {error ? (
-                                <InputError message="Tanggal Waktu harus lebih atau sama dengan tanggal ini"></InputError>
-                            ) : (
-                                <></>
-                            )}
+                            <InputError message={errors.start_time} />
                         </div>
                         <div className="grid gap-3">
                             <Label htmlFor="duration-1">Durasi</Label>
@@ -157,6 +151,7 @@ export default function DialogFormManage() {
                                     )
                                 }
                             />
+                            <InputError message={errors.duration} />
                         </div>
                     </div>
                     <DialogFooter>

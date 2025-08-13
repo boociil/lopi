@@ -3,16 +3,16 @@
 namespace App\Http\Controllers\Jadwal;
 
 use App\Http\Controllers\Controller;
-use App\Model\Jadwal\Jadwal;
 use App\Model\Jadwal\Zoom;
-use App\Model\Umum\Peran;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use GuzzleHttp\Client;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 class Zoom_Controller extends Controller
 {
@@ -67,8 +67,16 @@ class Zoom_Controller extends Controller
         ]);
     }
 
-    public function tambah(Request $request)
+    public function tambah(Request $request): RedirectResponse
     {
+        $validated = $request->validate([
+            'topic' => 'required|string',
+            'password' => 'required|string',
+            'start_time'=>'required|after_or_equal:'.Carbon::today()->format('Y-m-d'),
+            'duration' => 'required|integer|max:1440',
+            'start_time_penyesuaian' => 'required|integer',
+        ]);
+
         $zoom = new Zoom();
         $zoom->id = Str::uuid();
         $zoom->topic = $request->input('topic');
@@ -86,7 +94,7 @@ class Zoom_Controller extends Controller
         $zoom->recurrence_opt = null;
         $zoom->save();
         //redirect
-        redirect()->route('zoom-index');
+        return redirect()->route('zoom-index');
     }
 
     public function ubah(Request $request)
