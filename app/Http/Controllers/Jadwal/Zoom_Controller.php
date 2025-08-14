@@ -99,7 +99,7 @@ class Zoom_Controller extends Controller
 
     public function ubah(Request $request)
     {
-        $zoom = Zoom::where('id', $request->input('jadwal_id'))->first();
+        $zoom = Zoom::where('id', $request->input('zoom_id'))->first();
         if(!$zoom){
             return abort(404);
         }
@@ -115,14 +115,23 @@ class Zoom_Controller extends Controller
         redirect()->route('zoom-index');
     }
 
-    public function hapus(Request $request)
+    public function hapus(Request $request, $zoom_id)
     {
-        $zoom = Zoom::where('id', $request->input('jadwal_id'))->first();
+        $zoom = Zoom::where('id', $zoom_id)->first();
+        Log::alert($zoom);
         if(!$zoom){
             return abort(404);
         }
         $zoom->delete();
 
+        //redirect
+        redirect()->route('zoom-index');
+    }
+
+    public function approval(Request $request, $zoom_id)
+    {
+        $zoom = Zoom::where('id', $zoom_id)->first();
+        Log::alert($zoom);
         //redirect
         redirect()->route('zoom-index');
     }

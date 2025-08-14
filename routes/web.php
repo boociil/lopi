@@ -23,8 +23,8 @@ use Inertia\Inertia;
 
 
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
-Route::post('/login', [LoginController::class, 'login']);
-Route::get('/logout', [LoginController::class, 'logout'])->name('logout');
+Route::post('/login', [LoginController::class, 'login'])->middleware('guest');
+Route::get('/logout', [LoginController::class, 'logout'])->middleware('guest')->name('logout');
 
 // Route::get('/login_sso', [SSO_Controller::class, 'showLoginForm'])->name('login');
 // Route::get('/sso', [SSO_Controller::class, 'sso'])->name('sso');
@@ -79,8 +79,8 @@ Route::group(
 ], function () {
     Route::get('/', [Zoom_Controller::class, 'index'])->name('zoom-index');
     Route::post('/tambah', [Zoom_Controller::class, 'tambah'])->name('zoom-tambah');
-    Route::post('/{jadwal_id}/ubah', [Zoom_Controller::class, 'ubah'])->name('zoom-ubah');
-    Route::post('/{jadwal_id}/hapus', [Zoom_Controller::class, 'hapus'])->name('zoom-hapus');
-    Route::post('/{jadwal_id}/approval', [Jadwal_Controller::class, 'approval'])->name('zoom-approval');
+    Route::post('/{zoom_id}/ubah', [Zoom_Controller::class, 'ubah'])->name('zoom-ubah');
+    Route::post('/{zoom_id}/hapus', [Zoom_Controller::class, 'hapus'])->name('zoom-hapus');
+    Route::post('/{zoom_id}/approval', [Zoom_Controller::class, 'approval'])->name('zoom-approval');
 });
 
