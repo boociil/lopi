@@ -1,4 +1,4 @@
-import {router, useForm } from "@inertiajs/react";
+import {router, useForm, usePage } from "@inertiajs/react";
 
 import {
     Dialog,
@@ -30,6 +30,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
+
 
 type ZoomForm = {
     topic: string;
@@ -37,6 +39,7 @@ type ZoomForm = {
     start_time: string;
     start_time_penyesuaian: number;
     duration: number;
+    zoom_status:  0 | 1 | 2;
 };
 
 export default function DialogFormManage() {
@@ -50,6 +53,7 @@ export default function DialogFormManage() {
         start_time: new Date().toISOString(),
         start_time_penyesuaian: (new Date()).getTimezoneOffset(),
         duration: 120,
+        zoom_status: 0,
     });
 
     const [date24, setDate24] = useState<Date | undefined>(new Date());
@@ -66,6 +70,7 @@ export default function DialogFormManage() {
             setData("password", eventDialog.data.password);
             setData("start_time", eventDialog.data.start_time);
             setData("duration", eventDialog.data.duration);
+            setData("zoom_status", eventDialog.data.zoom_status);
             setDate24(new Date(eventDialog.data.start_time))
         }
 
@@ -143,14 +148,14 @@ export default function DialogFormManage() {
             <Dialog open={true} onOpenChange={close_dialog}>
                 <DialogContent className="sm:max-w-[425px]">
                     <form className="flex flex-col gap-6" onSubmit={submit}>
-                        <DialogHeader>
+                        <DialogHeader className="text-accent-foreground">
                             {eventDialog.status == 'tambah' &&
                                 <DialogTitle>Tambah Jadwal Zoom</DialogTitle>
                             }
                             {eventDialog.status == 'ubah' &&
                                 <DialogTitle>Ubah Jadwal Zoom</DialogTitle>
                             }
-                            {eventDialog.status == 'ubah' &&
+                            {eventDialog.status == 'approval' &&
                                 <DialogTitle>Approve Jadwal Zoom</DialogTitle>
                             }
 
@@ -160,83 +165,100 @@ export default function DialogFormManage() {
                         </DialogHeader>
                         <div className="grid gap-4">
                             <div className="grid gap-3">
-                                <Label htmlFor="topic-1">Topic</Label>
+                                <Label className="text-secondary" htmlFor="topic-1">Topic</Label>
                                 <Input
                                     id="topic-1"
                                     name="topic"
-                                    defaultValue="Kegiatan"
                                     required
                                     disabled={eventDialog.status == 'approval'}
+                                    value={data.topic}
                                     onChange={(e) =>
                                         setData("topic", e.target.value)
                                     }
+                                    className="text-secondary"
                                 />
                                 <InputError message={errors.topic} />
                             </div>
                             <div className="grid gap-3">
-                                <Label htmlFor="password-1">Password</Label>
+                                <Label className="text-secondary" htmlFor="password-1">Password</Label>
                                 <Input
                                     id="password-1"
                                     name="password"
-                                    defaultValue="BPS"
                                     required
                                     disabled={eventDialog.status == 'approval'}
+                                    value={data.password}
                                     onChange={(e) =>
                                         setData("password", e.target.value)
                                     }
+                                    className="text-secondary"
                                 />
                                 <InputError message={errors.password} />
                             </div>
                             <div className="grid gap-3">
-                                <Label htmlFor="starttime-1">Mulai</Label>
+                                <Label className="text-secondary" htmlFor="starttime-1">Mulai</Label>
                                 <DateTimePicker
                                     hourCycle={24}
                                     granularity="minute"
                                     value={date24}
                                     onChange={setDate24}
                                     disabled={eventDialog.status == 'approval'}
+                                    className="text-secondary"
                                 />
                                 <InputError message={errors.start_time} />
                             </div>
                             <div className="grid gap-3">
-                                <Label htmlFor="duration-1">Durasi</Label>
+                                <Label className="text-secondary" htmlFor="duration-1">Durasi</Label>
                                 <Input
                                     type="number"
                                     id="duration-1"
                                     name="duration"
-                                    defaultValue={data.duration}
                                     required
                                     disabled={eventDialog.status == 'approval'}
+                                    value={data.duration}
                                     onChange={(e) =>
                                         setData(
                                             "duration",
                                             parseInt(e.target.value),
                                         )
                                     }
+                                    className="text-secondary"
                                 />
                                 <InputError message={errors.duration} />
                             </div>
+                            {eventDialog.status == 'approval' && (
+                                <>
+                                    <div className="grid gap-3">
+                                        <Label className="text-secondary" htmlFor="duration-1">Approval</Label>
+                                        <Select required>
+                                            <SelectTrigger
+                                                name="zoom_status"
+                                                className="text-secondary"
+                                                value={data.zoom_status}
+                                                onChange={(e) =>
+                                                    setData(
+                                                        "zoom_status",
+                                                        parseInt(e.target.value),
+                                                    )
+                                                }>
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectGroup>
+                                                    <SelectItem value="2">Setuju</SelectItem>
+                                                    <SelectItem value="1">Tolak</SelectItem>
+                                                </SelectGroup>
+                                            </SelectContent>
+                                        </Select>
+
+                                        <InputError message={errors.zoom_status} />
+                                    </div>
+                                </>
+                            )}
                         </div>
                         <DialogFooter>
-                            { (eventDialog.status == 'tambah' || eventDialog.status == 'ubah') &&
-                                <>
-                                    <DialogClose asChild>
-                                        <Button variant="outline">Batal</Button>
-                                    </DialogClose>
-                                    <Button type="submit">Simpan</Button>
-                                </>
-                            }
-                             {eventDialog.status == 'approval' &&
-                                <>
-                                    <DialogClose asChild>
-                                        <Button variant="destructive" onClick={(e) => approval_data(0)}>Tolak</Button>
-                                    </DialogClose>
-                                    <DialogClose asChild>
-                                        <Button variant="destructive"  onClick={(e) => approval_data(1)}>Setujui</Button>
-                                    </DialogClose>
-                                </>
-                            }
-
+                            <DialogClose asChild>
+                                <Button  className="text-accent-foreground" variant="outline">Batal</Button>
+                            </DialogClose>
+                            <Button type="submit">Simpan</Button>
                         </DialogFooter>
                     </form>
                 </DialogContent>

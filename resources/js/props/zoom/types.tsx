@@ -6,6 +6,8 @@ export type ZoomProps = {
 export type ZoomContextType = ZoomProps & {
   eventDialog: zoom_dialog_event
   setEventDialog: (eventDialog: zoom_dialog_event) => void
+  haveZoomRole: boolean
+  setHaveZoomRole: (haveZoomRole: boolean) => void
 }
 
 
@@ -18,7 +20,7 @@ export interface zoom {
     end_time: string;
     pembuat_username: string | null;
     pembuat_nama: string | null;
-    zoom_status: number | null;
+    zoom_status: number;
     zoom_akun: string | null;
     zoom_meeting_id: bigint | null;
     zoom_start_url: string | null;

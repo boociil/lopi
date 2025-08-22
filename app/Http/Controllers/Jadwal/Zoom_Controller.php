@@ -4,15 +4,17 @@ namespace App\Http\Controllers\Jadwal;
 
 use App\Http\Controllers\Controller;
 use App\Model\Jadwal\Zoom;
+use App\Model\Umum\Peran;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
-use GuzzleHttp\Client;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
-use Inertia\Inertia;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Log;
+
+use GuzzleHttp\Client;
+use Inertia\Inertia;
 
 class Zoom_Controller extends Controller
 {
@@ -75,7 +77,15 @@ class Zoom_Controller extends Controller
             'start_time'=>'required|after_or_equal:'.Carbon::today()->format('Y-m-d'),
             'duration' => 'required|integer|max:1440',
             'start_time_penyesuaian' => 'required|integer',
+            'zoom_status' => ['integer', Rule::in([0, 1, 2])],
+            'zoom_akun' => ['string', Rule::in(['', 'statsulbar', 'sp2020'])]
         ]);
+
+        $have_zoom_peran =  Peran::where('pemilik_username', Auth::user()->username)
+                ->where('tipe_peran', 'global')
+                ->where('peran', 'zoom')
+                ->whereNull('tahun', null)
+                ->first();
 
         $zoom = new Zoom();
         $zoom->id = Str::uuid();
@@ -92,25 +102,118 @@ class Zoom_Controller extends Controller
         $zoom->pembuat_username = Auth::user()->username;
         $zoom->is_recurrence = 0;
         $zoom->recurrence_opt = null;
+        $zoom->zoom_status = '0';
+
+        return abort(500, "Terjadi kesalahan !");
+
+        if($have_zoom_peran && in_array($request->input('zoom_akun'), ['statsulbar', 'sp2020'])){
+            $zoom_mmet = $this->zoom_createMeeting($request->input('zoom_akun'), [
+                "agenda" => $request->input('topic'),
+                "topic" => $request->input('topic'),
+                "default_password" => false,
+                "password" => $request->input('password'),
+                "start_time" => $request->input('start_time'),
+                "timezone" => "Asia/Singapore",
+                "duration" => 60,
+                "type" => 2
+            ]);
+
+            if($zoom_mmet['status']){
+                $zoom->zoom_status = $request->input('zoom_status');
+                $zoom->zoom_akun = $request->input('zoom_akun');
+                $zoom->zoom_meeting_id = $zoom_mmet['data']['id'];
+                $zoom->zoom_start_url = $zoom_mmet['data']['start_url'];
+                $zoom->zoom_join_url =$zoom_mmet['data']['join_url'];
+            }else{
+                return abort(500, 'Terjadi kesalahan');
+            }
+        }
+
         $zoom->save();
         //redirect
         return redirect()->route('zoom-index');
     }
 
-    public function ubah(Request $request)
+    public function ubah(Request $request, $zoom_id)
     {
-        $zoom = Zoom::where('id', $request->input('zoom_id'))->first();
+         $validated = $request->validate([
+            'topic' => 'required|string',
+            'password' => 'required|string',
+            'start_time'=>'required|after_or_equal:'.Carbon::today()->format('Y-m-d'),
+            'duration' => 'required|integer|max:1440',
+            'start_time_penyesuaian' => 'required|integer',
+            'zoom_status' => ['integer', Rule::in([0, 1, 2])],
+            'zoom_akun' => ['string', Rule::in(['', 'statsulbar', 'sp2020'])]
+        ]);
+
+        $zoom = Zoom::where('id', $zoom_id)->first();
         if(!$zoom){
             return abort(404);
         }
-        $zoom->agenda = $request->input('agenda');
+
+        $have_zoom_peran =  Peran::where('pemilik_username', Auth::user()->username)
+            ->where('tipe_peran', 'global')
+            ->where('peran', 'zoom')
+            ->whereNull('tahun', null)
+            ->first();
+
+        if(! ($have_zoom_peran || $zoom->pembuat_username == Auth::user()->username) ){
+            return abort(401, 'Tidak memiliki akses');
+        }
+
+
         $zoom->topic = $request->input('topic');
         $zoom->password = $request->input('password');
-        $zoom->start_time = $request->input('start_time');
-        $zoom->duration = $request->input('duration');
+
+        $start_time_awal = $zoom->start_time;
+        $duration_awal = $zoom->duration;
+
         $zoom->pembuat_username = Auth::user()->username;
-        $zoom->is_recurrence = $request->input('is_recurrence');
-        $zoom->recurrence_opt = $request->input('recurrence_opt');
+        $zoom->is_recurrence = 0;
+        $zoom->recurrence_opt = null;
+
+        if(! ($start_time_awal == Carbon::parse($request->input('start_time'))
+            ->addMinutes($request->input('start_time_penyesuaian')* -1)
+            ->toDateTimeString() && $duration_awal == $zoom->duration) )
+        {
+            $zoom->start_time = Carbon::parse($request->input('start_time'))
+                ->addMinutes($request->input('start_time_penyesuaian')* -1)
+                ->toDateTimeString();
+            $zoom->duration = $request->input('duration');
+            $zoom->end_time = Carbon::parse($request->input('start_time'))
+                ->addMinutes($request->input('start_time_penyesuaian') * -1)
+                ->addMinutes($request->input('duration'))
+                ->toDateTimeString();
+            if(!$zoom->zoom_meeting_id){
+                if($have_zoom_peran){
+                    $zoom_app = $this->zoom_updateMeeting($zoom->zoom_akun, "".$zoom->zoom_meeting_id,[
+                            "agenda" => $request->input('topic'),
+                            "topic" => $request->input('topic'),
+                            "default_password" => false,
+                            "password" => $request->input('password'),
+                            "start_time" => $request->input('start_time'),
+                            "timezone" => "Asia/Singapore",
+                            "duration" => 60,
+                            "type" => 2
+                        ]);
+                    if(!$zoom_app['status']){
+                        return abort(500, 'Terjadi kesalahan');
+                    }
+                }else{
+                    $zoom_app = $this->zoom_deleteMeeting($zoom->zoom_akun, "".$zoom->zoom_meeting_id);
+                    if(!$zoom_app['status']){
+                        return abort(500, 'Terjadi kesalahan');
+                    }
+
+                    $zoom->zoom_status = null;
+                    $zoom->zoom_akun = null;
+                    $zoom->zoom_meeting_id = null;
+                    $zoom->zoom_start_url = null;
+                    $zoom->zoom_join_url = null;
+                }
+            }
+        }
+
         $zoom->save();
         redirect()->route('zoom-index');
     }
@@ -118,10 +221,27 @@ class Zoom_Controller extends Controller
     public function hapus(Request $request, $zoom_id)
     {
         $zoom = Zoom::where('id', $zoom_id)->first();
-        Log::alert($zoom);
         if(!$zoom){
             return abort(404);
         }
+
+        $have_zoom_peran =  Peran::where('pemilik_username', Auth::user()->username)
+            ->where('tipe_peran', 'global')
+            ->where('peran', 'zoom')
+            ->whereNull('tahun', null)
+            ->first();
+
+        if(! ($have_zoom_peran || $zoom->pembuat_username == Auth::user()->username) ){
+            return abort(401, 'Tidak memiliki akses');
+        }
+
+        if($zoom->zoom_meeting_id){
+            $zoom_app = $this->zoom_deleteMeeting($zoom->zoom_akun, "".$zoom->zoom_meeting_id);
+            if(!$zoom_app['status']){
+                return abort(500, 'Terjadi kesalahan');
+            }
+        }
+
         $zoom->delete();
 
         //redirect
@@ -130,8 +250,51 @@ class Zoom_Controller extends Controller
 
     public function approval(Request $request, $zoom_id)
     {
+        $validated = $request->validate([
+            'zoom_status' => ['integer', Rule::in([0, 1, 2])],
+            'zoom_akun' => ['string', Rule::in(['', 'statsulbar', 'sp2020'])]
+        ]);
+
+        $have_zoom_peran =  Peran::where('pemilik_username', Auth::user()->username)
+            ->where('tipe_peran', 'global')
+            ->where('peran', 'zoom')
+            ->whereNull('tahun', null)
+            ->first();
+
+        if(! ($have_zoom_peran) ){
+            return abort(401, 'Tidak memiliki akses');
+        }
+
         $zoom = Zoom::where('id', $zoom_id)->first();
-        Log::alert($zoom);
+
+        if($request->input('zoom_status') == '1'){
+            if($zoom->zoom_meeting_id){
+                $zoom_app = $this->zoom_deleteMeeting($zoom->zoom_akun, "".$zoom->zoom_meeting_id);
+                if(!$zoom_app['status']){
+                    return abort(500, 'Terjadi kesalahan');
+                }
+
+                $zoom->zoom_status = null;
+                $zoom->zoom_akun = null;
+                $zoom->zoom_meeting_id = null;
+                $zoom->zoom_start_url = null;
+                $zoom->zoom_join_url = null;
+            }
+        }else if($request->input('zoom_status') == '2'){
+            if(!$zoom->zoom_meeting_id){
+                $zoom_app = $this->zoom_deleteMeeting($zoom->zoom_akun, "".$zoom->zoom_meeting_id);
+                if(!$zoom_app['status']){
+                    return abort(500, 'Terjadi kesalahan');
+                }
+
+                $zoom->zoom_status = null;
+                $zoom->zoom_akun = null;
+                $zoom->zoom_meeting_id = null;
+                $zoom->zoom_start_url = null;
+                $zoom->zoom_join_url = null;
+            }
+        }
+
         //redirect
         redirect()->route('zoom-index');
     }
@@ -140,7 +303,6 @@ class Zoom_Controller extends Controller
 
     protected function zoom_getAccessToken($path)
     {
-
         $client = new Client([
             'headers' => [
                 'Authorization' => 'Basic ' . base64_encode($this->zoom_config[$path]['client_id'] . ':' . $this->zoom_config[$path]['client_secret']),
@@ -265,6 +427,4 @@ class Zoom_Controller extends Controller
         }
 
     }
-
-
 }

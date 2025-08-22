@@ -36,6 +36,13 @@ Route::get('/maintenance', function(){
 
 
 Route::get('/', [Beranda_Controller::class, 'redirect_func'])->middleware('auth');
+Route::post('tahun/{tahun}/ubah', function ($request, $tahun) {
+    $tahun_array = explode(",", env("TAHUN_ARRAY"));
+    if(in_array($tahun, $tahun_array)){
+        $request->session()->put('tahun_active', $tahun);
+    }
+    redirect()->route('zoom-index');
+})->middleware('statistik');
 Route::get('/tampilan', function () {
     return Inertia::render('tampilan');
 })->name('tampilan')->middleware('auth');
