@@ -5,7 +5,7 @@ import {
     type BreadcrumbItem,
     type SharedData,
 } from "@/types";
-import { Head, usePage } from "@inertiajs/react";
+import { Head, router, usePage } from "@inertiajs/react";
 
 import * as React from "react";
 import { Plus } from "lucide-react";
@@ -19,8 +19,17 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
-import { date_format, get_time_from_date_time } from "@/lib/date";
-import { Badge } from "@/components/ui/badge";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 import Heading from "@/components/heading";
 import PeranProvider from "@/props/peran/provider";
 import {
@@ -37,13 +46,13 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function Index({
-    peranZoom_,
-    user_,
-    satuan_kerja_tahun_,
+    peranLopi,
+    user,
+    satuanKerjaTahun,
 }: React.PropsWithChildren<{
-    peranZoom_: peran_lopi[];
-    user_: User[];
-    satuan_kerja_tahun_: satuan_kerja_tahun[];
+    peranLopi: peran_lopi[];
+    user: User[];
+    satuanKerjaTahun: satuan_kerja_tahun[];
 }>) {
     const [eventDialog, setEventDialog] = React.useState<peran_dialog_event>({
         status: null,
@@ -51,40 +60,43 @@ export default function Index({
     });
 
 
+    const [userDict, setUserDict] = React.useState<Map<string, string>>(new Map<string, string>);
+    const [satuanKerjaTahunDict, setSatuanKerjaTahunDict] = React.useState<Map<string, string>>(new Map<string, string>);
 
-    const [peranZoom, setPeranZoom] = React.useState<peran_lopi[]>(peranZoom_);
-    const [user, setUser] = React.useState<User[]>(user_);
-    const [satuanKerjaTahun, setSatuanKerjaTahun] = React.useState<satuan_kerja_tahun[]>(satuan_kerja_tahun_);
+    React.useEffect(() => {
+        let userDict_ = new Map<string, string>()
+        user.forEach(element => {
+            userDict_.set(element.username, element.nama)
+        });
+        setUserDict(userDict_)
 
-    let userDict_ = new Map<string, string>()
-    user.forEach(element => {
-        userDict_.set(element.username, element.nama)
-    });
-    const [userDict, setUserDict] = React.useState<Map<string, string>>(userDict_);
+        let satuanKerjaTahunDict_ =  new Map<string, string>()
+        satuanKerjaTahun.forEach(element => {
+            satuanKerjaTahunDict_.set(element.id, element.nama)
+        });
+        setSatuanKerjaTahunDict(satuanKerjaTahunDict_)
+    }, [user, satuanKerjaTahun, eventDialog]);
 
-    let satuanKerjaTahunDict_ =  new Map<string, string>()
-    satuanKerjaTahun.forEach(element => {
-        satuanKerjaTahunDict_.set(element.id, element.nama)
-    });
-    const [satuanKerjaTahunDict, setSatuanKerjaTahunDict] = React.useState<Map<string, string>>(satuanKerjaTahunDict_);
+    function hapus(peran_lopi_: peran_lopi){
+        router.post(route('peran-hapus', {'peran_id': peran_lopi_.id}))
+        setEventDialog({
+            status: null,
+            data: null,
+        })
+    };
 
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Peran" />
             <PeranProvider
-                peranZoom={peranZoom}
-                setPeranZoom={setPeranZoom}
+                peranLopi={peranLopi}
                 user={user}
-                setUser={setUser}
                 satuanKerjaTahun={satuanKerjaTahun}
-                setSatuanKerjaTahun={setSatuanKerjaTahun}
                 eventDialog={eventDialog}
                 setEventDialog={setEventDialog}
                 userDict={userDict}
-                setUserDict={setUserDict}
                 satuanKerjaTahunDict={satuanKerjaTahunDict}
-                setSatuanKerjaTahunDict={setSatuanKerjaTahunDict}
             >
                 <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4 overflow-x-auto">
                     <div className="w-full">
@@ -117,7 +129,7 @@ export default function Index({
                                         <TableHead className="text-center">
                                             Peran
                                         </TableHead>
-                                        <TableHead className="text-center">
+                                        <TableHead>
                                             Satuan Kerja
                                         </TableHead>
                                         <TableHead className="text-center">
@@ -126,14 +138,14 @@ export default function Index({
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody className="text-accent-foreground">
-                                    {peranZoom.length > 0 ? (
-                                        peranZoom.map((item, index) => {
+                                    {peranLopi.length > 0 ? (
+                                        peranLopi.map((item, index) => {
                                             return (
                                                 <TableRow key={"-" + item.id}>
                                                     <TableCell className="text-center">
                                                         {index+1}
                                                     </TableCell>
-                                                    <TableCellWrap className="text-center">
+                                                    <TableCellWrap>
                                                         {userDict.has(item.pemilik_username) ?
                                                             (<>{userDict.get(item.pemilik_username)}</>) :
                                                             (<>{item.pemilik_username}</>)
@@ -143,14 +155,37 @@ export default function Index({
                                                         {(item.peran == "zoom") && (<>Zoom</>)}
                                                         {(item.peran == "ruang") && (<>Ruang</>)}
                                                     </TableCell>
-                                                    <TableCellWrap className="text-center">
+                                                    <TableCellWrap>
                                                         {satuanKerjaTahunDict.has(item.parent_id) ?
                                                             (<>{satuanKerjaTahunDict.get(item.parent_id)}</>) :
                                                             (<>- Tidak Ditemukan-</>)
                                                         }
                                                     </TableCellWrap>
                                                     <TableCell className="text-center">
-                                                        <button></button>
+                                                        <AlertDialog>
+                                                            <AlertDialogTrigger asChild>
+                                                                <Button variant="outline">Hapus</Button>
+                                                            </AlertDialogTrigger>
+                                                            <AlertDialogContent>
+                                                                <AlertDialogHeader>
+                                                                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                                                    <AlertDialogDescription>
+                                                                        This action cannot be undone. This will permanently delete your
+                                                                        account and remove your data from our servers.
+                                                                    </AlertDialogDescription>
+                                                                </AlertDialogHeader>
+                                                                <AlertDialogFooter>
+                                                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                                    <AlertDialogAction
+                                                                        onClick={e =>{
+                                                                            setEventDialog({
+                                                                                status: 'hapus',
+                                                                                data: item,
+                                                                            })
+                                                                            hapus(item)}}>Hapus</AlertDialogAction>
+                                                                </AlertDialogFooter>
+                                                            </AlertDialogContent>
+                                                        </AlertDialog>
                                                     </TableCell>
                                                 </TableRow>
                                             );

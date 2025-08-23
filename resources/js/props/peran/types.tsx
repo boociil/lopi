@@ -1,16 +1,11 @@
 import {  User } from "@/types";
 
 export type PeranProps = {
-    peranZoom: peran_lopi[];
-    setPeranZoom: (peranZoom: peran_lopi[]) => void;
+    peranLopi: peran_lopi[];
     user: User[];
-    setUser: (user: User[]) => void;
     satuanKerjaTahun: satuan_kerja_tahun[];
-    setSatuanKerjaTahun: (satuanKerjaTahun: satuan_kerja_tahun[]) => void;
     userDict: Map<string, string>,
-    setUserDict: (userDict: Map<string, string>) => void;
     satuanKerjaTahunDict: Map<string, string>,
-    setSatuanKerjaTahunDict: (satuanKerjaTahunDict: Map<string, string>) => void;
 };
 
 export type PeranContextType = PeranProps & {
@@ -39,6 +34,6 @@ export interface satuan_kerja_tahun {
 }
 
 export interface peran_dialog_event {
-    status: null | "tambah";
+    status: null | "tambah" | "hapus";
     data: peran_lopi | null;
 }

@@ -25,6 +25,7 @@ type PeranForm = {
     peran: string;
     username: string;
     satuan_kerja_tahun: string;
+    status: string;
 };
 
 export default function DialogFormManage() {
@@ -37,16 +38,15 @@ export default function DialogFormManage() {
         peran: "zoom",
         username: "",
         satuan_kerja_tahun: "",
+        status: "",
     });
 
     const submit: React.FormEventHandler = (e) => {
         e.preventDefault();
         post(route("peran-tambah"), {
             onSuccess: () => {
-                setData("peran", "zoom");
-                setData("username", "");
-                setData("satuan_kerja_tahun", "");
-            },
+                close_dialog()
+            }
         });
     };
 
@@ -69,6 +69,7 @@ export default function DialogFormManage() {
         setData("peran", "zoom");
         setData("username", "");
         setData("satuan_kerja_tahun", "");
+        setData("status", "");
         setEventDialog({ status: null, data: null })
         setPenggunaArr([])
         return true
@@ -161,7 +162,7 @@ export default function DialogFormManage() {
                                 </div>
                             </>
                             : <></>}
-
+                        {errors.status && <div className="mb-4 text-center text-sm font-medium text-red-400">{errors.status}</div>}
                         </div>
                         <DialogFooter>
                             <DialogClose asChild>

@@ -8,49 +8,34 @@ import DialogFormManage from "./dialog/form-manage";
 import {type User } from "@/types";
 
 export default function PeranProvider({
-    peranZoom,
-    setPeranZoom,
+    peranLopi,
     user,
-    setUser,
     satuanKerjaTahun,
-    setSatuanKerjaTahun,
+    userDict,
+    satuanKerjaTahunDict,
     eventDialog,
     setEventDialog,
-    userDict,
-    setUserDict,
-    satuanKerjaTahunDict,
-    setSatuanKerjaTahunDict,
     children,
 }: {
-    peranZoom: peran_lopi[];
-    setPeranZoom: (peranZoom: peran_lopi[]) => void;
+    peranLopi: peran_lopi[];
     user: User[];
-    setUser: (user: User[]) => void;
     satuanKerjaTahun: satuan_kerja_tahun[];
-    setSatuanKerjaTahun: (satuanKerjaTahun: satuan_kerja_tahun[]) => void;
+    userDict: Map<string, string>,
+    satuanKerjaTahunDict: Map<string, string>,
     eventDialog: peran_dialog_event;
     setEventDialog: (eventDialog: peran_dialog_event) => void;
-    userDict: Map<string, string>,
-    setUserDict: (userDict: Map<string, string>) => void;
-    satuanKerjaTahunDict: Map<string, string>,
-    setSatuanKerjaTahunDict: (satuanKerjaTahunDict: Map<string, string>) => void;
     children: React.ReactNode;
 }) {
     return (
         <PeranContext.Provider
             value={{
-                peranZoom,
-                setPeranZoom,
+                peranLopi,
                 user,
-                setUser,
                 satuanKerjaTahun,
-                setSatuanKerjaTahun,
+                userDict,
+                satuanKerjaTahunDict,
                 eventDialog,
                 setEventDialog,
-                userDict,
-                setUserDict,
-                satuanKerjaTahunDict,
-                setSatuanKerjaTahunDict,
             }}
         >
             <DialogFormManage></DialogFormManage>

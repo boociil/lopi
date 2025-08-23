@@ -315,7 +315,7 @@ export default function Index({
                                     Hari Ini <Badge variant="default">{zoomHariIni.length}</Badge>
                                 </TabsTrigger>
                                 <TabsTrigger value="akan_datang">
-                                    Akan Datang <Badge variant="default">{zoomBesok.length}</Badge>
+                                    Menjelang <Badge variant="default">{zoomBesok.length}</Badge>
                                 </TabsTrigger>
                                 <TabsTrigger value="selesai">
                                     Selesai <Badge variant="default">{zoomKemarin.length}</Badge>
@@ -537,11 +537,11 @@ function TableZoom({
                                     <TableRow
                                         key={"-" + item.id + "-" + item.zoom_meeting_id}
                                     >
-                                        <TableCellWrap className="text-wrap whitespace-wrap w-80">
+                                        <TableCellWrap className="text-wrap whitespace-wrap min-w-45">
                                             {item.topic}
                                             <br />
                                         </TableCellWrap>
-                                        <TableCellWrap className="text-center">
+                                        <TableCellWrap className="text-center min-w-45">
                                             {date_format(item.start_time)}
                                             <br />
                                             {get_time_from_date_time(
@@ -551,7 +551,7 @@ function TableZoom({
                                         </TableCellWrap>
                                         <TableCell className="text-center">{status}</TableCell>
                                         <TableCell className="text-center">{item.zoom_akun}</TableCell>
-                                        <TableCellWrap className="text-center">{pembuat_zoom}</TableCellWrap>
+                                        <TableCellWrap className="text-center min-w-45">{pembuat_zoom}</TableCellWrap>
                                         <TableCell className="text-center">{aksi_group}</TableCell>
                                     </TableRow>
                                 );
