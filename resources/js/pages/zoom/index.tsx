@@ -166,6 +166,7 @@ export default function Index({
     const [zoomHariIni, setZoomHariIni] = React.useState<zoom[]>([]);
     const [zoomKemarin, setZoomKemarin] = React.useState<zoom[]>([]);
     const [zoomBesok, setZoomBesok] = React.useState<zoom[]>([]);
+    const [zoomButuhApproval, setZoomButuhApproval] = React.useState<zoom[]>([]);
 
     React.useEffect(() => {
         let hari_ini_00 = new Date().setHours(0, 0, 0, 0);
@@ -190,9 +191,17 @@ export default function Index({
                 return false;
             }
         });
+        let hari_approval = zoom.filter((item) => {
+            if (new Date(item.start_time).setHours(0, 0, 0, 0) > hari_ini_00 && item.zoom_status == 0) {
+                return true;
+            } else {
+                return false;
+            }
+        });
         setZoomHariIni(hari_ini);
         setZoomKemarin(hari_sebelum);
         setZoomBesok(hari_setelah);
+        setZoomButuhApproval(hari_approval)
     }, [zoom, eventDialog]);
 
     const auth = usePage<SharedData>().props.auth;
@@ -200,13 +209,6 @@ export default function Index({
     const [haveZoomRole, setHaveZoomRole] = React.useState(false);
 
     React.useEffect(() => {
-        let super_admin = peran.find((item) => {
-            if (item.tipe_peran == "global" && item.peran == "admin") {
-                return true;
-            }
-            return false;
-        });
-
         let admin_zoom = peran.find((item) => {
             if (item.peran == "zoom") {
                 return true;
@@ -214,7 +216,7 @@ export default function Index({
             return false;
         });
 
-        if (super_admin || admin_zoom) {
+        if (admin_zoom) {
             setHaveZoomRole(true);
         } else {
             setHaveZoomRole(false);
@@ -265,7 +267,7 @@ export default function Index({
                             title="Pengaturan Zoom"
                             description="Membuat dan Mengatur Jadwal Rapat Online"
                         />
-                        <div className="flex items-center py-4 mt-1 gap-x-1.5">
+                        <div className="flex items-center mt-2 mb-6 gap-x-1.5">
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
                                     <Button
@@ -280,6 +282,7 @@ export default function Index({
                                     {nama_bulan_pilihan.map((item) => (
                                         <DropdownMenuItem asChild>
                                             <Link
+                                                key={item.index}
                                                 className="block w-full"
                                                 href={route("zoom-index")}
                                                 data={{ bulan: item.index }}
@@ -305,18 +308,23 @@ export default function Index({
                         </div>
                         <Tabs
                             defaultValue="hari_ini"
-                            className="w-full flex-col justify-start gap-6"
+                            className="w-full flex-col justify-start gap-4"
                         >
                             <TabsList>
                                 <TabsTrigger value="hari_ini">
                                     Hari Ini <Badge variant="default">{zoomHariIni.length}</Badge>
                                 </TabsTrigger>
                                 <TabsTrigger value="akan_datang">
-                                    Rencana (Akan Datang) <Badge variant="default">{zoomBesok.length}</Badge>
+                                    Akan Datang <Badge variant="default">{zoomBesok.length}</Badge>
                                 </TabsTrigger>
                                 <TabsTrigger value="selesai">
-                                    Riwayat (Selesai) <Badge variant="default">{zoomKemarin.length}</Badge>
+                                    Selesai <Badge variant="default">{zoomKemarin.length}</Badge>
                                 </TabsTrigger>
+                                { haveZoomRole && (
+                                    <TabsTrigger value="approve">
+                                        Approve <Badge variant="default">{zoomButuhApproval.length}</Badge>
+                                    </TabsTrigger>
+                                )}
                             </TabsList>
 
                             <TabsContent value="hari_ini">
@@ -343,6 +351,16 @@ export default function Index({
                                     setEventDialog={setEventDialog}
                                 ></TableZoom>
                             </TabsContent>
+                            { haveZoomRole && (
+                                <TabsContent value="approve">
+                                    <TableZoom
+                                        zoom_list={zoomButuhApproval}
+                                        haveZoomRole={haveZoomRole}
+                                        auth={auth}
+                                        setEventDialog={setEventDialog}
+                                    ></TableZoom>
+                                </TabsContent>
+                            )}
 
                         </Tabs>
                     </div>
@@ -372,11 +390,11 @@ function TableZoom({
                 <TableHeader className="bg-accent">
                     <TableRow>
                         <TableHead>Topic</TableHead>
-                        <TableHead>Waktu</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Akun</TableHead>
-                        <TableHead>Pembuat</TableHead>
-                        <TableHead>Aksi</TableHead>
+                        <TableHead className="text-center">Waktu</TableHead>
+                        <TableHead className="text-center">Status</TableHead>
+                        <TableHead className="text-center">Akun</TableHead>
+                        <TableHead className="text-center">Pembuat</TableHead>
+                        <TableHead className="text-center">Aksi</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody className="text-accent-foreground">
@@ -430,28 +448,33 @@ function TableZoom({
                                                 </Button>
                                             </DropdownMenuTrigger>
                                             <DropdownMenuContent className="w-56">
-                                                <DropdownMenuItem
-                                                    onClick={() =>
-                                                        setEventDialog({
-                                                            status: "ubah",
-                                                            data: item,
-                                                        })
-                                                    }
-                                                >
-                                                    Edit
-                                                </DropdownMenuItem>
-                                                <DropdownMenuItem
-                                                    onClick={() =>
-                                                        setEventDialog({
-                                                            status: "hapus",
-                                                            data: item,
-                                                        })
-                                                    }
-                                                >
-                                                    Hapus
-                                                </DropdownMenuItem>
-                                                {haveZoomRole &&
-                                                    item.zoom_status == 0 && (
+                                                { ( (haveZoomRole || item.pembuat_username == auth.user.username) &&
+                                                    new Date(item.start_time).setHours(0,0,0,0) >= hari_ini_00 ) &&(
+                                                        <>
+                                                            <DropdownMenuItem
+                                                                onClick={() =>
+                                                                    setEventDialog({
+                                                                        status: "ubah",
+                                                                        data: item,
+                                                                    })
+                                                                }
+                                                            >
+                                                                Edit
+                                                            </DropdownMenuItem>
+                                                            <DropdownMenuItem
+                                                                onClick={() =>
+                                                                    setEventDialog({
+                                                                        status: "hapus",
+                                                                        data: item,
+                                                                    })
+                                                                }
+                                                            >
+                                                                Hapus
+                                                            </DropdownMenuItem>
+                                                        </>
+                                                )}
+
+                                                { (haveZoomRole && new Date(item.start_time).setHours(0,0,0,0) >= hari_ini_00) && (
                                                         <DropdownMenuItem
                                                             onClick={() =>
                                                                 setEventDialog({
@@ -465,11 +488,12 @@ function TableZoom({
                                                     )}
 
                                                 { ( (haveZoomRole || item.pembuat_username == auth.user.username) &&
-                                                    new Date(item.start_time).setHours(0,0,0,0) == new Date().setHours(0,0,0,0) ) && (
+                                                    new Date(item.start_time).setHours(0,0,0,0) == hari_ini_00 &&
+                                                    item.zoom_start_url != null) && (
                                                         <DropdownMenuItem>
                                                             <a
                                                                 className="w-full"
-                                                                href="/venues/"
+                                                                href={item.zoom_start_url}
                                                                 target="_blank"
                                                             >
                                                                 Start Zoom
@@ -477,7 +501,8 @@ function TableZoom({
                                                         </DropdownMenuItem>
                                                     )}
 
-                                                {new Date(item.start_time).setHours(0,0,0,0) >= new Date().setHours(0, 0, 0, 0) && (
+                                                { (new Date(item.start_time).setHours(0,0,0,0) >= hari_ini_00
+                                                    && item.zoom_join_url != null) && (
                                                     <DropdownMenuItem>
                                                         <a
                                                             className="w-full"
@@ -488,12 +513,16 @@ function TableZoom({
                                                         </a>
                                                     </DropdownMenuItem>
                                                 )}
-                                                { (new Date(item.start_time).setHours(0,0,0,0) >= new Date().setHours(0, 0, 0, 0)
+                                                { (new Date(item.start_time).setHours(0,0,0,0) >= hari_ini_00
                                                     && item.zoom_join_url != null) && (
                                                     <DropdownMenuItem>
                                                         <button
                                                             className="w-full"
-                                                            onClick={() => navigator.clipboard.writeText(item.zoom_join_url)}
+                                                            onClick={() => {
+                                                                if(item.zoom_join_url){
+                                                                    navigator.clipboard.writeText(item.zoom_join_url)}
+                                                                }
+                                                            }
                                                         >
                                                             Copy URL Join
                                                         </button>
@@ -512,7 +541,7 @@ function TableZoom({
                                             {item.topic}
                                             <br />
                                         </TableCellWrap>
-                                        <TableCellWrap>
+                                        <TableCellWrap className="text-center">
                                             {date_format(item.start_time)}
                                             <br />
                                             {get_time_from_date_time(
@@ -520,10 +549,10 @@ function TableZoom({
                                             )} -{" "}
                                             {get_time_from_date_time(item.end_time)}
                                         </TableCellWrap>
-                                        <TableCell>{status}</TableCell>
-                                        <TableCell>{item.zoom_akun}</TableCell>
-                                        <TableCellWrap>{pembuat_zoom}</TableCellWrap>
-                                        <TableCell>{aksi_group}</TableCell>
+                                        <TableCell className="text-center">{status}</TableCell>
+                                        <TableCell className="text-center">{item.zoom_akun}</TableCell>
+                                        <TableCellWrap className="text-center">{pembuat_zoom}</TableCellWrap>
+                                        <TableCell className="text-center">{aksi_group}</TableCell>
                                     </TableRow>
                                 );
                             })

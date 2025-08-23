@@ -77,6 +77,10 @@ class Satuan_Kerja_Tahun extends Model
     {
         return $this->hasMany(Tim::class, 'satuan_kerja_tahun_id', 'id');
     }
+    public function peran_daftar(): HasMany
+    {
+        return $this->hasMany(Peran::class, 'parent_id', 'id');
+    }
 
     public function tim_daftar_id_nama(): HasMany
     {

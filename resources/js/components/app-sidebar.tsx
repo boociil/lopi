@@ -4,10 +4,14 @@ import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type Peran, type NavGeneral, type NavItem, type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { LayoutGrid, CalendarDays, Video, Folder, BookOpen, LinkIcon } from 'lucide-react';
+import { LayoutGrid, CalendarDays, Video, LinkIcon, LockKeyholeOpen } from 'lucide-react';
 import AppLogo from './app-logo';
 
 export function AppSidebar() {
+    const auth = usePage<SharedData>().props.auth;
+    const peran = auth.peran;
+
+
     const mainNavItems: NavGeneral[] = [
         {
             type: 'item',
@@ -26,35 +30,50 @@ export function AppSidebar() {
             title: 'Zoom',
             href: '/lopi/zoom',
             icon: Video,
-        },
+        }
     ];
+
+    let find_super_admin = peran.find(item => {
+        if(item.peran == 'admin' && item.tipe_peran == 'global' && item.tahun == null){
+            return true
+        }
+    })
+    if(find_super_admin){
+        mainNavItems.push({
+            type: 'item',
+            title: 'Peran',
+            href: '/lopi/peran',
+            icon: LockKeyholeOpen,
+        })
+    }
 
     const tahun_active = usePage<SharedData>().props.tahun_active;
     const footerNavItems: NavGeneral[] = [
         {
-            type: 'item',
+
+            type: 'group',
             title: 'Tahun Aktif : '+tahun_active,
             href: '/lopi/tahun',
             icon: LinkIcon,
             subItems: [
                 {
                     title: 'Tahun 2022',
-                    href: 'tahun/2022/ubah',
+                    href: '/lopi/tahun/2022/ubah',
                 },
                 {
                     title: 'Tahun 2023',
-                    href: 'tahun/2022/ubah',
+                    href: '/lopi/tahun/2023/ubah',
                 },
                 {
                     title: 'Tahun 2024',
-                    href: 'tahun/2022/ubah',
+                    href: '/lopi/tahun/2024/ubah',
                 },
                 {
                     title: 'Tahun 2025',
-                    href: 'tahun/2022/ubah',
+                    href: '/lopi/tahun/2025/ubah',
                 },
             ]
-        },
+        }
     ];
 
     return (

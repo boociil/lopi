@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\Lopi_Controller;
 use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\Auth\LoginController;
@@ -36,16 +37,18 @@ Route::get('/maintenance', function(){
 
 
 Route::get('/', [Beranda_Controller::class, 'redirect_func'])->middleware('auth');
-Route::post('tahun/{tahun}/ubah', function ($request, $tahun) {
+
+Route::get('tahun/{tahun}/ubah', function ($tahun) {
     $tahun_array = explode(",", env("TAHUN_ARRAY"));
     if(in_array($tahun, $tahun_array)){
-        $request->session()->put('tahun_active', $tahun);
+        session()->put('tahun_active', $tahun);
     }
     redirect()->route('zoom-index');
-})->middleware('statistik');
+})->middleware('auth');
+
 Route::get('/tampilan', function () {
     return Inertia::render('tampilan');
-})->name('tampilan')->middleware('auth');
+})->name('tampilan')->middleware(['auth', 'check_maintenance', 'statistik']);
 
 //beranda
 Route::group(
@@ -61,11 +64,10 @@ Route::group(
     'prefix' => 'jadwal',
     'middleware' => ['auth', 'check_maintenance', 'statistik'],
 ], function () {
-    Route::get('/', [Jadwal_Controller::class, 'jadwal-index']);
-    Route::get('/tambah', [Jadwal_Controller::class, 'jadwal-tambah']);
-    Route::get('/{jadwal_id}/ubah', [Jadwal_Controller::class, 'jadwal-ubah']);
-    Route::get('/{jadwal_id}/hapus', [Jadwal_Controller::class, 'jadwal-hapus']);
-
+    Route::get('/', [Jadwal_Controller::class, 'index'])->name('jadwal-index');
+    Route::get('/tambah', [Jadwal_Controller::class, 'index'])->name('jadwal-tambah');
+    Route::get('/{jadwal_id}/ubah', [Jadwal_Controller::class, 'index'])->name('jadwal-ubah');
+    Route::get('/{jadwal_id}/hapus', [Jadwal_Controller::class, 'index'])->name('jadwal-hapus');
 });
 
  Route::group(
@@ -73,10 +75,10 @@ Route::group(
     'prefix' => 'ruang',
 ], function () {
     Route::get('/', [Ruang_Controller::class, 'index'])->name('ruang-index');
-    Route::post('/tambah', [Ruang_Controller::class, 'tambah'])->name('ruang-tambah');
-    Route::post('/{ruang_id}/ubah', [Ruang_Controller::class, 'ubah'])->name('ruang-ubah');
-    Route::post('/{ruang_id}/hapus', [Ruang_Controller::class, 'hapus'])->name('ruang-hapus');
-    Route::post('/{ruang_id}/approval', [Ruang_Controller::class, 'approval'])->name('ruang-approval');
+    Route::get('/tambah', [Ruang_Controller::class, 'tambah'])->name('ruang-tambah');
+    Route::get('/{ruang_id}/ubah', [Ruang_Controller::class, 'ubah'])->name('ruang-ubah');
+    Route::get('/{ruang_id}/hapus', [Ruang_Controller::class, 'hapus'])->name('ruang-hapus');
+    Route::get('/{ruang_id}/approval', [Ruang_Controller::class, 'approval'])->name('ruang-approval');
 });
 
 Route::group(
@@ -85,9 +87,21 @@ Route::group(
     'middleware' => ['auth', 'check_maintenance', 'statistik'],
 ], function () {
     Route::get('/', [Zoom_Controller::class, 'index'])->name('zoom-index');
-    Route::post('/tambah', [Zoom_Controller::class, 'tambah'])->name('zoom-tambah');
-    Route::post('/{zoom_id}/ubah', [Zoom_Controller::class, 'ubah'])->name('zoom-ubah');
-    Route::post('/{zoom_id}/hapus', [Zoom_Controller::class, 'hapus'])->name('zoom-hapus');
-    Route::post('/{zoom_id}/approval', [Zoom_Controller::class, 'approval'])->name('zoom-approval');
+    Route::get('/tambah', [Zoom_Controller::class, 'tambah'])->name('zoom-tambah');
+    Route::get('/{zoom_id}/ubah', [Zoom_Controller::class, 'ubah'])->name('zoom-ubah');
+    Route::get('/{zoom_id}/hapus', [Zoom_Controller::class, 'hapus'])->name('zoom-hapus');
+    Route::get('/{zoom_id}/approval', [Zoom_Controller::class, 'approval'])->name('zoom-approval');
 });
+
+Route::group(
+[
+    'prefix' => 'peran',
+    'middleware' => ['auth', 'check_maintenance', 'statistik'],
+], function () {
+    Route::get('/', [Lopi_Controller::class, 'index'])->name('peran-index');
+    Route::get('/tambah', [Lopi_Controller::class, 'tambah'])->name('peran-tambah');
+    Route::get('/{peran_id}/hapus', [Lopi_Controller::class, 'hapus'])->name('peran-hapus');
+    Route::post('/get-user', [Lopi_Controller::class, 'getUser'])->name('peran-index');
+});
+
 
