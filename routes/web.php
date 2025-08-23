@@ -101,7 +101,7 @@ Route::group(
     Route::get('/', [Lopi_Controller::class, 'index'])->name('peran-index');
     Route::get('/tambah', [Lopi_Controller::class, 'tambah'])->name('peran-tambah');
     Route::get('/{peran_id}/hapus', [Lopi_Controller::class, 'hapus'])->name('peran-hapus');
-    Route::post('/get-user', [Lopi_Controller::class, 'getUser'])->name('peran-index');
+    Route::get('/get-user', [Lopi_Controller::class, 'getUser'])->name('peran-index');
 });
 
 

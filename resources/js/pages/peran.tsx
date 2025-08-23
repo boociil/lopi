@@ -24,7 +24,7 @@ import { Badge } from "@/components/ui/badge";
 import Heading from "@/components/heading";
 import PeranProvider from "@/props/peran/provider";
 import {
-    type peran_zoom,
+    type peran_lopi,
     type peran_dialog_event,
     type satuan_kerja_tahun,
 } from "@/props/peran/types";
@@ -41,7 +41,7 @@ export default function Index({
     user_,
     satuan_kerja_tahun_,
 }: React.PropsWithChildren<{
-    peranZoom_: peran_zoom[];
+    peranZoom_: peran_lopi[];
     user_: User[];
     satuan_kerja_tahun_: satuan_kerja_tahun[];
 }>) {
@@ -52,7 +52,7 @@ export default function Index({
 
 
 
-    const [peranZoom, setPeranZoom] = React.useState<peran_zoom[]>(peranZoom_);
+    const [peranZoom, setPeranZoom] = React.useState<peran_lopi[]>(peranZoom_);
     const [user, setUser] = React.useState<User[]>(user_);
     const [satuanKerjaTahun, setSatuanKerjaTahun] = React.useState<satuan_kerja_tahun[]>(satuan_kerja_tahun_);
 

@@ -1,8 +1,8 @@
-import { Peran, User } from "@/types";
+import {  User } from "@/types";
 
 export type PeranProps = {
-    peranZoom: peran_zoom[];
-    setPeranZoom: (peranZoom: peran_zoom[]) => void;
+    peranZoom: peran_lopi[];
+    setPeranZoom: (peranZoom: peran_lopi[]) => void;
     user: User[];
     setUser: (user: User[]) => void;
     satuanKerjaTahun: satuan_kerja_tahun[];
@@ -18,7 +18,7 @@ export type PeranContextType = PeranProps & {
     setEventDialog: (eventDialog: peran_dialog_event) => void;
 };
 
-export interface peran_zoom {
+export interface peran_lopi {
     id: string;
     tipe_peran: string;
     parent_id: string;
@@ -35,10 +35,10 @@ export interface satuan_kerja_tahun {
     kode_satuan_kerja: string;
     type: string;
     parent_id: string | null;
-    peran_daftar: Peran[];
+    peran_daftar: peran_lopi[];
 }
 
 export interface peran_dialog_event {
     status: null | "tambah";
-    data: peran_zoom | null;
+    data: peran_lopi | null;
 }

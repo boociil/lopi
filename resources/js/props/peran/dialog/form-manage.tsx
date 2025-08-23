@@ -17,7 +17,8 @@ import { usePeranContext } from "../context";
 import React from "react";
 import InputError from "@/components/input-error";
 
-import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger } from "@/components/ui/select";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { peran_lopi } from "../types";
 
 
 type PeranForm = {
@@ -28,28 +29,48 @@ type PeranForm = {
 
 export default function DialogFormManage() {
     const { eventDialog, setEventDialog, satuanKerjaTahun, userDict } = usePeranContext();
+    const [penggunaArr, setPenggunaArr] = React.useState<peran_lopi[]>([])
 
     const { data, setData, post, processing, errors, reset } = useForm<
         Required<PeranForm>
     >({
-        peran: "",
+        peran: "zoom",
         username: "",
         satuan_kerja_tahun: "",
     });
 
     const submit: React.FormEventHandler = (e) => {
         e.preventDefault();
-        post(route("zoom-tambah"), {
+        post(route("peran-tambah"), {
             onSuccess: () => {
-                setData("peran", "");
+                setData("peran", "zoom");
                 setData("username", "");
                 setData("satuan_kerja_tahun", "");
             },
         });
     };
 
+    function setPenggunaArrMeta(value: String){
+        let find = satuanKerjaTahun.find(item => item.id == value)
+        if(find){
+            let username_unique: String [] = []
+            let peran_ :  peran_lopi [] = []
+            find.peran_daftar.forEach(element => {
+                if(!username_unique.includes(element.pemilik_username)){
+                    username_unique.push(element.pemilik_username)
+                    peran_.push(element)
+                }
+            });
+            setPenggunaArr(peran_)
+        }
+    }
+
     function close_dialog(){
+        setData("peran", "zoom");
+        setData("username", "");
+        setData("satuan_kerja_tahun", "");
         setEventDialog({ status: null, data: null })
+        setPenggunaArr([])
         return true
     };
 
@@ -59,7 +80,7 @@ export default function DialogFormManage() {
                 <DialogContent className="sm:max-w-[425px]">
                     <form className="flex flex-col gap-6" onSubmit={submit}>
                         <DialogHeader className="text-accent-foreground">
-                            <DialogTitle>Tambah Jadwal Zoom</DialogTitle>
+                            <DialogTitle>Tambah Peran</DialogTitle>
                             <DialogDescription>
                                 Isi isian diatas. Klik Simpan Jika Selesai.
                             </DialogDescription>
@@ -67,17 +88,15 @@ export default function DialogFormManage() {
                         <div className="grid gap-4">
                             <div className="grid gap-3">
                                 <Label className="text-secondary" htmlFor="peran-1">Peran</Label>
-                                <Select required>
+                                <Select required
+                                    defaultValue={data.peran}
+                                    onValueChange={(value) => setData(
+                                                "peran",
+                                               value)}>
                                     <SelectTrigger
                                         name="peran"
-                                        className="text-secondary"
-                                        value={data.peran}
-                                        onChange={(e) =>
-                                            setData(
-                                                "peran",
-                                               e.target.value,
-                                            )
-                                        }>
+                                        className="text-secondary">
+                                        <SelectValue placeholder="Pilih Peran" />
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectGroup>
@@ -91,52 +110,58 @@ export default function DialogFormManage() {
                             </div>
                             <div className="grid gap-3">
                                 <Label className="text-secondary" htmlFor="satuan-kerja-tahun-1">Satuan Kerja</Label>
-                                <Select required>
+                                <Select required
+                                    defaultValue={data.satuan_kerja_tahun}
+                                    onValueChange={(value) => {
+                                        setData("satuan_kerja_tahun",value)
+                                        setPenggunaArrMeta(value)
+                                    }}>
                                     <SelectTrigger
                                         name="satuan_kerja"
-                                        className="text-secondary"
-                                        value={data.satuan_kerja_tahun}
-                                        onChange={(e) =>
-                                            setData(
-                                                "satuan_kerja_tahun",
-                                                e.target.value,
-                                            )
-                                        }>
+                                        className="text-secondary">
+                                        <SelectValue placeholder="Pilih Satuan Kerja" />
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectGroup>
-                                            {satuanKerjaTahun.map((item, index) =>
-                                                ( <SelectItem value={item.id}>{item.nama}</SelectItem>)
-                                            )}
+                                            <SelectGroup>
+                                                {satuanKerjaTahun.map((item, index) =>
+                                                    ( <SelectItem key={item.id} value={item.id}>{item.nama}</SelectItem>)
+                                                )}
+                                            </SelectGroup>
                                         </SelectGroup>
                                     </SelectContent>
                                 </Select>
                                 <InputError message={errors.satuan_kerja_tahun} />
                             </div>
-                            <div className="grid gap-3">
-                                <Label className="text-secondary" htmlFor="satuan-kerja-tahun-1">Satuan Kerja</Label>
-                                <Select required>
-                                    <SelectTrigger
-                                        name="satuan_kerja"
-                                        className="text-secondary"
-                                        value={data.satuan_kerja_tahun}
-                                        onChange={(e) =>
-                                            setData(
-                                                "satuan_kerja_tahun",
-                                                e.target.value,
-                                            )
-                                        }>
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectGroup>
-                                            {satuanKerjaTahun.map((item, index) =>
-                                                ( <SelectItem value={item.id}>{item.nama}</SelectItem>)
+                            {data.satuan_kerja_tahun ?
+                            <>
+                                <div className="grid gap-3">
+                                    <Label className="text-secondary" htmlFor="user-1">Pengguna</Label>
+                                    <Select required
+                                        defaultValue={data.username}
+                                        onValueChange={(value) => setData(
+                                            "username",
+                                            value)}>
+                                        <SelectTrigger
+                                            name="satuan_kerja"
+                                            className="text-secondary">
+                                                <SelectValue placeholder="Pilih Pengguna" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {penggunaArr.map((item, index) =>
+                                                (
+                                                    <SelectItem key={item.id}  value={item.pemilik_username}>
+                                                        { userDict.has(item.pemilik_username) ? <>{userDict.get(item.pemilik_username)}</> : <>{item.pemilik_username}</> }
+                                                    </SelectItem>
+                                                )
                                             )}
-                                        </SelectGroup>
-                                    </SelectContent>
-                                </Select>
-                                <InputError message={errors.satuan_kerja_tahun} />
-                            </div>
+                                        </SelectContent>
+                                    </Select>
+                                    <InputError message={errors.satuan_kerja_tahun} />
+                                </div>
+                            </>
+                            : <></>}
+
                         </div>
                         <DialogFooter>
                             <DialogClose asChild>

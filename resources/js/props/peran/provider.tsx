@@ -2,7 +2,7 @@ import { PeranContext } from "./context";
 import {
     type satuan_kerja_tahun,
     type peran_dialog_event,
-    type peran_zoom,
+    type peran_lopi,
 } from "./types";
 import DialogFormManage from "./dialog/form-manage";
 import {type User } from "@/types";
@@ -22,8 +22,8 @@ export default function PeranProvider({
     setSatuanKerjaTahunDict,
     children,
 }: {
-    peranZoom: peran_zoom[];
-    setPeranZoom: (peranZoom: peran_zoom[]) => void;
+    peranZoom: peran_lopi[];
+    setPeranZoom: (peranZoom: peran_lopi[]) => void;
     user: User[];
     setUser: (user: User[]) => void;
     satuanKerjaTahun: satuan_kerja_tahun[];
