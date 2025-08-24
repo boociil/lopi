@@ -1,13 +1,11 @@
 export type ZoomProps = {
   zoom: zoom[]
-  setZoom: (zoom: zoom[]) => void
+  haveZoomRole: boolean
 }
 
 export type ZoomContextType = ZoomProps & {
   eventDialog: zoom_dialog_event
   setEventDialog: (eventDialog: zoom_dialog_event) => void
-  haveZoomRole: boolean
-  setHaveZoomRole: (haveZoomRole: boolean) => void
 }
 
 

@@ -37,7 +37,7 @@ class Ruang_Controller extends Controller
                 });
             });
         })->get();
-        return Inertia::render('jadwal/index', [
+        return Inertia::render('ruang', [
             "jadwal" => $jadwal_bulan,
         ]);
     }
@@ -55,20 +55,5 @@ class Ruang_Controller extends Controller
         //redirect
         return 1;
     }
-
-    public function reject(Request $request)
-    {
-        $jadwal = Jadwal::where('id', $request->id)->first();
-        if(!$jadwal){
-            return abort(404);
-        }
-
-        $jadwal->ruang_status = 0;
-        $jadwal->ruang_username_confirm = Auth::user()->username;
-
-        //redirect
-        return 1;
-    }
-
 
 }

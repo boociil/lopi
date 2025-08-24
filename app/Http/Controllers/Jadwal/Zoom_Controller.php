@@ -14,6 +14,7 @@ use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Log;
 
 use GuzzleHttp\Client;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 
 class Zoom_Controller extends Controller
@@ -45,6 +46,7 @@ class Zoom_Controller extends Controller
         if($request->has('bulan')){
             $month = $request->input('bulan');
         }
+        $today_str = Carbon::today()->format('Y-m-d');
 
         $date = Carbon::create(session('tahun_active'), $month, 1);
         $month_start = Carbon::create(session('tahun_active'), $month, 1)->startOfMonth();
@@ -54,6 +56,9 @@ class Zoom_Controller extends Controller
         for($i=0; $i<count($zoom_bulan_daftar); $i++){
             if($zoom_bulan_daftar[$i]->pembuat){
                 $zoom_bulan_daftar[$i]->pembuat_nama = $zoom_bulan_daftar[$i]->pembuat->nama;
+            }
+            if(Carbon::parse($zoom_bulan_daftar[$i]->start_time)->format('Y-m-d') != $today_str){
+                $zoom_bulan_daftar[$i]->zoom_start_url = null;
             }
         }
         // $zoom_statsulbar = $this->zoom_getAllMeeting('statsulbar', $month_start->format('Y-m-d'), $month_end->format('Y-m-d'));
@@ -104,7 +109,9 @@ class Zoom_Controller extends Controller
         $zoom->recurrence_opt = null;
         $zoom->zoom_status = '0';
 
-        return abort(500, "Terjadi kesalahan !");
+        throw ValidationException::withMessages([
+            'status' => 'Zoom tidak dapat dibuat',
+        ]);
 
         if($have_zoom_peran && in_array($request->input('zoom_akun'), ['statsulbar', 'sp2020'])){
             $zoom_mmet = $this->zoom_createMeeting($request->input('zoom_akun'), [
@@ -114,18 +121,20 @@ class Zoom_Controller extends Controller
                 "password" => $request->input('password'),
                 "start_time" => $request->input('start_time'),
                 "timezone" => "Asia/Singapore",
-                "duration" => 60,
+                "duration" => $request->input('duration'),
                 "type" => 2
             ]);
 
             if($zoom_mmet['status']){
-                $zoom->zoom_status = $request->input('zoom_status');
+                $zoom->zoom_status = 2;
                 $zoom->zoom_akun = $request->input('zoom_akun');
                 $zoom->zoom_meeting_id = $zoom_mmet['data']['id'];
                 $zoom->zoom_start_url = $zoom_mmet['data']['start_url'];
                 $zoom->zoom_join_url =$zoom_mmet['data']['join_url'];
             }else{
-                return abort(500, 'Terjadi kesalahan');
+                throw ValidationException::withMessages([
+                    'status' => 'Zoom tidak dapat dibuat',
+                ]);
             }
         }
 
@@ -136,7 +145,7 @@ class Zoom_Controller extends Controller
 
     public function ubah(Request $request, $zoom_id)
     {
-         $validated = $request->validate([
+        $validated = $request->validate([
             'topic' => 'required|string',
             'password' => 'required|string',
             'start_time'=>'required|after_or_equal:'.Carbon::today()->format('Y-m-d'),
@@ -148,7 +157,9 @@ class Zoom_Controller extends Controller
 
         $zoom = Zoom::where('id', $zoom_id)->first();
         if(!$zoom){
-            return abort(404);
+            throw ValidationException::withMessages([
+                'status' => 'Zoom tidak ditemukan',
+            ]);
         }
 
         $have_zoom_peran =  Peran::where('pemilik_username', Auth::user()->username)
@@ -158,34 +169,40 @@ class Zoom_Controller extends Controller
             ->first();
 
         if(! ($have_zoom_peran || $zoom->pembuat_username == Auth::user()->username) ){
-            return abort(401, 'Tidak memiliki akses');
+            throw ValidationException::withMessages([
+                'status' => 'Tidak memiliki akses',
+            ]);
         }
-
 
         $zoom->topic = $request->input('topic');
         $zoom->password = $request->input('password');
 
         $start_time_awal = $zoom->start_time;
         $duration_awal = $zoom->duration;
+        $zoom_akun_awal = $zoom->zoom_akun;
+
+        $zoom->start_time = Carbon::parse($request->input('start_time'))
+            ->addMinutes($request->input('start_time_penyesuaian')* -1)
+            ->toDateTimeString();
+        $zoom->duration = $request->input('duration');
+        $zoom->end_time = Carbon::parse($request->input('start_time'))
+            ->addMinutes($request->input('start_time_penyesuaian') * -1)
+            ->addMinutes($request->input('duration'))
+            ->toDateTimeString();
+        $zoom->pembuat_username = Auth::user()->username;
+        $zoom->is_recurrence = 0;
+        $zoom->recurrence_opt = null;
 
         $zoom->pembuat_username = Auth::user()->username;
         $zoom->is_recurrence = 0;
         $zoom->recurrence_opt = null;
 
-        if(! ($start_time_awal == Carbon::parse($request->input('start_time'))
-            ->addMinutes($request->input('start_time_penyesuaian')* -1)
-            ->toDateTimeString() && $duration_awal == $zoom->duration) )
-        {
-            $zoom->start_time = Carbon::parse($request->input('start_time'))
-                ->addMinutes($request->input('start_time_penyesuaian')* -1)
-                ->toDateTimeString();
-            $zoom->duration = $request->input('duration');
-            $zoom->end_time = Carbon::parse($request->input('start_time'))
-                ->addMinutes($request->input('start_time_penyesuaian') * -1)
-                ->addMinutes($request->input('duration'))
-                ->toDateTimeString();
-            if(!$zoom->zoom_meeting_id){
-                if($have_zoom_peran){
+        if(!$zoom->zoom_meeting_id){
+            if(! ($start_time_awal ==$zoom->start_time
+                && $duration_awal == $zoom->duration
+                && $zoom_akun_awal == $request->input('zoom_akun')) )
+            {
+                if($have_zoom_peran && $zoom_akun_awal == $request->input('zoom_akun')){
                     $zoom_app = $this->zoom_updateMeeting($zoom->zoom_akun, "".$zoom->zoom_meeting_id,[
                             "agenda" => $request->input('topic'),
                             "topic" => $request->input('topic'),
@@ -193,23 +210,69 @@ class Zoom_Controller extends Controller
                             "password" => $request->input('password'),
                             "start_time" => $request->input('start_time'),
                             "timezone" => "Asia/Singapore",
-                            "duration" => 60,
+                            "duration" => $request->input('duration'),
                             "type" => 2
                         ]);
                     if(!$zoom_app['status']){
-                        return abort(500, 'Terjadi kesalahan');
+                        throw ValidationException::withMessages([
+                            'status' => 'Zoom gagal diubah',
+                        ]);
+                    }
+                }else if($have_zoom_peran && $zoom_akun_awal != $request->input('zoom_akun')){
+                    $zoom_app = $this->zoom_deleteMeeting($zoom->zoom_akun, "".$zoom->zoom_meeting_id);
+                    if(!$zoom_app['status']){
+                        throw ValidationException::withMessages([
+                            'status' => 'Zoom gagal diubah',
+                        ]);
+                    }
+                    $zoom_mmet = $this->zoom_createMeeting($request->input('zoom_akun'), [
+                        "agenda" => $request->input('topic'),
+                        "topic" => $request->input('topic'),
+                        "default_password" => false,
+                        "password" => $request->input('password'),
+                        "start_time" => $request->input('start_time'),
+                        "timezone" => "Asia/Singapore",
+                        "duration" => $request->input('duration'),
+                        "type" => 2
+                    ]);
+
+                    if($zoom_mmet['status']){
+                        $zoom->zoom_akun = $request->input('zoom_akun');
+                        $zoom->zoom_meeting_id = $zoom_mmet['data']['id'];
+                        $zoom->zoom_start_url = $zoom_mmet['data']['start_url'];
+                        $zoom->zoom_join_url =$zoom_mmet['data']['join_url'];
+                    }else{
+                        throw ValidationException::withMessages([
+                            'status' => 'Zoom gagal diubah',
+                        ]);
                     }
                 }else{
                     $zoom_app = $this->zoom_deleteMeeting($zoom->zoom_akun, "".$zoom->zoom_meeting_id);
-                    if(!$zoom_app['status']){
-                        return abort(500, 'Terjadi kesalahan');
-                    }
+                    throw ValidationException::withMessages([
+                        'status' => 'Zoom gagal diubah',
+                    ]);
 
-                    $zoom->zoom_status = null;
+                    $zoom->zoom_status = 0;
                     $zoom->zoom_akun = null;
                     $zoom->zoom_meeting_id = null;
                     $zoom->zoom_start_url = null;
                     $zoom->zoom_join_url = null;
+                }
+            }else{
+                 $zoom_app = $this->zoom_updateMeeting($zoom->zoom_akun, "".$zoom->zoom_meeting_id,[
+                        "agenda" => $request->input('topic'),
+                        "topic" => $request->input('topic'),
+                        "default_password" => false,
+                        "password" => $request->input('password'),
+                        "start_time" => $request->input('start_time'),
+                        "timezone" => "Asia/Singapore",
+                        "duration" => $request->input('duration'),
+                        "type" => 2
+                    ]);
+                if(!$zoom_app['status']){
+                    throw ValidationException::withMessages([
+                        'status' => 'Zoom gagal diubah',
+                    ]);
                 }
             }
         }
@@ -232,13 +295,17 @@ class Zoom_Controller extends Controller
             ->first();
 
         if(! ($have_zoom_peran || $zoom->pembuat_username == Auth::user()->username) ){
-            return abort(401, 'Tidak memiliki akses');
+            throw ValidationException::withMessages([
+                'status' => 'Tidak memiliki akses',
+            ]);
         }
 
         if($zoom->zoom_meeting_id){
             $zoom_app = $this->zoom_deleteMeeting($zoom->zoom_akun, "".$zoom->zoom_meeting_id);
             if(!$zoom_app['status']){
-                return abort(500, 'Terjadi kesalahan');
+                throw ValidationException::withMessages([
+                    'status' => 'Zoom gagal dihapus',
+                ]);
             }
         }
 
@@ -271,27 +338,75 @@ class Zoom_Controller extends Controller
             if($zoom->zoom_meeting_id){
                 $zoom_app = $this->zoom_deleteMeeting($zoom->zoom_akun, "".$zoom->zoom_meeting_id);
                 if(!$zoom_app['status']){
-                    return abort(500, 'Terjadi kesalahan');
+                    throw ValidationException::withMessages([
+                        'status' => 'Zoom gagal dibuat',
+                    ]);
                 }
 
-                $zoom->zoom_status = null;
+                $zoom->zoom_status = 1;
                 $zoom->zoom_akun = null;
                 $zoom->zoom_meeting_id = null;
                 $zoom->zoom_start_url = null;
                 $zoom->zoom_join_url = null;
+                $zoom->save();
             }
         }else if($request->input('zoom_status') == '2'){
             if(!$zoom->zoom_meeting_id){
-                $zoom_app = $this->zoom_deleteMeeting($zoom->zoom_akun, "".$zoom->zoom_meeting_id);
-                if(!$zoom_app['status']){
-                    return abort(500, 'Terjadi kesalahan');
-                }
+                 $zoom_mmet = $this->zoom_createMeeting($request->input('zoom_akun'), [
+                    "agenda" => $zoom->topic,
+                    "topic" => $zoom->topic,
+                    "default_password" => false,
+                    "password" => $zoom->password,
+                    "start_time" => $zoom->start_time,
+                    "timezone" => "Asia/Singapore",
+                    "duration" => $zoom->duration,
+                    "type" => 2
+                ]);
 
-                $zoom->zoom_status = null;
-                $zoom->zoom_akun = null;
-                $zoom->zoom_meeting_id = null;
-                $zoom->zoom_start_url = null;
-                $zoom->zoom_join_url = null;
+                if($zoom_mmet['status']){
+                    $zoom->zoom_status = 2;
+                    $zoom->zoom_akun = $request->input('zoom_akun');
+                    $zoom->zoom_meeting_id = $zoom_mmet['data']['id'];
+                    $zoom->zoom_start_url = $zoom_mmet['data']['start_url'];
+                    $zoom->zoom_join_url =$zoom_mmet['data']['join_url'];
+                    $zoom->save();
+                }else{
+                    throw ValidationException::withMessages([
+                        'status' => 'Zoom tidak dapat dibuat',
+                    ]);
+                }
+            }else {
+               if($zoom->zoom_akun != $request->input('zoom_akun')){
+                    $zoom_app = $this->zoom_deleteMeeting($zoom->zoom_akun, "".$zoom->zoom_meeting_id);
+                    if(!$zoom_app['status']){
+                        throw ValidationException::withMessages([
+                            'status' => 'Zoom gagal diubah',
+                        ]);
+                    }
+                    $zoom_mmet = $this->zoom_createMeeting($request->input('zoom_akun'), [
+                        "agenda" => $request->input('topic'),
+                        "topic" => $request->input('topic'),
+                        "default_password" => false,
+                        "password" => $request->input('password'),
+                        "start_time" => $request->input('start_time'),
+                        "timezone" => "Asia/Singapore",
+                        "duration" => $request->input('duration'),
+                        "type" => 2
+                    ]);
+
+                    if($zoom_mmet['status']){
+                        $zoom->zoom_status = 2;
+                        $zoom->zoom_akun = $request->input('zoom_akun');
+                        $zoom->zoom_meeting_id = $zoom_mmet['data']['id'];
+                        $zoom->zoom_start_url = $zoom_mmet['data']['start_url'];
+                        $zoom->zoom_join_url =$zoom_mmet['data']['join_url'];
+                        $zoom->save();
+                    }else{
+                        throw ValidationException::withMessages([
+                            'status' => 'Zoom gagal diubah',
+                        ]);
+                    }
+                }
             }
         }
 

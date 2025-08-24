@@ -75,14 +75,10 @@ export default function Index({
             satuanKerjaTahunDict_.set(element.id, element.nama)
         });
         setSatuanKerjaTahunDict(satuanKerjaTahunDict_)
-    }, [user, satuanKerjaTahun, eventDialog]);
+    }, [user, satuanKerjaTahun]);
 
     function hapus(peran_lopi_: peran_lopi){
         router.post(route('peran-hapus', {'peran_id': peran_lopi_.id}))
-        setEventDialog({
-            status: null,
-            data: null,
-        })
     };
 
 
@@ -168,20 +164,16 @@ export default function Index({
                                                             </AlertDialogTrigger>
                                                             <AlertDialogContent>
                                                                 <AlertDialogHeader>
-                                                                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                                                <AlertDialogTitle>Apakah kamu yakin?</AlertDialogTitle>
                                                                     <AlertDialogDescription>
-                                                                        This action cannot be undone. This will permanently delete your
-                                                                        account and remove your data from our servers.
+                                                                        Apakah anda yakin untuk menghapus peran {item.peran} <br/>
+                                                                        pada pengguna {userDict.has(item.pemilik_username) ? userDict.get(item.pemilik_username) : item.pemilik_username} ?
                                                                     </AlertDialogDescription>
                                                                 </AlertDialogHeader>
                                                                 <AlertDialogFooter>
                                                                     <AlertDialogCancel>Cancel</AlertDialogCancel>
                                                                     <AlertDialogAction
                                                                         onClick={e =>{
-                                                                            setEventDialog({
-                                                                                status: 'hapus',
-                                                                                data: item,
-                                                                            })
                                                                             hapus(item)}}>Hapus</AlertDialogAction>
                                                                 </AlertDialogFooter>
                                                             </AlertDialogContent>

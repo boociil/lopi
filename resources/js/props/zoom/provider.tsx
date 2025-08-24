@@ -4,19 +4,15 @@ import DialogFormManage from './dialog/form-manage'
 
 export default function ZommProvider({
   zoom,
-  setZoom,
+  haveZoomRole,
   eventDialog,
   setEventDialog,
-  haveZoomRole,
-  setHaveZoomRole,
   children
 }: {
     zoom: zoom[]
-    setZoom: (zoom: zoom[]) => void,
+    haveZoomRole: boolean
     eventDialog: zoom_dialog_event,
     setEventDialog: (eventDialog: zoom_dialog_event) => void,
-    haveZoomRole: boolean
-    setHaveZoomRole: (haveZoomRole: boolean) => void
     children: React.ReactNode
 }) {
 
@@ -24,11 +20,9 @@ export default function ZommProvider({
     <ZoomContext.Provider
       value={{
         zoom,
-        setZoom,
+        haveZoomRole,
         eventDialog,
         setEventDialog,
-        haveZoomRole,
-        setHaveZoomRole
       }}
     >
         <DialogFormManage></DialogFormManage>

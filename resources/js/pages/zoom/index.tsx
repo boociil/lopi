@@ -3,8 +3,8 @@ import { Auth, type BreadcrumbItem, type SharedData } from "@/types";
 import {
     type zoom,
     type zoom_app,
-    zoom_app_with_status,
-    zoom_dialog_event,
+    type zoom_app_with_status,
+    type zoom_dialog_event,
 } from "@/props/zoom/types";
 import { Head, usePage } from "@inertiajs/react";
 
@@ -18,7 +18,6 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
     Table,
@@ -56,7 +55,14 @@ export default function Index({
     zoom_statsulbar: zoom_app_with_status;
     zoom_sp2020: zoom_app_with_status;
 }>) {
-    const data: zoom[] = [];
+
+    const [zoomHariIni, setZoomHariIni] = React.useState<zoom[]>([]);
+    const [zoomKemarin, setZoomKemarin] = React.useState<zoom[]>([]);
+    const [zoomBesok, setZoomBesok] = React.useState<zoom[]>([]);
+    const [zoomButuhApproval, setZoomButuhApproval] = React.useState<zoom[]>([]);
+
+    const zoom: zoom[] = [];
+
     zoom_bulan_daftar.forEach((element) => {
         const item: zoom = {
             topic: element.topic,
@@ -77,16 +83,16 @@ export default function Index({
             zoom_app_prop: null,
             id: element.id,
         };
-        data.push(item);
+        zoom.push(item);
     });
 
     if (zoom_statsulbar.status) {
         zoom_statsulbar.data.meetings.forEach((element) => {
             let dapat = false;
-            for (let i = 0; i < data.length; i++) {
-                if (data[i].zoom_meeting_id == element.id) {
+            for (let i = 0; i < zoom.length; i++) {
+                if (zoom[i].zoom_meeting_id == element.id) {
                     dapat = true;
-                    data[i].zoom_app_prop = element;
+                    zoom[i].zoom_app_prop = element;
                 }
             }
             if (!dapat) {
@@ -109,7 +115,7 @@ export default function Index({
                     zoom_app_prop: element,
                     id: null,
                 };
-                data.push(item);
+                zoom.push(item);
             }
         });
     }
@@ -117,10 +123,10 @@ export default function Index({
     if (zoom_sp2020.status) {
         zoom_sp2020.data.meetings.forEach((element) => {
             let dapat = false;
-            for (let i = 0; i < data.length; i++) {
-                if (data[i].zoom_meeting_id == element.id) {
+            for (let i = 0; i < zoom.length; i++) {
+                if (zoom[i].zoom_meeting_id == element.id) {
                     dapat = true;
-                    data[i].zoom_app_prop = element;
+                    zoom[i].zoom_app_prop = element;
                 }
             }
             if (!dapat) {
@@ -143,12 +149,12 @@ export default function Index({
                     zoom_app_prop: element,
                     id: null,
                 };
-                data.push(item);
+                zoom.push(item);
             }
         });
     }
 
-    data.sort((a, b) => {
+    zoom.sort((a, b) => {
         if (a.start_time < b.start_time) {
             return -1;
         } else if (a.start_time > b.start_time) {
@@ -161,12 +167,6 @@ export default function Index({
         status: null,
         data: null,
     });
-
-    const [zoom, setZoom] = React.useState<zoom[]>(data);
-    const [zoomHariIni, setZoomHariIni] = React.useState<zoom[]>([]);
-    const [zoomKemarin, setZoomKemarin] = React.useState<zoom[]>([]);
-    const [zoomBesok, setZoomBesok] = React.useState<zoom[]>([]);
-    const [zoomButuhApproval, setZoomButuhApproval] = React.useState<zoom[]>([]);
 
     React.useEffect(() => {
         let hari_ini_00 = new Date().setHours(0, 0, 0, 0);
@@ -202,7 +202,7 @@ export default function Index({
         setZoomKemarin(hari_sebelum);
         setZoomBesok(hari_setelah);
         setZoomButuhApproval(hari_approval)
-    }, [zoom, eventDialog]);
+    }, [zoom_bulan_daftar, zoom_statsulbar, zoom_sp2020]);
 
     const auth = usePage<SharedData>().props.auth;
     const peran = auth.peran;
@@ -255,11 +255,9 @@ export default function Index({
             <Head title="Zoom" />
             <ZommProvider
                 zoom={zoom}
-                setZoom={setZoom}
+                haveZoomRole={haveZoomRole}
                 eventDialog={eventDialog}
                 setEventDialog={setEventDialog}
-                haveZoomRole={haveZoomRole}
-                setHaveZoomRole={setHaveZoomRole}
             >
                 <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4 overflow-x-auto">
                     <div className="w-full">
@@ -400,138 +398,16 @@ function TableZoom({
                 <TableBody className="text-accent-foreground">
                        {zoom_list.length > 0 ? (
                              zoom_list.map((item) => {
-                                let status = <Badge variant="outline">Belum</Badge>;
-                                if (item.id != null) {
-                                    if (item.zoom_status == 0) {
-                                        status = <Badge variant="outline">Belum</Badge>;
-                                    } else if (item.zoom_status == 1) {
-                                        status = (
-                                            <Badge variant="destructive">Ditolak</Badge>
-                                        );
-                                    } else if (item.zoom_status == 2) {
-                                        status = (
-                                            <Badge variant="default">Diterima</Badge>
-                                        );
-                                    }
-                                } else if (
-                                    item.zoom_app_prop != null &&
-                                    item.id == null
-                                ) {
-                                    status = (
-                                        <Badge variant="outline">Langsung Di App</Badge>
-                                    );
-                                }
 
-                                let pembuat_zoom = "";
-                                if (item.pembuat_nama != null) {
-                                    pembuat_zoom = item.pembuat_nama;
-                                } else {
-                                    pembuat_zoom = "-";
-                                }
-
-                                let aksi_group = <div></div>;
-                                if (
-                                    item.zoom_app_prop == null &&
-                                    item.zoom_status == 0
-                                ) {
-                                    aksi_group = (
-                                        <DropdownMenu>
-                                            <DropdownMenuTrigger asChild>
-                                                <Button
-                                                    variant="ghost"
-                                                    className="h-8 w-8 p-0 border"
-                                                >
-                                                    <span className="sr-only">
-                                                        Buka Aksi
-                                                    </span>
-                                                    <MoreHorizontal />
-                                                </Button>
-                                            </DropdownMenuTrigger>
-                                            <DropdownMenuContent className="w-56">
-                                                { ( (haveZoomRole || item.pembuat_username == auth.user.username) &&
-                                                    new Date(item.start_time).setHours(0,0,0,0) >= hari_ini_00 ) &&(
-                                                        <>
-                                                            <DropdownMenuItem
-                                                                onClick={() =>
-                                                                    setEventDialog({
-                                                                        status: "ubah",
-                                                                        data: item,
-                                                                    })
-                                                                }
-                                                            >
-                                                                Edit
-                                                            </DropdownMenuItem>
-                                                            <DropdownMenuItem
-                                                                onClick={() =>
-                                                                    setEventDialog({
-                                                                        status: "hapus",
-                                                                        data: item,
-                                                                    })
-                                                                }
-                                                            >
-                                                                Hapus
-                                                            </DropdownMenuItem>
-                                                        </>
-                                                )}
-
-                                                { (haveZoomRole && new Date(item.start_time).setHours(0,0,0,0) >= hari_ini_00) && (
-                                                        <DropdownMenuItem
-                                                            onClick={() =>
-                                                                setEventDialog({
-                                                                    status: "approval",
-                                                                    data: item,
-                                                                })
-                                                            }
-                                                        >
-                                                            Approval
-                                                        </DropdownMenuItem>
-                                                    )}
-
-                                                { ( (haveZoomRole || item.pembuat_username == auth.user.username) &&
+                                let canEditHapus = ( (haveZoomRole || item.pembuat_username == auth.user.username) &&
+                                                    new Date(item.start_time).setHours(0,0,0,0) >= hari_ini_00 )
+                                let canApprove = (haveZoomRole && item.pembuat_username != auth.user.username && new Date(item.start_time).setHours(0,0,0,0) >= hari_ini_00)
+                                let calStartZoom =( (haveZoomRole || item.pembuat_username == auth.user.username) &&
                                                     new Date(item.start_time).setHours(0,0,0,0) == hari_ini_00 &&
-                                                    item.zoom_start_url != null) && (
-                                                        <DropdownMenuItem>
-                                                            <a
-                                                                className="w-full"
-                                                                href={item.zoom_start_url}
-                                                                target="_blank"
-                                                            >
-                                                                Start Zoom
-                                                            </a>
-                                                        </DropdownMenuItem>
-                                                    )}
-
-                                                { (new Date(item.start_time).setHours(0,0,0,0) >= hari_ini_00
-                                                    && item.zoom_join_url != null) && (
-                                                    <DropdownMenuItem>
-                                                        <a
-                                                            className="w-full"
-                                                            href="/venues/"
-                                                            target="_blank"
-                                                        >
-                                                            Join Zoom
-                                                        </a>
-                                                    </DropdownMenuItem>
-                                                )}
-                                                { (new Date(item.start_time).setHours(0,0,0,0) >= hari_ini_00
-                                                    && item.zoom_join_url != null) && (
-                                                    <DropdownMenuItem>
-                                                        <button
-                                                            className="w-full"
-                                                            onClick={() => {
-                                                                if(item.zoom_join_url){
-                                                                    navigator.clipboard.writeText(item.zoom_join_url)}
-                                                                }
-                                                            }
-                                                        >
-                                                            Copy URL Join
-                                                        </button>
-                                                    </DropdownMenuItem>
-                                                )}
-                                            </DropdownMenuContent>
-                                        </DropdownMenu>
-                                    );
-                                }
+                                                    item.zoom_start_url != null)
+                                let canJoinZoom = (new Date(item.start_time).setHours(0,0,0,0) >= hari_ini_00
+                                                    && item.zoom_join_url != null)
+                                let openAksi = canEditHapus || canApprove || calStartZoom || canJoinZoom
 
                                 return (
                                     <TableRow
@@ -549,10 +425,85 @@ function TableZoom({
                                             )} -{" "}
                                             {get_time_from_date_time(item.end_time)}
                                         </TableCellWrap>
-                                        <TableCell className="text-center">{status}</TableCell>
+                                        <TableCell className="text-center">
+                                            { (item.id == null)
+                                                && <Badge variant="outline">Langsung Di App</Badge>}
+                                            { (item.id != null && item.zoom_status == 0)
+                                                && <Badge variant="outline">Belum</Badge>}
+                                            { (item.id != null && item.zoom_status == 1)
+                                                && <Badge variant="destructive">Ditolak</Badge>}
+                                            { (item.id != null && item.zoom_status == 2)
+                                                && <Badge variant="default">Diterima</Badge>}
+                                        </TableCell>
                                         <TableCell className="text-center">{item.zoom_akun}</TableCell>
-                                        <TableCellWrap className="text-center min-w-45">{pembuat_zoom}</TableCellWrap>
-                                        <TableCell className="text-center">{aksi_group}</TableCell>
+                                        <TableCellWrap className="text-center min-w-45">
+                                            {(item.pembuat_nama != null) ? (item.pembuat_nama) : "-"}
+                                        </TableCellWrap>
+                                        <TableCell className="text-center">
+                                            {openAksi && (
+                                                <DropdownMenu>
+                                                    <DropdownMenuTrigger asChild>
+                                                        <Button
+                                                            variant="ghost"
+                                                            className="h-8 w-8 p-0 border"
+                                                        >
+                                                            <span className="sr-only">
+                                                                Buka Aksi
+                                                            </span>
+                                                            <MoreHorizontal />
+                                                        </Button>
+                                                    </DropdownMenuTrigger>
+                                                    <DropdownMenuContent className="w-56">
+                                                        {canEditHapus && (
+                                                            <>
+                                                                <DropdownMenuItem onClick={() =>setEventDialog({status: "ubah",data: item,})}>
+                                                                    Edit
+                                                                </DropdownMenuItem>
+                                                                <DropdownMenuItem onClick={() =>setEventDialog({status: "hapus",data: item,})}>
+                                                                    Hapus
+                                                                </DropdownMenuItem>
+                                                            </>
+                                                        )}
+                                                        {canApprove && (
+                                                            <DropdownMenuItem
+                                                                onClick={() => setEventDialog({status: "approval", data: item,})}>
+                                                                Approval
+                                                            </DropdownMenuItem>
+                                                        )}
+                                                        {calStartZoom && (
+                                                            <DropdownMenuItem>
+                                                                <a
+                                                                    className="w-full"
+                                                                    href={item.zoom_start_url}
+                                                                    target="_blank"
+                                                                >
+                                                                    Start Zoom
+                                                                </a>
+                                                            </DropdownMenuItem>
+                                                        )}
+                                                        {canJoinZoom && (<>
+                                                            <DropdownMenuItem>
+                                                                <a className="w-full" href={item.zoom_join_url} target="_blank">
+                                                                    Join Zoom
+                                                                </a>
+                                                            </DropdownMenuItem>
+                                                            <DropdownMenuItem>
+                                                                <button
+                                                                    className="w-full"
+                                                                    onClick={() => {
+                                                                        if(item.zoom_join_url){
+                                                                            navigator.clipboard.writeText(item.zoom_join_url)}
+                                                                        }
+                                                                    }
+                                                                >
+                                                                    Copy URL Join
+                                                                </button>
+                                                            </DropdownMenuItem>
+                                                        </>)}
+                                                    </DropdownMenuContent>
+                                                </DropdownMenu>
+                                            )}
+                                        </TableCell>
                                     </TableRow>
                                 );
                             })

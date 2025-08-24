@@ -9,6 +9,20 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
+import {
+    Command,
+    CommandEmpty,
+    CommandGroup,
+    CommandInput,
+    CommandItem,
+    CommandList,
+} from "@/components/ui/command"
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from "@/components/ui/popover"
+
 
 import { Label } from "@/components/ui/label";
 
@@ -18,8 +32,9 @@ import React from "react";
 import InputError from "@/components/input-error";
 
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { peran_lopi } from "../types";
-
+import { type peran_lopi } from "../types";
+import { Check, ChevronsUpDown, LoaderCircle } from "lucide-react"
+import { cn } from "@/lib/utils"
 
 type PeranForm = {
     peran: string;
@@ -31,8 +46,9 @@ type PeranForm = {
 export default function DialogFormManage() {
     const { eventDialog, setEventDialog, satuanKerjaTahun, userDict } = usePeranContext();
     const [penggunaArr, setPenggunaArr] = React.useState<peran_lopi[]>([])
+    const [openPengguna, setOpenPengguna] = React.useState(false)
 
-    const { data, setData, post, processing, errors, reset } = useForm<
+    const { data, setData, post, processing, errors, setError, clearErrors } = useForm<
         Required<PeranForm>
     >({
         peran: "zoom",
@@ -43,6 +59,11 @@ export default function DialogFormManage() {
 
     const submit: React.FormEventHandler = (e) => {
         e.preventDefault();
+        clearErrors("peran", "username","satuan_kerja_tahun","status")
+        if(data.username == ""){
+            setError("username", "Pengguna harus terisi")
+            return
+        }
         post(route("peran-tambah"), {
             onSuccess: () => {
                 close_dialog()
@@ -66,6 +87,7 @@ export default function DialogFormManage() {
     }
 
     function close_dialog(){
+        clearErrors("peran", "username","satuan_kerja_tahun","status")
         setData("peran", "zoom");
         setData("username", "");
         setData("satuan_kerja_tahun", "");
@@ -115,6 +137,7 @@ export default function DialogFormManage() {
                                     defaultValue={data.satuan_kerja_tahun}
                                     onValueChange={(value) => {
                                         setData("satuan_kerja_tahun",value)
+                                        setData("username", "")
                                         setPenggunaArrMeta(value)
                                     }}>
                                     <SelectTrigger
@@ -138,37 +161,62 @@ export default function DialogFormManage() {
                             <>
                                 <div className="grid gap-3">
                                     <Label className="text-secondary" htmlFor="user-1">Pengguna</Label>
-                                    <Select required
-                                        defaultValue={data.username}
-                                        onValueChange={(value) => setData(
-                                            "username",
-                                            value)}>
-                                        <SelectTrigger
-                                            name="satuan_kerja"
-                                            className="text-secondary">
-                                                <SelectValue placeholder="Pilih Pengguna" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {penggunaArr.map((item, index) =>
-                                                (
-                                                    <SelectItem key={item.id}  value={item.pemilik_username}>
-                                                        { userDict.has(item.pemilik_username) ? <>{userDict.get(item.pemilik_username)}</> : <>{item.pemilik_username}</> }
-                                                    </SelectItem>
-                                                )
-                                            )}
-                                        </SelectContent>
-                                    </Select>
-                                    <InputError message={errors.satuan_kerja_tahun} />
+                                    <Popover open={openPengguna} onOpenChange={setOpenPengguna} modal={true}>
+                                        <PopoverTrigger asChild>
+                                            <Button
+                                                variant="outline"
+                                                role="combobox"
+                                                className="justify-between text-secondary"
+                                            >
+                                                { (data.username != "")
+                                                    ? userDict.has(data.username) ? userDict.get(data.username) : data.username
+                                                    : "Pilih Pengguna..."}
+                                                <ChevronsUpDown className="opacity-50" />
+                                            </Button>
+                                        </PopoverTrigger>
+                                        <PopoverContent className="p-0 w-full">
+                                            <Command>
+                                                <CommandInput placeholder="Cari Pengguna..." className="h-9" />
+                                                <CommandList>
+                                                    <CommandEmpty>Tidak ditemukan.</CommandEmpty>
+                                                    <CommandGroup>
+                                                    {penggunaArr.map((item) => (
+                                                        <CommandItem
+                                                            key={item.pemilik_username}
+                                                            value={item.pemilik_username}
+                                                            onSelect={(currentValue) => {
+                                                                setData("username", currentValue === data.username ? "" : currentValue)
+                                                                setOpenPengguna(false)
+                                                            }}
+                                                        >
+                                                        {userDict.has(item.pemilik_username) ? userDict.get(item.pemilik_username) : item.pemilik_username}
+                                                        <Check
+                                                            className={cn(
+                                                            "ml-auto",
+                                                                data.username === item.pemilik_username ? "opacity-100" : "opacity-0"
+                                                            )}
+                                                        />
+                                                        </CommandItem>
+                                                    ))}
+                                                    </CommandGroup>
+                                                </CommandList>
+                                            </Command>
+                                        </PopoverContent>
+                                    </Popover>
+                                    <InputError message={errors.username} />
                                 </div>
                             </>
                             : <></>}
-                        {errors.status && <div className="mb-4 text-center text-sm font-medium text-red-400">{errors.status}</div>}
+                        <InputError message={errors.status} />
                         </div>
                         <DialogFooter>
                             <DialogClose asChild>
                                 <Button  className="text-accent-foreground" variant="outline">Batal</Button>
                             </DialogClose>
-                            <Button type="submit">Simpan</Button>
+                            <Button type="submit" disabled={processing}>
+                                {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}
+                                Simpan
+                            </Button>
                         </DialogFooter>
                     </form>
                 </DialogContent>

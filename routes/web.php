@@ -75,9 +75,6 @@ Route::group(
     'prefix' => 'ruang',
 ], function () {
     Route::get('/', [Ruang_Controller::class, 'index'])->name('ruang-index');
-    Route::get('/tambah', [Ruang_Controller::class, 'tambah'])->name('ruang-tambah');
-    Route::get('/{ruang_id}/ubah', [Ruang_Controller::class, 'ubah'])->name('ruang-ubah');
-    Route::get('/{ruang_id}/hapus', [Ruang_Controller::class, 'hapus'])->name('ruang-hapus');
     Route::get('/{ruang_id}/approval', [Ruang_Controller::class, 'approval'])->name('ruang-approval');
 });
 

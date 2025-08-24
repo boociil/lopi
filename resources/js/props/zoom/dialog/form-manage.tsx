@@ -31,6 +31,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { type SharedData } from "@/types";
 
 
 type ZoomForm = {
@@ -39,11 +40,13 @@ type ZoomForm = {
     start_time: string;
     start_time_penyesuaian: number;
     duration: number;
-    zoom_status:  0 | 1 | 2;
+    zoom_status:  number;
+    zoom_akun: string;
+    status: string
 };
 
 export default function DialogFormManage() {
-    const { eventDialog, setEventDialog } = useZoomContext();
+    const { eventDialog, setEventDialog, haveZoomRole } = useZoomContext();
 
     const { data, setData, post, processing, errors, reset } = useForm<
         Required<ZoomForm>
@@ -54,8 +57,11 @@ export default function DialogFormManage() {
         start_time_penyesuaian: (new Date()).getTimezoneOffset(),
         duration: 120,
         zoom_status: 0,
+        zoom_akun: "",
+        status: "",
     });
 
+    const auth = usePage<SharedData>().props.auth;
     const [date24, setDate24] = useState<Date | undefined>(new Date());
 
     useEffect(() => {
@@ -71,6 +77,9 @@ export default function DialogFormManage() {
             setData("start_time", eventDialog.data.start_time);
             setData("duration", eventDialog.data.duration);
             setData("zoom_status", eventDialog.data.zoom_status);
+            if(eventDialog.data.zoom_akun != null){
+                setData("zoom_akun", eventDialog.data.zoom_akun);
+            }
             setDate24(new Date(eventDialog.data.start_time))
         }
 
@@ -81,23 +90,19 @@ export default function DialogFormManage() {
         if(eventDialog.status == 'tambah'){
             post(route("zoom-tambah"), {
                 onSuccess: () => {
-                    setData("topic", "Kegiatan");
-                    setData("password", "BPS");
-                    setData("start_time", new Date().toISOString());
-                    setData("start_time_penyesuaian", 0);
-                    setData("duration", 120);
-                    setEventDialog({ status: null, data: null });
+                    close_dialog()
                 },
             });
         }else if(eventDialog.status == 'ubah'){
             post(route("zoom-ubah", {'zoom_id': eventDialog.data?.id}), {
                 onSuccess: () => {
-                    setData("topic", "Kegiatan");
-                    setData("password", "BPS");
-                    setData("start_time", new Date().toISOString());
-                    setData("start_time_penyesuaian", 0);
-                    setData("duration", 120);
-                    setEventDialog({ status: null, data: null });
+                    close_dialog()
+                },
+            });
+        }else if(eventDialog.status == 'approval'){
+            post(route("zoom-approval", {'zoom_id': eventDialog.data?.id}), {
+                onSuccess: () => {
+                    close_dialog()
                 },
             });
         }
@@ -106,17 +111,20 @@ export default function DialogFormManage() {
     };
 
     function close_dialog(){
+        setData("topic", "Kegiatan")
+        setData("password", "BPS")
+        setData("start_time",  new Date().toISOString())
+        setData("start_time_penyesuaian",  (new Date()).getTimezoneOffset())
+        setData("duration",  120)
+        setData("zoom_status",  0)
+        setData("zoom_akun",  "")
+        setData("status",  "")
         setEventDialog({ status: null, data: null })
         return true
     };
 
     function delete_data(){
         router.post(route('zoom-hapus', {'zoom_id': eventDialog.data?.id}))
-        setEventDialog({ status: null, data: null });
-    };
-
-    function approval_data(aproval_stataus: number){
-        router.post(route('zoom-approval', {'zoom_id': eventDialog.data?.id}), {'asas': aproval_stataus})
         setEventDialog({ status: null, data: null });
     };
 
@@ -203,6 +211,7 @@ export default function DialogFormManage() {
                                     onChange={setDate24}
                                     disabled={eventDialog.status == 'approval'}
                                     className="text-secondary"
+                                    modal={true}
                                 />
                                 <InputError message={errors.start_time} />
                             </div>
@@ -225,21 +234,44 @@ export default function DialogFormManage() {
                                 />
                                 <InputError message={errors.duration} />
                             </div>
-                            {eventDialog.status == 'approval' && (
+                            { haveZoomRole   && (
                                 <>
                                     <div className="grid gap-3">
-                                        <Label className="text-secondary" htmlFor="duration-1">Approval</Label>
-                                        <Select required>
+                                        <Label className="text-secondary" htmlFor="duration-1">Akun</Label>
+                                        <Select required
+                                            value={""+(data.zoom_status)}
+                                            onValueChange={(value) => {
+                                                setData("zoom_akun", value)
+                                            }}>
                                             <SelectTrigger
                                                 name="zoom_status"
-                                                className="text-secondary"
-                                                value={data.zoom_status}
-                                                onChange={(e) =>
-                                                    setData(
-                                                        "zoom_status",
-                                                        parseInt(e.target.value),
-                                                    )
-                                                }>
+                                                className="text-secondary">
+                                                <SelectValue placeholder="Pilih Akun Zoom" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectGroup>
+                                                    <SelectItem value="statsulbar">statsulbar</SelectItem>
+                                                    <SelectItem value="sp2020">sp2020</SelectItem>
+                                                </SelectGroup>
+                                            </SelectContent>
+                                        </Select>
+
+                                        <InputError message={errors.zoom_status} />
+                                    </div>
+                                </>
+                            )}
+                            { eventDialog.status == "approval"  && (
+                                <>
+                                    <div className="grid gap-3">
+                                        <Label className="text-secondary" htmlFor="approval-1">Approval</Label>
+                                        <Select required
+                                            value={""+(data.zoom_status)}
+                                            onValueChange={(value) => {
+                                                setData("zoom_status", parseInt(value))
+                                            }}>
+                                            <SelectTrigger
+                                                name="zoom_status"
+                                                className="text-secondary">
                                             </SelectTrigger>
                                             <SelectContent>
                                                 <SelectGroup>
@@ -254,6 +286,7 @@ export default function DialogFormManage() {
                                 </>
                             )}
                         </div>
+                        {errors.status && <div className="mb-4 text-center text-sm font-medium text-red-400">{errors.status}</div>}
                         <DialogFooter>
                             <DialogClose asChild>
                                 <Button  className="text-accent-foreground" variant="outline">Batal</Button>
