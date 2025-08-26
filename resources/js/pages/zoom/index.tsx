@@ -401,13 +401,13 @@ function TableZoom({
 
                                 let canEditHapus = ( (haveZoomRole || item.pembuat_username == auth.user.username) &&
                                                     new Date(item.start_time).setHours(0,0,0,0) >= hari_ini_00 )
-                                let canApprove = (haveZoomRole && item.pembuat_username != auth.user.username && new Date(item.start_time).setHours(0,0,0,0) >= hari_ini_00)
+                                let canApprove = (haveZoomRole && item.pembuat_username != auth.user.username &&
+                                                new Date(item.start_time).setHours(0,0,0,0) >= hari_ini_00)
                                 let calStartZoom =( (haveZoomRole || item.pembuat_username == auth.user.username) &&
                                                     new Date(item.start_time).setHours(0,0,0,0) == hari_ini_00 &&
                                                     item.zoom_start_url != null)
                                 let canJoinZoom = (new Date(item.start_time).setHours(0,0,0,0) >= hari_ini_00
                                                     && item.zoom_join_url != null)
-                                let openAksi = canEditHapus || canApprove || calStartZoom || canJoinZoom
 
                                 return (
                                     <TableRow
@@ -440,69 +440,71 @@ function TableZoom({
                                             {(item.pembuat_nama != null) ? (item.pembuat_nama) : "-"}
                                         </TableCellWrap>
                                         <TableCell className="text-center">
-                                            {openAksi && (
-                                                <DropdownMenu>
-                                                    <DropdownMenuTrigger asChild>
-                                                        <Button
-                                                            variant="ghost"
-                                                            className="h-8 w-8 p-0 border"
-                                                        >
-                                                            <span className="sr-only">
-                                                                Buka Aksi
-                                                            </span>
-                                                            <MoreHorizontal />
-                                                        </Button>
-                                                    </DropdownMenuTrigger>
-                                                    <DropdownMenuContent className="w-56">
-                                                        {canEditHapus && (
-                                                            <>
-                                                                <DropdownMenuItem onClick={() =>setEventDialog({status: "ubah",data: item,})}>
-                                                                    Edit
-                                                                </DropdownMenuItem>
-                                                                <DropdownMenuItem onClick={() =>setEventDialog({status: "hapus",data: item,})}>
-                                                                    Hapus
-                                                                </DropdownMenuItem>
-                                                            </>
-                                                        )}
-                                                        {canApprove && (
-                                                            <DropdownMenuItem
-                                                                onClick={() => setEventDialog({status: "approval", data: item,})}>
-                                                                Approval
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild>
+                                                    <Button
+                                                        variant="ghost"
+                                                        className="h-8 w-8 p-0 border"
+                                                    >
+                                                        <span className="sr-only">
+                                                            Buka Aksi
+                                                        </span>
+                                                        <MoreHorizontal />
+                                                    </Button>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent className="w-56">
+                                                    <DropdownMenuItem onClick={() =>setEventDialog({status: "lihat",data: item,})}>
+                                                        Lihat
+                                                    </DropdownMenuItem>
+                                                    {canEditHapus && (
+                                                        <>
+                                                            <DropdownMenuItem onClick={() =>setEventDialog({status: "ubah",data: item,})}>
+                                                                Ubah
                                                             </DropdownMenuItem>
-                                                        )}
-                                                        {calStartZoom && (
-                                                            <DropdownMenuItem>
-                                                                <a
-                                                                    className="w-full"
-                                                                    href={item.zoom_start_url}
-                                                                    target="_blank"
-                                                                >
-                                                                    Start Zoom
-                                                                </a>
+                                                            <DropdownMenuItem onClick={() =>setEventDialog({status: "hapus",data: item,})}>
+                                                                Hapus
                                                             </DropdownMenuItem>
-                                                        )}
-                                                        {canJoinZoom && (<>
-                                                            <DropdownMenuItem>
-                                                                <a className="w-full" href={item.zoom_join_url} target="_blank">
-                                                                    Join Zoom
-                                                                </a>
-                                                            </DropdownMenuItem>
-                                                            <DropdownMenuItem>
-                                                                <button
-                                                                    className="w-full"
-                                                                    onClick={() => {
-                                                                        if(item.zoom_join_url){
-                                                                            navigator.clipboard.writeText(item.zoom_join_url)}
-                                                                        }
+                                                        </>
+                                                    )}
+                                                    {canApprove && (
+                                                        <DropdownMenuItem
+                                                            onClick={() => setEventDialog({status: "approval", data: item,})}>
+                                                            Approval
+                                                        </DropdownMenuItem>
+                                                    )}
+                                                    {calStartZoom && (
+                                                        <DropdownMenuItem>
+                                                            <a
+                                                                className="w-full"
+                                                                href={item.zoom_start_url}
+                                                                target="_blank"
+                                                            >
+                                                                Start Zoom
+                                                            </a>
+                                                        </DropdownMenuItem>
+                                                    )}
+                                                    {canJoinZoom && (<>
+                                                        <DropdownMenuItem>
+                                                            <a className="w-full" href={item.zoom_join_url} target="_blank">
+                                                                Join Zoom
+                                                            </a>
+                                                        </DropdownMenuItem>
+                                                        <DropdownMenuItem>
+                                                            <button
+                                                                className="w-full"
+                                                                onClick={() => {
+                                                                    if(item.zoom_join_url){
+                                                                        navigator.clipboard.writeText(item.zoom_join_url)}
                                                                     }
-                                                                >
-                                                                    Copy URL Join
-                                                                </button>
-                                                            </DropdownMenuItem>
-                                                        </>)}
-                                                    </DropdownMenuContent>
-                                                </DropdownMenu>
-                                            )}
+                                                                }
+                                                            >
+                                                                Copy URL Join
+                                                            </button>
+                                                        </DropdownMenuItem>
+                                                    </>)}
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
+
                                         </TableCell>
                                     </TableRow>
                                 );

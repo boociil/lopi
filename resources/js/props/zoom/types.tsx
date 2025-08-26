@@ -44,6 +44,6 @@ export interface zoom_app {
 }
 
 export interface zoom_dialog_event {
-    status: null | 'tambah' | 'ubah' | 'hapus' | 'approval';
+    status: null | 'lihat'| 'tambah' | 'ubah' | 'hapus' | 'approval';
     data: zoom | null;
 }

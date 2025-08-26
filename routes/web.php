@@ -5,9 +5,9 @@ use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Umum\Beranda_Controller;
-use App\Http\Controllers\Jadwal\Jadwal_Controller;
-use App\Http\Controllers\Jadwal\Ruang_Controller;
-use App\Http\Controllers\Jadwal\Zoom_Controller;
+use App\Http\Controllers\Lopi\Jadwal_Controller;
+use App\Http\Controllers\Lopi\Ruang_Controller;
+use App\Http\Controllers\Lopi\Zoom_Controller;
 use App\Model\Umum\Peran;
 use Inertia\Inertia;
 
@@ -61,6 +61,16 @@ Route::group(
 
 Route::group(
 [
+    'prefix' => 'peran',
+    'middleware' => ['auth', 'check_maintenance', 'statistik'],
+], function () {
+    Route::get('/', [Lopi_Controller::class, 'index'])->name('peran-index');
+    Route::post('/tambah', [Lopi_Controller::class, 'tambah'])->name('peran-tambah');
+    Route::post('/{peran_id}/hapus', [Lopi_Controller::class, 'hapus'])->name('peran-hapus');
+});
+
+Route::group(
+[
     'prefix' => 'jadwal',
     'middleware' => ['auth', 'check_maintenance', 'statistik'],
 ], function () {
@@ -70,34 +80,43 @@ Route::group(
     Route::get('/{jadwal_id}/hapus', [Jadwal_Controller::class, 'index'])->name('jadwal-hapus');
 });
 
- Route::group(
-[
-    'prefix' => 'ruang',
-], function () {
-    Route::get('/', [Ruang_Controller::class, 'index'])->name('ruang-index');
-    Route::get('/{ruang_id}/approval', [Ruang_Controller::class, 'approval'])->name('ruang-approval');
-});
+
 
 Route::group(
 [
-    'prefix' => 'zoom',
+    'prefix' => 'pinjam',
     'middleware' => ['auth', 'check_maintenance', 'statistik'],
 ], function () {
-    Route::get('/', [Zoom_Controller::class, 'index'])->name('zoom-index');
-    Route::get('/tambah', [Zoom_Controller::class, 'tambah'])->name('zoom-tambah');
-    Route::get('/{zoom_id}/ubah', [Zoom_Controller::class, 'ubah'])->name('zoom-ubah');
-    Route::get('/{zoom_id}/hapus', [Zoom_Controller::class, 'hapus'])->name('zoom-hapus');
-    Route::get('/{zoom_id}/approval', [Zoom_Controller::class, 'approval'])->name('zoom-approval');
+    Route::group(
+    [
+        'prefix' => 'zoom',
+    ], function () {
+        Route::get('/', [Zoom_Controller::class, 'index'])->name('zoom-index');
+        Route::get('/tambah', [Zoom_Controller::class, 'tambah'])->name('zoom-tambah');
+        Route::get('/{zoom_id}/ubah', [Zoom_Controller::class, 'ubah'])->name('zoom-ubah');
+        Route::get('/{zoom_id}/hapus', [Zoom_Controller::class, 'hapus'])->name('zoom-hapus');
+        Route::get('/{zoom_id}/approval', [Zoom_Controller::class, 'approval'])->name('zoom-approval');
+    });
+
+    Route::group(
+    [
+        'prefix' => 'ruang',
+    ], function () {
+        Route::get('/', [Ruang_Controller::class, 'index'])->name('ruang-index');
+        Route::get('/{ruang_id}/approval', [Ruang_Controller::class, 'approval'])->name('ruang-approval');
+    });
+
+    Route::group(
+    [
+        'prefix' => 'peran',
+        'middleware' => ['auth', 'check_maintenance', 'statistik'],
+    ], function () {
+        Route::get('/', [Lopi_Controller::class, 'index'])->name('peran-index');
+        Route::post('/tambah', [Lopi_Controller::class, 'tambah'])->name('peran-tambah');
+        Route::post('/{peran_id}/hapus', [Lopi_Controller::class, 'hapus'])->name('peran-hapus');
+    });
 });
 
-Route::group(
-[
-    'prefix' => 'peran',
-    'middleware' => ['auth', 'check_maintenance', 'statistik'],
-], function () {
-    Route::get('/', [Lopi_Controller::class, 'index'])->name('peran-index');
-    Route::post('/tambah', [Lopi_Controller::class, 'tambah'])->name('peran-tambah');
-    Route::post('/{peran_id}/hapus', [Lopi_Controller::class, 'hapus'])->name('peran-hapus');
-});
+
 
 

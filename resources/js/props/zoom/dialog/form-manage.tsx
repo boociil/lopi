@@ -151,12 +151,15 @@ export default function DialogFormManage() {
                 </AlertDialogContent>
             </AlertDialog>
         )
-    }else if(eventDialog.status == 'tambah' || eventDialog.status == 'ubah'  || eventDialog.status == 'approval'){
+    }else if(eventDialog.status == 'lihat' || eventDialog.status == 'tambah' || eventDialog.status == 'ubah'  || eventDialog.status == 'approval'){
          return (
             <Dialog open={true} onOpenChange={close_dialog}>
                 <DialogContent className="sm:max-w-[425px]">
                     <form className="flex flex-col gap-6" onSubmit={submit}>
                         <DialogHeader className="text-accent-foreground">
+                            {eventDialog.status == 'lihat' &&
+                                <DialogTitle>Lihat Jadwal Zoom</DialogTitle>
+                            }
                             {eventDialog.status == 'tambah' &&
                                 <DialogTitle>Tambah Jadwal Zoom</DialogTitle>
                             }
@@ -178,7 +181,7 @@ export default function DialogFormManage() {
                                     id="topic-1"
                                     name="topic"
                                     required
-                                    disabled={eventDialog.status == 'approval'}
+                                    disabled={eventDialog.status == 'lihat'}
                                     value={data.topic}
                                     onChange={(e) =>
                                         setData("topic", e.target.value)
@@ -193,7 +196,7 @@ export default function DialogFormManage() {
                                     id="password-1"
                                     name="password"
                                     required
-                                    disabled={eventDialog.status == 'approval'}
+                                    disabled={eventDialog.status == 'lihat'}
                                     value={data.password}
                                     onChange={(e) =>
                                         setData("password", e.target.value)
@@ -209,7 +212,7 @@ export default function DialogFormManage() {
                                     granularity="minute"
                                     value={date24}
                                     onChange={setDate24}
-                                    disabled={eventDialog.status == 'approval'}
+                                    disabled={eventDialog.status == 'lihat'}
                                     className="text-secondary"
                                     modal={true}
                                 />
@@ -222,7 +225,7 @@ export default function DialogFormManage() {
                                     id="duration-1"
                                     name="duration"
                                     required
-                                    disabled={eventDialog.status == 'approval'}
+                                    disabled={eventDialog.status == 'lihat'}
                                     value={data.duration}
                                     onChange={(e) =>
                                         setData(
@@ -235,32 +238,6 @@ export default function DialogFormManage() {
                                 <InputError message={errors.duration} />
                             </div>
                             { haveZoomRole   && (
-                                <>
-                                    <div className="grid gap-3">
-                                        <Label className="text-secondary" htmlFor="duration-1">Akun</Label>
-                                        <Select required
-                                            value={""+(data.zoom_status)}
-                                            onValueChange={(value) => {
-                                                setData("zoom_akun", value)
-                                            }}>
-                                            <SelectTrigger
-                                                name="zoom_status"
-                                                className="text-secondary">
-                                                <SelectValue placeholder="Pilih Akun Zoom" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectGroup>
-                                                    <SelectItem value="statsulbar">statsulbar</SelectItem>
-                                                    <SelectItem value="sp2020">sp2020</SelectItem>
-                                                </SelectGroup>
-                                            </SelectContent>
-                                        </Select>
-
-                                        <InputError message={errors.zoom_status} />
-                                    </div>
-                                </>
-                            )}
-                            { eventDialog.status == "approval"  && (
                                 <>
                                     <div className="grid gap-3">
                                         <Label className="text-secondary" htmlFor="approval-1">Approval</Label>
@@ -283,6 +260,32 @@ export default function DialogFormManage() {
 
                                         <InputError message={errors.zoom_status} />
                                     </div>
+                                    { data.zoom_status == 2   && (
+                                         <div className="grid gap-3">
+                                            <Label className="text-secondary" htmlFor="duration-1">Akun</Label>
+                                            <Select
+                                                required
+                                                disabled={eventDialog.status == 'lihat'}
+                                                value={""+(data.zoom_status)}
+                                                onValueChange={(value) => {
+                                                    setData("zoom_akun", value)
+                                                }}>
+                                                <SelectTrigger
+                                                    name="zoom_status"
+                                                    className="text-secondary">
+                                                    <SelectValue placeholder="Pilih Akun Zoom" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectGroup>
+                                                        <SelectItem value="statsulbar">statsulbar</SelectItem>
+                                                        <SelectItem value="sp2020">sp2020</SelectItem>
+                                                    </SelectGroup>
+                                                </SelectContent>
+                                            </Select>
+
+                                            <InputError message={errors.zoom_status} />
+                                        </div>
+                                    )}
                                 </>
                             )}
                         </div>

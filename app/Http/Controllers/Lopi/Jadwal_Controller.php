@@ -1,16 +1,17 @@
 <?php
 
-namespace App\Http\Controllers\Jadwal;
+namespace App\Http\Controllers\Lopi;
 
 use App\Http\Controllers\Controller;
-use App\Model\Jadwal\Jadwal;
+use App\Model\Lopi\Jadwal;
 use App\Model\Umum\Peran;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
-class Ruang_Controller extends Controller
+use App\Traits\Menu;
+
+class Jadwal_Controller extends Controller
 {
     public function __construct(Request $request)
     {
@@ -26,34 +27,33 @@ class Ruang_Controller extends Controller
 
         $jadwal_bulan = Jadwal::where(function ($query) use ($bulan_ini, $month_start,  $month_end){
             $query->orWhere(function ($query1) use ($bulan_ini){
-                $query1->whereNull('end_time');
+                $query1->whereNull('end_date');
                 $query1->whereMonth("start_date", $bulan_ini);
             });
             $query->orWhere(function ($query1) use ( $month_start,  $month_end){
-                $query1->whereNotNull('end_time');
+                $query1->whereNotNull('end_date');
                 $query1->where(function ($query2) use ($month_start,  $month_end){
                     $query2->orWhereBetween("start_date", [$month_start->format('Y-m-d'), $month_end->format('Y-m-d')]);
                     $query2->orWhereBetween('end_date', [$month_start->format('Y-m-d'), $month_end->format('Y-m-d')]);
                 });
             });
         })->get();
-        return Inertia::render('ruang', [
+        return Inertia::render('jadwal/index', [
             "jadwal" => $jadwal_bulan,
         ]);
     }
 
-    public function approve(Request $request)
+    public function tambah(Request $request)
     {
-        $jadwal = Jadwal::where('id', $request->id)->first();
-        if(!$jadwal){
-            return abort(404);
-        }
-
-        $jadwal->ruang_status = 2;
-        $jadwal->ruang_username_confirm = Auth::user()->username;
+        //set validation
+        $request->validate([
+            'title'   => 'required',
+            'content' => 'required',
+        ]);
 
         //redirect
         return 1;
     }
+
 
 }

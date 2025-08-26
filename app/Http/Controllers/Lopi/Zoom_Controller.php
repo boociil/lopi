@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Http\Controllers\Jadwal;
+namespace App\Http\Controllers\Lopi;
 
 use App\Http\Controllers\Controller;
-use App\Model\Jadwal\Zoom;
+use App\Model\Lopi\Zoom;
 use App\Model\Umum\Peran;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -107,35 +107,39 @@ class Zoom_Controller extends Controller
         $zoom->pembuat_username = Auth::user()->username;
         $zoom->is_recurrence = 0;
         $zoom->recurrence_opt = null;
-        $zoom->zoom_status = '0';
 
         throw ValidationException::withMessages([
             'status' => 'Zoom tidak dapat dibuat',
         ]);
 
-        if($have_zoom_peran && in_array($request->input('zoom_akun'), ['statsulbar', 'sp2020'])){
-            $zoom_mmet = $this->zoom_createMeeting($request->input('zoom_akun'), [
-                "agenda" => $request->input('topic'),
-                "topic" => $request->input('topic'),
-                "default_password" => false,
-                "password" => $request->input('password'),
-                "start_time" => $request->input('start_time'),
-                "timezone" => "Asia/Singapore",
-                "duration" => $request->input('duration'),
-                "type" => 2
-            ]);
-
-            if($zoom_mmet['status']){
-                $zoom->zoom_status = 2;
-                $zoom->zoom_akun = $request->input('zoom_akun');
-                $zoom->zoom_meeting_id = $zoom_mmet['data']['id'];
-                $zoom->zoom_start_url = $zoom_mmet['data']['start_url'];
-                $zoom->zoom_join_url =$zoom_mmet['data']['join_url'];
-            }else{
-                throw ValidationException::withMessages([
-                    'status' => 'Zoom tidak dapat dibuat',
+        if($have_zoom_peran ){
+            $zoom->zoom_status = $request->input('zoom_status');
+            if($request->input('zoom_status') == 2 && in_array($request->input('zoom_akun'), ['statsulbar', 'sp2020'])){
+                $zoom_mmet = $this->zoom_createMeeting($request->input('zoom_akun'), [
+                    "agenda" => $request->input('topic'),
+                    "topic" => $request->input('topic'),
+                    "default_password" => false,
+                    "password" => $request->input('password'),
+                    "start_time" => $request->input('start_time'),
+                    "timezone" => "Asia/Singapore",
+                    "duration" => $request->input('duration'),
+                    "type" => 2
                 ]);
+
+                if($zoom_mmet['status']){
+                    $zoom->zoom_status = 2;
+                    $zoom->zoom_akun = $request->input('zoom_akun');
+                    $zoom->zoom_meeting_id = $zoom_mmet['data']['id'];
+                    $zoom->zoom_start_url = $zoom_mmet['data']['start_url'];
+                    $zoom->zoom_join_url =$zoom_mmet['data']['join_url'];
+                }else{
+                    throw ValidationException::withMessages([
+                        'status' => 'Zoom tidak dapat dibuat',
+                    ]);
+                }
             }
+        }else{
+            $zoom->zoom_status = 0;
         }
 
         $zoom->save();
@@ -197,7 +201,18 @@ class Zoom_Controller extends Controller
         $zoom->is_recurrence = 0;
         $zoom->recurrence_opt = null;
 
-        if(!$zoom->zoom_meeting_id){
+        if( $request->input('zoom_status') == 0 || $request->input('zoom_status') == 1 ){
+            if($zoom->zoom_meeting_id == null){
+                $zoom->zoom_status = $request->input('zoom_status');
+            }else{
+                $zoom_app = $this->zoom_deleteMeeting($zoom->zoom_akun, "".$zoom->zoom_meeting_id);
+                throw ValidationException::withMessages([
+                    'status' => 'Zoom gagal diubah',
+                ]);
+            }
+        }
+
+        if( $request->input('zoom_status') == 2 && $zoom->zoom_meeting_id){
             if(! ($start_time_awal ==$zoom->start_time
                 && $duration_awal == $zoom->duration
                 && $zoom_akun_awal == $request->input('zoom_akun')) )

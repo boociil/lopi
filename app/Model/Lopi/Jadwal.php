@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Model\Jadwal;
+namespace App\Model\Lopi;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;

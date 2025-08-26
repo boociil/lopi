@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Model\Jadwal;
+namespace App\Model\Lopi;
 
 use App\Model\Umum\User;
 use Illuminate\Database\Eloquent\Model;
