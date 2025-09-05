@@ -11,12 +11,45 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('siakip2_ruang', function (Blueprint $table) {
+
+        Schema::create('siakip2_pinjam_mobil', function (Blueprint $table) {
+            $table->string('id', 36)->primary();
+
+            $table->string('kegiatan');
+
+            $table->string('tipe', 20);//sekali, berulang
+            $table->string('berulang_id', 36)->nullable();//durasi, berulang
+            $table->date('tanggal_awal');
+            $table->date('tanggal_akhir');
+            $table->time('waktu_awal');
+            $table->time('waktu_akhir');
+
+            $table->string('pembuat_username', 100);
+            $table->string('confirm_username', 100)->nullable();
+
+            $table->timestamps();
+            $table->softDeletes();
+            $table->engine = 'InnoDB';
+
+            $table->foreign('pembuat_username', 'mobil_fk_pembuat_username')->references('username')->on('siakip2_users');
+            $table->foreign('confirm_username', 'mobil_fk_confirm_username')->references('username')->on('siakip2_users');
+        });
+
+
+        Schema::create('siakip2_pinjam_ruang', function (Blueprint $table) {
             $table->string('id', 36)->primary();
 
             $table->string('topic');
             $table->string('status', 1)->default(0); // status penilaian => 0: belum, 1:tolak, 2:selesai
             $table->string('ruang', 100);
+
+            $table->string('tipe', 20);//sekali, berulang
+            $table->string('berulang_id', 36)->nullable();//durasi, berulang
+            $table->date('tanggal_awal');
+            $table->date('tanggal_akhir');
+            $table->time('waktu_awal');
+            $table->time('waktu_akhir');
+
             $table->string('pembuat_username', 100);
             $table->string('confirm_username', 100)->nullable();
 
@@ -28,14 +61,18 @@ return new class extends Migration
             $table->foreign('confirm_username', 'ruang_fk_confirm_username')->references('username')->on('siakip2_users');
         });
 
-         Schema::create('siakip2_zoom', function (Blueprint $table) {
+         Schema::create('siakip2_pinjam_zoom', function (Blueprint $table) {
             //peserta ruang mana tanggal, tautan daftar hadrir, notulensi, tautan dokumentasi, tautan undangan
             $table->string('id', 36)->primary();
             $table->string('topic', 2000);
             $table->string('password', 10);
-            $table->dateTime('start_time');
-            $table->unsignedInteger('duration');
-            $table->dateTime('end_time');
+
+            $table->string('tipe', 20);//sekali, berulang
+            $table->string('berulang_id', 36)->nullable();//durasi, berulang
+            $table->date('tanggal_awal');
+            $table->date('tanggal_akhir');
+            $table->time('waktu_awal');
+            $table->time('waktu_akhir');
 
             $table->string('pembuat_username', 100);
             $table->string('confirm_username', 100)->nullable();
@@ -66,10 +103,15 @@ return new class extends Migration
             $table->string('pemilik_type')->nullable();
             $table->string('pemilik_id',100)->nullable();
 
-            $table->dateTime('tanggal_awal');
-            $table->dateTime('tanggal_akhir');
             $table->string('topic');
             $table->text('description')->nullable();
+
+            $table->string('tipe', 20);//sekali, berulang
+            $table->string('berulang_id', 36)->nullable();//durasi, berulang
+            $table->date('tanggal_awal');
+            $table->date('tanggal_akhir');
+            $table->time('waktu_awal');
+            $table->time('waktu_akhir');
 
             $table->string('url_daftar_hadir', 2048)->nullable();
             $table->string('url_notulensi', 2048)->nullable();
@@ -84,8 +126,8 @@ return new class extends Migration
             $table->engine = 'InnoDB';
 
             $table->foreign('pembuat_username', 'jadwal_fk_pembuat_username')->references('username')->on('siakip2_users');
-            $table->foreign('zoom_id', 'jadwal_fk_zoom_id')->references('id')->on('siakip2_zoom');
-            $table->foreign('ruang_id', 'jadwal_fk_ruang_id')->references('id')->on('siakip2_ruang');
+            $table->foreign('zoom_id', 'jadwal_fk_zoom_id')->references('id')->on('siakip2_pinjam_zoom');
+            $table->foreign('ruang_id', 'jadwal_fk_ruang_id')->references('id')->on('siakip2_pinjam_ruang');
         });
 
 
