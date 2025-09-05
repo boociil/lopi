@@ -3,12 +3,12 @@ import { cva } from "class-variance-authority";
 import { differenceInMinutes, parseISO } from "date-fns";
 import type { HTMLAttributes } from "react";
 import { cn } from "@/lib/utils";
-import { useCalendar } from "@/calender_modules/contexts/calendar-context";
-import { EventDetailsDialog } from "@/calender_modules/dialogs/event-details-dialog";
-import { DraggableEvent } from "@/calender_modules/dnd/draggable-event";
-import { ResizableEvent } from "@/calender_modules/dnd/resizable-event";
-import { formatTime } from "@/calender_modules/helpers";
-import type { IEvent } from "@/calender_modules/interfaces";
+import { useCalendar } from "@/components/calender_modules/contexts/calendar-context";
+import { EventDetailsDialog } from "@/components/calender_modules/dialogs/event-details-dialog";
+import { DraggableEvent } from "@/components/calender_modules/dnd/draggable-event";
+import { ResizableEvent } from "@/components/calender_modules/dnd/resizable-event";
+import { formatTime } from "@/components/calender_modules/helpers";
+import type { IEvent } from "@/components/calender_modules/interfaces";
 
 const calendarWeekEventCardVariants = cva(
 	"flex select-none flex-col gap-0.5 truncate whitespace-nowrap rounded-md border px-2 py-1.5 text-xs focus-visible:outline-offset-2",

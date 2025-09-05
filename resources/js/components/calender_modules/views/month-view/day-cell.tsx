@@ -9,17 +9,17 @@ import { cn } from "@/lib/utils";
 import {
   staggerContainer,
   transition,
-} from "@/calender_modules/animations";
-import { EventListDialog } from "@/calender_modules/dialogs/events-list-dialog";
-import { DroppableArea } from "@/calender_modules/dnd/droppable-area";
-import { getMonthCellEvents } from "@/calender_modules/helpers";
-import { useMediaQuery } from "@/calender_modules/hooks";
+} from "@/components/calender_modules/animations";
+import { EventListDialog } from "@/components/calender_modules/dialogs/events-list-dialog";
+import { DroppableArea } from "@/components/calender_modules/dnd/droppable-area";
+import { getMonthCellEvents } from "@/components/calender_modules/helpers";
+import { useMediaQuery } from "@/components/calender_modules/hooks";
 import type {
   ICalendarCell,
   IEvent,
-} from "@/calender_modules/interfaces";
-import { EventBullet } from "@/calender_modules/views/month-view/event-bullet";
-import { MonthEventBadge } from "@/calender_modules/views/month-view/month-event-badge";
+} from "@/components/calender_modules/interfaces";
+import { EventBullet } from "@/components/calender_modules/views/month-view/event-bullet";
+import { MonthEventBadge } from "@/components/calender_modules/views/month-view/month-event-badge";
 import { AddEditEventDialog } from "../../dialogs/add-edit-event-dialog";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";

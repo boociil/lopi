@@ -3,13 +3,13 @@
 import { isSameDay, parseISO } from "date-fns";
 import { motion } from "framer-motion";
 import React from "react";
-import { fadeIn, transition } from "@/calender_modules/animations";
-import { useCalendar } from "@/calender_modules/contexts/calendar-context";
-import { AgendaEvents } from "@/calender_modules/views/agenda-view/agenda-events";
-import { CalendarMonthView } from "@/calender_modules/views/month-view/calendar-month-view";
-import { CalendarDayView } from "@/calender_modules/views/week-and-day-view/calendar-day-view";
-import { CalendarWeekView } from "@/calender_modules/views/week-and-day-view/calendar-week-view";
-import { CalendarYearView } from "@/calender_modules/views/year-view/calendar-year-view";
+import { fadeIn, transition } from "@/components/calender_modules/animations";
+import { useCalendar } from "@/components/calender_modules/contexts/calendar-context";
+import { AgendaEvents } from "@/components/calender_modules/views/agenda-view/agenda-events";
+import { CalendarMonthView } from "@/components/calender_modules/views/month-view/calendar-month-view";
+import { CalendarDayView } from "@/components/calender_modules/views/week-and-day-view/calendar-day-view";
+import { CalendarWeekView } from "@/components/calender_modules/views/week-and-day-view/calendar-week-view";
+import { CalendarYearView } from "@/components/calender_modules/views/year-view/calendar-year-view";
 
 export function CalendarBody() {
 	const { view, events } = useCalendar();

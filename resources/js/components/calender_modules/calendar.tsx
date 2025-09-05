@@ -1,9 +1,9 @@
 import React from "react";
-import { CalendarBody } from "@/calender_modules/calendar-body";
-import { CalendarProvider } from "@/calender_modules/contexts/calendar-context";
-import { DndProvider } from "@/calender_modules/contexts/dnd-context";
-import { CalendarHeader } from "@/calender_modules/header/calendar-header";
-import { getEvents, getUsers } from "@/calender_modules/requests";
+import { CalendarBody } from "@/components/calender_modules/calendar-body";
+import { CalendarProvider } from "@/components/calender_modules/contexts/calendar-context";
+import { DndProvider } from "@/components/calender_modules/contexts/dnd-context";
+import { CalendarHeader } from "@/components/calender_modules/header/calendar-header";
+import { getEvents, getUsers } from "@/components/calender_modules/requests";
 
 async function getCalendarData() {
 	return {

@@ -7,7 +7,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { useCalendar } from "@/calender_modules/contexts/calendar-context";
+import { useCalendar } from "@/components/calender_modules/contexts/calendar-context";
 
 export function UserSelect() {
 	const { users, selectedUserId, filterEventsBySelectedUser } = useCalendar();

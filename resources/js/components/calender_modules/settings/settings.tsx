@@ -22,9 +22,9 @@ import {
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Switch } from "@/components/ui/switch";
-import { useCalendar } from "@/calender_modules/contexts/calendar-context";
-import type { TCalendarView } from "@/calender_modules/types";
-import { useDragDrop } from "@/calender_modules/contexts/dnd-context";
+import { useCalendar } from "@/components/calender_modules/contexts/calendar-context";
+import type { TCalendarView } from "@/components/calender_modules/types";
+import { useDragDrop } from "@/components/calender_modules/contexts/dnd-context";
 
 export function Settings() {
 	const {

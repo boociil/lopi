@@ -4,8 +4,8 @@ import { Button } from "@/components/ui/button";
 import {
 	buttonHover,
 	transition,
-} from "@/calender_modules/animations";
-import { useCalendar } from "@/calender_modules/contexts/calendar-context";
+} from "@/components/calender_modules/animations";
+import { useCalendar } from "@/components/calender_modules/contexts/calendar-context";
 
 const MotionButton = motion.create(Button);
 

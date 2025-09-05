@@ -1,4 +1,4 @@
-import { useDragDrop } from "@/calender_modules/contexts/dnd-context";
+import { useDragDrop } from "@/components/calender_modules/contexts/dnd-context";
 import { EventDropConfirmationDialog } from "./event-drop-confirmation-dialog";
 import { memo } from "react";
 

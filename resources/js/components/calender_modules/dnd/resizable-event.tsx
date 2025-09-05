@@ -13,9 +13,9 @@ import { Resizable, type ResizeCallback } from "re-resizable";
 import type React from "react";
 import { useCallback, useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
-import { useCalendar } from "@/calender_modules/contexts/calendar-context";
+import { useCalendar } from "@/components/calender_modules/contexts/calendar-context";
 
-import type { IEvent } from "@/calender_modules/interfaces";
+import type { IEvent } from "@/components/calender_modules/interfaces";
 
 interface ResizableEventBlockProps {
 	event: IEvent;

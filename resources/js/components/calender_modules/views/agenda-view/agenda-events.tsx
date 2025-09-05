@@ -10,16 +10,16 @@ import {
     CommandList,
 } from "@/components/ui/command";
 import {cn} from "@/lib/utils";
-import {useCalendar} from "@/calender_modules/contexts/calendar-context";
-import {EventDetailsDialog} from "@/calender_modules/dialogs/event-details-dialog";
+import {useCalendar} from "@/components/calender_modules/contexts/calendar-context";
+import {EventDetailsDialog} from "@/components/calender_modules/dialogs/event-details-dialog";
 import {
     formatTime,
     getBgColor,
     getColorClass, getEventsForMonth,
     getFirstLetters,
     toCapitalize,
-} from "@/calender_modules/helpers";
-import {EventBullet} from "@/calender_modules/views/month-view/event-bullet";
+} from "@/components/calender_modules/helpers";
+import {EventBullet} from "@/components/calender_modules/views/month-view/event-bullet";
 
 export const AgendaEvents: FC = () => {
     const {events, use24HourFormat, badgeVariant, agendaModeGroupBy, selectedDate} =

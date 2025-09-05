@@ -1,4 +1,4 @@
-import type { TEventColor } from "@/calender_modules/types";
+import type { TEventColor } from "@/components/calender_modules/types";
 
 export interface IUser {
 	id: string;

@@ -25,15 +25,15 @@ import {
 	subWeeks,
 	subYears,
 } from "date-fns";
-import { useCalendar } from "@/calender_modules/contexts/calendar-context";
+import { useCalendar } from "@/components/calender_modules/contexts/calendar-context";
 import type {
 	ICalendarCell,
 	IEvent,
-} from "@/calender_modules/interfaces";
+} from "@/components/calender_modules/interfaces";
 import type {
 	TCalendarView,
 	TEventColor,
-} from "@/calender_modules/types";
+} from "@/components/calender_modules/types";
 
 const FORMAT_STRING = "MMM d, yyyy";
 

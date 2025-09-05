@@ -12,7 +12,7 @@ import {
 	AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import { useCalendar } from "@/calender_modules/contexts/calendar-context";
+import { useCalendar } from "@/components/calender_modules/contexts/calendar-context";
 
 interface DeleteEventDialogProps {
 	eventId: number;

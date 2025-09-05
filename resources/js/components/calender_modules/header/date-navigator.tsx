@@ -7,17 +7,17 @@ import { Button } from "@/components/ui/button";
 import {
 	buttonHover,
 	transition,
-} from "@/calender_modules/animations";
-import { useCalendar } from "@/calender_modules/contexts/calendar-context";
+} from "@/components/calender_modules/animations";
+import { useCalendar } from "@/components/calender_modules/contexts/calendar-context";
 
 import {
 	getEventsCount,
 	navigateDate,
 	rangeText,
-} from "@/calender_modules/helpers";
+} from "@/components/calender_modules/helpers";
 
-import type { IEvent } from "@/calender_modules/interfaces";
-import type { TCalendarView } from "@/calender_modules/types";
+import type { IEvent } from "@/components/calender_modules/interfaces";
+import type { TCalendarView } from "@/components/calender_modules/types";
 
 interface IProps {
 	view: TCalendarView;

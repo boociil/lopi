@@ -14,10 +14,10 @@ import {
 	DialogTrigger,
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useCalendar } from "@/calender_modules/contexts/calendar-context";
-import { AddEditEventDialog } from "@/calender_modules/dialogs/add-edit-event-dialog";
-import { formatTime } from "@/calender_modules/helpers";
-import type { IEvent } from "@/calender_modules/interfaces";
+import { useCalendar } from "@/components/calender_modules/contexts/calendar-context";
+import { AddEditEventDialog } from "@/components/calender_modules/dialogs/add-edit-event-dialog";
+import { formatTime } from "@/components/calender_modules/helpers";
+import type { IEvent } from "@/components/calender_modules/interfaces";
 
 interface IProps {
 	event: IEvent;

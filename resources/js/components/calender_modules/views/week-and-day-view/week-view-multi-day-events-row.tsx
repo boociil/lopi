@@ -9,8 +9,8 @@ import {
 	startOfWeek,
 } from "date-fns";
 import { useMemo } from "react";
-import type { IEvent } from "@/calender_modules/interfaces";
-import { MonthEventBadge } from "@/calender_modules/views/month-view/month-event-badge";
+import type { IEvent } from "@/components/calender_modules/interfaces";
+import { MonthEventBadge } from "@/components/calender_modules/views/month-view/month-event-badge";
 
 interface IProps {
 	selectedDate: Date;

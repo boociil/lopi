@@ -32,14 +32,14 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { COLORS } from "@/calender_modules/constants";
-import { useCalendar } from "@/calender_modules/contexts/calendar-context";
-import { useDisclosure } from "@/calender_modules/hooks";
-import type { IEvent } from "@/calender_modules/interfaces";
+import { COLORS } from "@/components/calender_modules/constants";
+import { useCalendar } from "@/components/calender_modules/contexts/calendar-context";
+import { useDisclosure } from "@/components/calender_modules/hooks";
+import type { IEvent } from "@/components/calender_modules/interfaces";
 import {
 	eventSchema,
 	type TEventFormData,
-} from "@/calender_modules/schemas";
+} from "@/components/calender_modules/schemas";
 
 interface IProps {
 	children: ReactNode;

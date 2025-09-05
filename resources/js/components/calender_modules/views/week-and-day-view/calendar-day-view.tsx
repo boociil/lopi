@@ -3,15 +3,15 @@ import { Calendar, Clock, User } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { DayPicker } from "@/components/ui/day-picker";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useCalendar } from "@/calender_modules/contexts/calendar-context";
+import { useCalendar } from "@/components/calender_modules/contexts/calendar-context";
 
-import { AddEditEventDialog } from "@/calender_modules/dialogs/add-edit-event-dialog";
-import { DroppableArea } from "@/calender_modules/dnd/droppable-area";
-import { groupEvents } from "@/calender_modules/helpers";
-import type { IEvent } from "@/calender_modules/interfaces";
-import { CalendarTimeline } from "@/calender_modules/views/week-and-day-view/calendar-time-line";
-import { DayViewMultiDayEventsRow } from "@/calender_modules/views/week-and-day-view/day-view-multi-day-events-row";
-import { RenderGroupedEvents } from "@/calender_modules/views/week-and-day-view/render-grouped-events";
+import { AddEditEventDialog } from "@/components/calender_modules/dialogs/add-edit-event-dialog";
+import { DroppableArea } from "@/components/calender_modules/dnd/droppable-area";
+import { groupEvents } from "@/components/calender_modules/helpers";
+import type { IEvent } from "@/components/calender_modules/interfaces";
+import { CalendarTimeline } from "@/components/calender_modules/views/week-and-day-view/calendar-time-line";
+import { DayViewMultiDayEventsRow } from "@/components/calender_modules/views/week-and-day-view/day-view-multi-day-events-row";
+import { RenderGroupedEvents } from "@/components/calender_modules/views/week-and-day-view/render-grouped-events";
 
 interface IProps {
 	singleDayEvents: IEvent[];

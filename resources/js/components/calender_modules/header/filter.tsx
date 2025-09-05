@@ -7,8 +7,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Separator } from "@/components/ui/separator";
 import { Toggle } from "@/components/ui/toggle";
-import { useCalendar } from "@/calender_modules/contexts/calendar-context";
-import type { TEventColor } from "@/calender_modules/types";
+import { useCalendar } from "@/components/calender_modules/contexts/calendar-context";
+import type { TEventColor } from "@/components/calender_modules/types";
 
 export default function FilterEvents() {
 	const { selectedColors, filterEventsBySelectedColors, clearFilter } =

@@ -4,12 +4,12 @@ import { cn } from "@/lib/utils";
 import {
 	staggerContainer,
 	transition,
-} from "@/calender_modules/animations";
-import { useCalendar } from "@/calender_modules/contexts/calendar-context";
-import { EventListDialog } from "@/calender_modules/dialogs/events-list-dialog";
-import { getCalendarCells } from "@/calender_modules/helpers";
-import type { IEvent } from "@/calender_modules/interfaces";
-import { EventBullet } from "@/calender_modules/views/month-view/event-bullet";
+} from "@/components/calender_modules/animations";
+import { useCalendar } from "@/components/calender_modules/contexts/calendar-context";
+import { EventListDialog } from "@/components/calender_modules/dialogs/events-list-dialog";
+import { getCalendarCells } from "@/components/calender_modules/helpers";
+import type { IEvent } from "@/components/calender_modules/interfaces";
+import { EventBullet } from "@/components/calender_modules/views/month-view/event-bullet";
 
 interface IProps {
 	singleDayEvents: IEvent[];

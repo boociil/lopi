@@ -3,16 +3,16 @@ import { useMemo } from "react";
 import {
 	staggerContainer,
 	transition,
-} from "@/calender_modules/animations";
-import { useCalendar } from "@/calender_modules/contexts/calendar-context";
+} from "@/components/calender_modules/animations";
+import { useCalendar } from "@/components/calender_modules/contexts/calendar-context";
 
 import {
 	calculateMonthEventPositions,
 	getCalendarCells,
-} from "@/calender_modules/helpers";
+} from "@/components/calender_modules/helpers";
 
-import type { IEvent } from "@/calender_modules/interfaces";
-import { DayCell } from "@/calender_modules/views/month-view/day-cell";
+import type { IEvent } from "@/components/calender_modules/interfaces";
+import { DayCell } from "@/components/calender_modules/views/month-view/day-cell";
 
 interface IProps {
 	singleDayEvents: IEvent[];

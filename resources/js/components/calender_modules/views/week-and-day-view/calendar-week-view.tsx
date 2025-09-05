@@ -5,17 +5,17 @@ import {
     fadeIn,
     staggerContainer,
     transition,
-} from "@/calender_modules/animations";
-import {useCalendar} from "@/calender_modules/contexts/calendar-context";
-import {AddEditEventDialog} from "@/calender_modules/dialogs/add-edit-event-dialog";
-import {DroppableArea} from "@/calender_modules/dnd/droppable-area";
-import {groupEvents} from "@/calender_modules/helpers";
-import type {IEvent} from "@/calender_modules/interfaces";
-import {CalendarTimeline} from "@/calender_modules/views/week-and-day-view/calendar-time-line";
-import {RenderGroupedEvents} from "@/calender_modules/views/week-and-day-view/render-grouped-events";
+} from "@/components/calender_modules/animations";
+import {useCalendar} from "@/components/calender_modules/contexts/calendar-context";
+import {AddEditEventDialog} from "@/components/calender_modules/dialogs/add-edit-event-dialog";
+import {DroppableArea} from "@/components/calender_modules/dnd/droppable-area";
+import {groupEvents} from "@/components/calender_modules/helpers";
+import type {IEvent} from "@/components/calender_modules/interfaces";
+import {CalendarTimeline} from "@/components/calender_modules/views/week-and-day-view/calendar-time-line";
+import {RenderGroupedEvents} from "@/components/calender_modules/views/week-and-day-view/render-grouped-events";
 import {
     WeekViewMultiDayEventsRow
-} from "@/calender_modules/views/week-and-day-view/week-view-multi-day-events-row";
+} from "@/components/calender_modules/views/week-and-day-view/week-view-multi-day-events-row";
 import {AlertCircleIcon} from 'lucide-react'
 
 interface IProps {
