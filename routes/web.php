@@ -6,9 +6,9 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Umum\Beranda_Controller;
 use App\Http\Controllers\Lopi\Jadwal_Controller;
-use App\Http\Controllers\Lopi\Ruang_Controller;
-use App\Http\Controllers\Lopi\Zoom_Controller;
-use App\Model\Umum\Peran;
+use App\Http\Controllers\Lopi\Pinjam_Mobil_Controller;
+use App\Http\Controllers\Lopi\Pinjam_Ruang_Controller;
+use App\Http\Controllers\Lopi\Pinjam_Zoom_Controller;
 use Inertia\Inertia;
 
 /*
@@ -89,21 +89,32 @@ Route::group(
 ], function () {
     Route::group(
     [
+        'prefix' => 'mobil',
+    ], function () {
+        Route::get('/', [Pinjam_Mobil_Controller::class, 'index'])->name('pinjam-mobil-index');
+        Route::get('/tambah', [Pinjam_Mobil_Controller::class, 'tambah'])->name('pinjam-mobil-tambah');
+        Route::get('/{pinjamMobil}/ubah', [Pinjam_Mobil_Controller::class, 'ubah'])->name('pinjam-mobil-ubah');
+        Route::get('/{pinjamMobil}/hapus', [Pinjam_Mobil_Controller::class, 'hapus'])->name('pinjam-mobil-hapus');
+        Route::get('/{pinjamMobil}/approval', [Pinjam_Mobil_Controller::class, 'approval'])->name('pinjam-mobil-approval');
+    });
+
+    Route::group(
+    [
         'prefix' => 'zoom',
     ], function () {
-        Route::get('/', [Zoom_Controller::class, 'index'])->name('zoom-index');
-        Route::get('/tambah', [Zoom_Controller::class, 'tambah'])->name('zoom-tambah');
-        Route::get('/{zoom_id}/ubah', [Zoom_Controller::class, 'ubah'])->name('zoom-ubah');
-        Route::get('/{zoom_id}/hapus', [Zoom_Controller::class, 'hapus'])->name('zoom-hapus');
-        Route::get('/{zoom_id}/approval', [Zoom_Controller::class, 'approval'])->name('zoom-approval');
+        Route::get('/', [Pinjam_Zoom_Controller::class, 'index'])->name('zoom-index');
+        Route::get('/tambah', [Pinjam_Zoom_Controller::class, 'tambah'])->name('zoom-tambah');
+        Route::get('/{zoom_id}/ubah', [Pinjam_Zoom_Controller::class, 'ubah'])->name('zoom-ubah');
+        Route::get('/{zoom_id}/hapus', [Pinjam_Zoom_Controller::class, 'hapus'])->name('zoom-hapus');
+        Route::get('/{zoom_id}/approval', [Pinjam_Zoom_Controller::class, 'approval'])->name('zoom-approval');
     });
 
     Route::group(
     [
         'prefix' => 'ruang',
     ], function () {
-        Route::get('/', [Ruang_Controller::class, 'index'])->name('ruang-index');
-        Route::get('/{ruang_id}/approval', [Ruang_Controller::class, 'approval'])->name('ruang-approval');
+        Route::get('/', [Pinjam_Ruang_Controller::class, 'index'])->name('ruang-index');
+        Route::get('/{ruang_id}/approval', [Pinjam_Ruang_Controller::class, 'approval'])->name('ruang-approval');
     });
 
     Route::group(

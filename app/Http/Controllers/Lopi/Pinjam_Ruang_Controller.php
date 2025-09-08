@@ -10,7 +10,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
-class Mobil_Controller extends Controller
+class Pinjam_Ruang_Controller extends Controller
 {
     public function __construct(Request $request)
     {

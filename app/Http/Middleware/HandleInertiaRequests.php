@@ -46,6 +46,12 @@ class HandleInertiaRequests extends Middleware
                 'peran' => Peran::get_my_peran(),
             ],
             'tahun_active' => session('tahun_active'),
+            'flash' => [
+                'success' => fn () => $request->session()->get('success'),
+                'error' => fn () => $request->session()->get('error'),
+                'info' => fn () => $request->session()->get('info'),
+                // Add other flash message types as needed
+            ],
             'ziggy' => fn (): array => [
                 ...(new Ziggy)->toArray(),
                 'location' => $request->url(),

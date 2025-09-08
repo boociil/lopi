@@ -37,6 +37,7 @@ export interface SharedData {
     quote: { message: string; author: string };
     auth: Auth;
     tahun_active: number;
+    flash: {success: string?; error: string?; info: string?; }
     ziggy: Config & { location: string };
     sidebarOpen: boolean;
     [key: string]: unknown;

@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Lopi;
 
 use App\Http\Controllers\Controller;
-use App\Model\Lopi\Zoom;
+use App\Model\Lopi\Pinjam_Zoom;
 use App\Model\Umum\Peran;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -17,7 +17,7 @@ use GuzzleHttp\Client;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 
-class Zoom_Controller extends Controller
+class Pinjam_Zoom_Controller extends Controller
 {
 
     private $zoom_config ;
@@ -52,7 +52,7 @@ class Zoom_Controller extends Controller
         $month_start = Carbon::create(session('tahun_active'), $month, 1)->startOfMonth();
         $month_end =  Carbon::create(session('tahun_active'), $month, 1)->endOfMonth();
 
-        $zoom_bulan_daftar = Zoom::with(['pembuat'])->whereMonth("start_time", $month)->whereYear("start_time", $date->year)->get();
+        $zoom_bulan_daftar = Pinjam_Zoom::with(['pembuat'])->whereMonth("start_time", $month)->whereYear("start_time", $date->year)->get();
         for($i=0; $i<count($zoom_bulan_daftar); $i++){
             if($zoom_bulan_daftar[$i]->pembuat){
                 $zoom_bulan_daftar[$i]->pembuat_nama = $zoom_bulan_daftar[$i]->pembuat->nama;
@@ -92,7 +92,7 @@ class Zoom_Controller extends Controller
                 ->whereNull('tahun', null)
                 ->first();
 
-        $zoom = new Zoom();
+        $zoom = new Pinjam_Zoom();
         $zoom->id = Str::uuid();
         $zoom->topic = $request->input('topic');
         $zoom->password = $request->input('password');
@@ -159,7 +159,7 @@ class Zoom_Controller extends Controller
             'zoom_akun' => ['string', Rule::in(['', 'statsulbar', 'sp2020'])]
         ]);
 
-        $zoom = Zoom::where('id', $zoom_id)->first();
+        $zoom = Pinjam_Zoom::where('id', $zoom_id)->first();
         if(!$zoom){
             throw ValidationException::withMessages([
                 'status' => 'Zoom tidak ditemukan',
@@ -298,7 +298,7 @@ class Zoom_Controller extends Controller
 
     public function hapus(Request $request, $zoom_id)
     {
-        $zoom = Zoom::where('id', $zoom_id)->first();
+        $zoom = Pinjam_Zoom::where('id', $zoom_id)->first();
         if(!$zoom){
             return abort(404);
         }
@@ -347,7 +347,7 @@ class Zoom_Controller extends Controller
             return abort(401, 'Tidak memiliki akses');
         }
 
-        $zoom = Zoom::where('id', $zoom_id)->first();
+        $zoom = Pinjam_Zoom::where('id', $zoom_id)->first();
 
         if($request->input('zoom_status') == '1'){
             if($zoom->zoom_meeting_id){
