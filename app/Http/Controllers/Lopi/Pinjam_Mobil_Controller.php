@@ -12,7 +12,8 @@ use Carbon\Carbon;
 use Inertia\Inertia;
 
 use App\Model\Umum\Peran;
-use App\Models\Lopi\Pinjam_Mobil;
+use App\Model\Lopi\Pinjam_Mobil;
+use App\Model\Umum\User;
 use Exception;
 use Illuminate\Support\Facades\Log;
 
@@ -21,20 +22,41 @@ class Pinjam_Mobil_Controller extends Controller
     public function index(Request $request)
     {
         $validated = $request->validate([
-            'tanggal_awal'      => 'required|date',
-            'tanggal_akhir'     => 'required|date|after_or_equal:tanggal_awal',
+            'tanggal_awal'      => 'date',
+            'tanggal_akhir'     => 'date|after_or_equal:tanggal_awal',
         ]);
 
-        return Inertia::render('mobil/index', [
+        $tanggal_awal = null;
+        $tanggal_akhir = null;
+
+        if($request->has('tanggal_awal') && $request->has('tanggal_akhir')){
+            $tanggal_awal = $request->input('tanggal_awal');
+            $tanggal_akhir = $request->input('tanggal_akhir');
+        }
+
+        if(! ($tanggal_awal && $tanggal_akhir) ){
+            $date = Carbon::today();
+            $tanggal_awal = $date->startOfWeek(Carbon::SUNDAY);
+            $tanggal_akhir = $date->endOfWeek(Carbon::SUNDAY);
+        }
+
+        $have_mobil_peran =  Peran::where('pemilik_username', Auth::user()->username)
+            ->where('tipe_peran', 'global')
+            ->where('peran', 'mobil')
+            ->whereNull('tahun')
+            ->first();
+
+        $user = User::all();
+
+        return Inertia::render('mobil', [
             "tanggal_awal" => $request->input('tanggal_awal'),
             "tanggal_akhir" => $request->input('tanggal_akhir'),
-            "data" =>  Pinjam_Mobil::with(['pembuat'])
-                            ->whereBetween('reservation_from', [$request->input('tanggal_awal'), $request->input('tanggal_akhir')])
+            "have_mobil_peran" => $have_mobil_peran ? true : false,
+            "user" => $user,
+            "data" =>  Pinjam_Mobil::orWhereBetween('tanggal_awal', [$request->input('tanggal_awal'), $request->input('tanggal_akhir')])
+                            ->orWhereBetween('tanggal_akhir', [$request->input('tanggal_awal'), $request->input('tanggal_akhir')])
                             ->get(),
         ]);
-
-        $pinjams = Pinjam_Mobil::with(['pembuat', 'confirm'])->latest()->get();
-        return response()->json($pinjams);
     }
 
     public function tambah(Request $request)
@@ -48,7 +70,7 @@ class Pinjam_Mobil_Controller extends Controller
             'waktu_akhir'       => 'required|date_format:H:i|after:waktu_awal',
         ]);
 
-        $have_zoom_peran =  Peran::where('pemilik_username', Auth::user()->username)
+        $have_mobil_peran =  Peran::where('pemilik_username', Auth::user()->username)
             ->where('tipe_peran', 'global')
             ->where('peran', 'mobil')
             ->whereNull('tahun', null)
@@ -71,7 +93,7 @@ class Pinjam_Mobil_Controller extends Controller
                 $pinjam_mobil->status = 'menunggu';
                 $pinjam_mobil->pembuat_username = Auth::user()->username;
 
-                if($have_zoom_peran){
+                if($have_mobil_peran){
                     $pinjam_mobil->status = 'disetujui';
                     $pinjam_mobil->confirm_username = Auth::user()->username;
                 }
@@ -98,7 +120,7 @@ class Pinjam_Mobil_Controller extends Controller
                     $pinjam_mobil->status = 'menunggu';
                     $pinjam_mobil->pembuat_username = Auth::user()->username;
 
-                    if($have_zoom_peran){
+                    if($have_mobil_peran){
                         $pinjam_mobil->status = 'disetujui';
                         $pinjam_mobil->confirm_username = Auth::user()->username;
                     }
@@ -125,13 +147,13 @@ class Pinjam_Mobil_Controller extends Controller
             'waktu_akhir'       => 'required|date_format:H:i|after:waktu_awal',
         ]);
 
-        $have_zoom_peran =  Peran::where('pemilik_username', Auth::user()->username)
+        $have_mobil_peran =  Peran::where('pemilik_username', Auth::user()->username)
             ->where('tipe_peran', 'global')
             ->where('peran', 'mobil')
             ->whereNull('tahun', null)
             ->first();
 
-        if(! ($have_zoom_peran || $pinjamMobil->pembuat_username == Auth::user()->username) ){
+        if(! ($have_mobil_peran || $pinjamMobil->pembuat_username == Auth::user()->username) ){
             return redirect()->route('pinjam-mobil-index')->with('error', 'Gagal mengubah peminjaman mobil!');
         }
 
@@ -157,7 +179,7 @@ class Pinjam_Mobil_Controller extends Controller
                 $pinjam_mobil->status = 'menunggu';
                 $pinjam_mobil->pembuat_username = Auth::user()->username;
 
-                if($have_zoom_peran){
+                if($have_mobil_peran){
                     $pinjam_mobil->status = 'disetujui';
                     $pinjam_mobil->confirm_username = Auth::user()->username;
                 }
@@ -184,7 +206,7 @@ class Pinjam_Mobil_Controller extends Controller
                     $pinjam_mobil->status = 'menunggu';
                     $pinjam_mobil->pembuat_username = Auth::user()->username;
 
-                    if($have_zoom_peran){
+                    if($have_mobil_peran){
                         $pinjam_mobil->status = 'disetujui';
                         $pinjam_mobil->confirm_username = Auth::user()->username;
                     }
@@ -205,13 +227,13 @@ class Pinjam_Mobil_Controller extends Controller
      */
     public function hapus(Pinjam_Mobil $pinjamMobil)
     {
-        $have_zoom_peran =  Peran::where('pemilik_username', Auth::user()->username)
+        $have_mobil_peran =  Peran::where('pemilik_username', Auth::user()->username)
             ->where('tipe_peran', 'global')
             ->where('peran', 'mobil')
             ->whereNull('tahun', null)
             ->first();
 
-        if(! ($have_zoom_peran || $pinjamMobil->pembuat_username == Auth::user()->username) ){
+        if(! ($have_mobil_peran || $pinjamMobil->pembuat_username == Auth::user()->username) ){
             return redirect()->route('pinjam-mobil-index')->with('error', 'Gagal menghapus peminjaman mobil!');
         }
 
@@ -240,13 +262,13 @@ class Pinjam_Mobil_Controller extends Controller
             'status'              => 'required|in:disetujui,ditolak',
         ]);
 
-        $have_zoom_peran =  Peran::where('pemilik_username', Auth::user()->username)
+        $have_mobil_peran =  Peran::where('pemilik_username', Auth::user()->username)
             ->where('tipe_peran', 'global')
             ->where('peran', 'mobil')
             ->whereNull('tahun', null)
             ->first();
 
-        if(! ($have_zoom_peran) ){
+        if(! ($have_mobil_peran) ){
             return redirect()->route('pinjam-mobil-index')->with('error', 'Gagal approval peminjaman mobil!');
         }
 

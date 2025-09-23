@@ -5,8 +5,11 @@ import { cn } from "@/lib/utils"
 
 function Switch({
   className,
+  icon,
   ...props
-}: React.ComponentProps<typeof SwitchPrimitive.Root>) {
+}: React.ComponentProps<typeof SwitchPrimitive.Root>& {
+	icon?: React.ReactNode;
+}) {
   return (
     <SwitchPrimitive.Root
       data-slot="switch"
@@ -22,6 +25,7 @@ function Switch({
           "bg-background dark:data-[state=unchecked]:bg-foreground dark:data-[state=checked]:bg-primary-foreground pointer-events-none block size-4 rounded-full ring-0 transition-transform data-[state=checked]:translate-x-[calc(100%-2px)] data-[state=unchecked]:translate-x-0"
         )}
       />
+      {icon ? icon : null}
     </SwitchPrimitive.Root>
   )
 }

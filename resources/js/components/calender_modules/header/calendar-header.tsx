@@ -12,7 +12,6 @@ import {
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { ButtonGroup } from "@/components/ui/button-group";
 import {
 	slideFromLeft,
 	slideFromRight,
@@ -28,7 +27,7 @@ import { Settings } from "@/components/calender_modules/settings/settings";
 import Views from "./view-tabs";
 
 export function CalendarHeader() {
-	const { view, events } = useCalendar();
+	const { view, events, settingCalender } = useCalendar();
 
 	return (
 		<div className="flex flex-col gap-4 border-b p-4 lg:flex-row lg:items-center lg:justify-between">
@@ -51,12 +50,16 @@ export function CalendarHeader() {
 				transition={transition}
 			>
 				<div className="options flex-wrap flex items-center gap-4 md:gap-2">
-					<FilterEvents />
+                    { settingCalender.show_filter &&
+                        <FilterEvents />
+                    }
 					<Views />
 				</div>
 
 				<div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:gap-1.5">
-					<UserSelect />
+                    { settingCalender.show_filter_user &&
+                        (<UserSelect />)
+                    }
 
 					<AddEditEventDialog>
 						<Button>
@@ -65,7 +68,7 @@ export function CalendarHeader() {
 						</Button>
 					</AddEditEventDialog>
 				</div>
-				<Settings />
+				{/* <Settings /> */}
 			</motion.div>
 		</div>
 	);

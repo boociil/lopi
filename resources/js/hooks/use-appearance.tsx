@@ -1,3 +1,4 @@
+import { useTheme } from 'next-themes';
 import { useCallback, useEffect, useState } from 'react';
 
 export type Appearance = 'light' | 'dark' | 'system';
@@ -49,6 +50,7 @@ export function initializeTheme() {
 
 export function useAppearance() {
     const [appearance, setAppearance] = useState<Appearance>('system');
+    const { theme, setTheme } = useTheme();
 
     const updateAppearance = useCallback((mode: Appearance) => {
         setAppearance(mode);
@@ -59,6 +61,12 @@ export function useAppearance() {
         // Store in cookie for SSR...
         setCookie('appearance', mode);
 
+        const isDark = mode === 'dark' || (mode === 'system' && prefersDark());
+        if(isDark){
+            setTheme('dark')
+        }else{
+            setTheme('light')
+        }
         applyTheme(mode);
     }, []);
 
@@ -70,4 +78,12 @@ export function useAppearance() {
     }, [updateAppearance]);
 
     return { appearance, updateAppearance } as const;
+}
+
+export function getPrefersDark(){
+    if (typeof window === 'undefined') {
+        return false;
+    }
+
+    return window.matchMedia('(prefers-color-scheme: dark)').matches;
 }

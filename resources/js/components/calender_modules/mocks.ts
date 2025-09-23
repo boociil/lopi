@@ -130,7 +130,7 @@ const mockGenerator = (numberOfEvents: number): IEvent[] => {
 
 	// Create an event happening now
 	const currentEvent = {
-		id: currentId++,
+		id: ""+currentId++,
 		startDate: new Date(now.getTime() - 30 * 60000).toISOString(),
 		endDate: new Date(now.getTime() + 30 * 60000).toISOString(),
 		title: events[Math.floor(Math.random() * events.length)],
@@ -178,7 +178,7 @@ const mockGenerator = (numberOfEvents: number): IEvent[] => {
 		}
 
 		result.push({
-			id: currentId++,
+			id: ""+currentId++,
 			startDate: startDate.toISOString(),
 			endDate: endDate.toISOString(),
 			title: events[Math.floor(Math.random() * events.length)],

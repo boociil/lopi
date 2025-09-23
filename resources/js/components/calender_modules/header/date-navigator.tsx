@@ -28,7 +28,7 @@ const MotionButton = motion.create(Button);
 const MotionBadge = motion.create(Badge);
 
 export function DateNavigator({ view, events }: IProps) {
-	const { selectedDate, setSelectedDate } = useCalendar();
+	const { selectedDate, setSelectedDate, settingCalender } = useCalendar();
 
 	const month = formatDate(selectedDate, "MMMM");
 	const year = selectedDate.getFullYear();
@@ -47,7 +47,7 @@ export function DateNavigator({ view, events }: IProps) {
 		<div className="space-y-0.5">
 			<div className="flex items-center gap-2">
 				<motion.span
-					className="text-lg font-semibold"
+					className="text-lg font-semibold text-accent-foreground"
 					initial={{ x: -20, opacity: 0 }}
 					animate={{ x: 0, opacity: 1 }}
 					transition={transition}
@@ -63,7 +63,7 @@ export function DateNavigator({ view, events }: IProps) {
 						exit={{ scale: 0.8, opacity: 0 }}
 						transition={transition}
 					>
-						{eventCount} events
+						{eventCount} {settingCalender.name_event}
 					</MotionBadge>
 				</AnimatePresence>
 			</div>
@@ -78,7 +78,7 @@ export function DateNavigator({ view, events }: IProps) {
 					whileHover="hover"
 					whileTap="tap"
 				>
-					<ChevronLeft className="h-4 w-4" />
+					<ChevronLeft className="h-4 w-4 text-accent-foreground" />
 				</MotionButton>
 
 				<motion.p
@@ -99,7 +99,7 @@ export function DateNavigator({ view, events }: IProps) {
 					whileHover="hover"
 					whileTap="tap"
 				>
-					<ChevronRight className="h-4 w-4" />
+					<ChevronRight className="h-4 w-4 text-accent-foreground" />
 				</MotionButton>
 			</div>
 		</div>

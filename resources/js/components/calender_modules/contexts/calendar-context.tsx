@@ -3,7 +3,7 @@
 import type React from "react";
 import { createContext, useContext, useState } from "react";
 import { useLocalStorage } from "@/components/calender_modules/hooks";
-import type { IEvent, IUser } from "@/components/calender_modules/interfaces";
+import type { IEvent, IUser, SettingCalender } from "@/components/calender_modules/interfaces";
 import type {
 	TCalendarView,
 	TEventColor,
@@ -29,8 +29,9 @@ interface ICalendarContext {
 	events: IEvent[];
 	addEvent: (event: IEvent) => void;
 	updateEvent: (event: IEvent) => void;
-	removeEvent: (eventId: number) => void;
+	removeEvent: (eventId: string) => void;
 	clearFilter: () => void;
+    settingCalender: SettingCalender;
 }
 
 interface CalendarSettings {
@@ -55,12 +56,14 @@ export function CalendarProvider({
 	events,
 	badge = "colored",
 	view = "day",
+    settingCalender,
 }: {
 	children: React.ReactNode;
 	users: IUser[];
 	events: IEvent[];
 	view?: TCalendarView;
 	badge?: "dot" | "colored";
+    settingCalender: SettingCalender
 }) {
 	const [settings, setSettings] = useLocalStorage<CalendarSettings>(
 		"calendar-settings",
@@ -145,7 +148,7 @@ export function CalendarProvider({
 		if (userId === "all") {
 			setFilteredEvents(allEvents);
 		} else {
-			const filtered = allEvents.filter((event) => event.user.id === userId);
+			const filtered = allEvents.filter((event) => event.user?.id === userId);
 			setFilteredEvents(filtered);
 		}
 	};
@@ -173,7 +176,7 @@ export function CalendarProvider({
 		);
 	};
 
-	const removeEvent = (eventId: number) => {
+	const removeEvent = (eventId: string) => {
 		setAllEvents((prev) => prev.filter((e) => e.id !== eventId));
 		setFilteredEvents((prev) => prev.filter((e) => e.id !== eventId));
 	};
@@ -206,6 +209,7 @@ export function CalendarProvider({
 		updateEvent,
 		removeEvent,
 		clearFilter,
+        settingCalender,
 	};
 
 	return (

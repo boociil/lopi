@@ -4,7 +4,7 @@ import { type ReactNode, useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { DateTimePicker } from "@/components/ui/date-time-picker";
+import { DateTimePicker } from "@/components/calender_modules/date-time-picker";
 import {
 	Form,
 	FormControl,
@@ -108,7 +108,7 @@ export function AddEditEventDialog({
 				...values,
 				startDate: format(values.startDate, "yyyy-MM-dd'T'HH:mm:ss"),
 				endDate: format(values.endDate, "yyyy-MM-dd'T'HH:mm:ss"),
-				id: isEditing ? event.id : Math.floor(Math.random() * 1000000),
+				id: isEditing ? event.id : ""+Math.floor(Math.random() * 1000000),
 				user: isEditing
 					? event.user
 					: {

@@ -1,7 +1,7 @@
 import { format, isWithinInterval, parseISO } from "date-fns";
 import { Calendar, Clock, User } from "lucide-react";
 import { useEffect, useRef } from "react";
-import { DayPicker } from "@/components/ui/day-picker";
+import { DayPicker } from "@/components/calender_modules/day-picker";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useCalendar } from "@/components/calender_modules/contexts/calendar-context";
 
@@ -207,7 +207,7 @@ export function CalendarDayView({ singleDayEvents, multiDayEvents }: IProps) {
 						<ScrollArea className="h-[422px] px-4" type="always">
 							<div className="space-y-6 pb-4">
 								{currentEvents.map((event) => {
-									const user = users.find((user) => user.id === event.user.id);
+									const user = users.find((user) => user.id === event.user?.id);
 
 									return (
 										<div key={event.id} className="space-y-1.5">

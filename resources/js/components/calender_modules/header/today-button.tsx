@@ -34,7 +34,7 @@ export function TodayButton() {
 				{formatDate(today, "MMM").toUpperCase()}
 			</motion.span>
 			<motion.span
-				className="text-lg font-bold"
+				className="text-lg font-bold text-accent-foreground"
 				initial={{ y: 10, opacity: 0 }}
 				animate={{ y: 0, opacity: 1 }}
 				transition={{ delay: 0.2, ...transition }}

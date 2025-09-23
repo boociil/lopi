@@ -29,7 +29,7 @@ export function EventDetailsDialog({ event, children }: IProps) {
 	const endDate = parseISO(event.endDate);
 	const { use24HourFormat, removeEvent } = useCalendar();
 
-	const deleteEvent = (eventId: number) => {
+	const deleteEvent = (eventId: string) => {
 		try {
 			removeEvent(eventId);
 			toast.success("Event deleted successfully.");
@@ -53,7 +53,7 @@ export function EventDetailsDialog({ event, children }: IProps) {
 							<div>
 								<p className="text-sm font-medium">Responsible</p>
 								<p className="text-sm text-muted-foreground">
-									{event.user.name}
+									{event.user?.name}
 								</p>
 							</div>
 						</div>
