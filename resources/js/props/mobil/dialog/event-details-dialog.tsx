@@ -15,19 +15,14 @@ import {
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useCalendar } from "@/components/calender_modules/contexts/calendar-context";
-import { AddEditEventDialog } from "@/components/calender_modules/dialogs/add-edit-event-dialog";
 import { formatTime } from "@/components/calender_modules/helpers";
 import type { IEvent } from "@/components/calender_modules/interfaces";
+import { Event_Details_Dialog_IProps } from "@/components/calender_modules/dialogs/props-dialog";
 
-interface IProps {
-	event: IEvent;
-	children: ReactNode;
-}
-
-export function EventDetailsDialog({ event, children }: IProps) {
+export function EventDetailsDialog({ event, children }: Event_Details_Dialog_IProps) {
 	const startDate = parseISO(event.startDate);
 	const endDate = parseISO(event.endDate);
-	const { use24HourFormat, removeEvent } = useCalendar();
+	const { use24HourFormat, removeEvent, AddEditEventDialog } = useCalendar();
 
 	const deleteEvent = (eventId: string) => {
 		try {

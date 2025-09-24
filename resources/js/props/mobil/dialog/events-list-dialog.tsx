@@ -13,24 +13,19 @@ import {formatTime} from "@/components/calender_modules/helpers";
 import type {IEvent} from "@/components/calender_modules/interfaces";
 import {dayCellVariants} from "@/components/calender_modules/views/month-view/day-cell";
 import {EventBullet} from "@/components/calender_modules/views/month-view/event-bullet";
-import {EventDetailsDialog} from "@/components/calender_modules/dialogs/event-details-dialog";
+import { Event_List_Dialog_IProps } from "@/components/calender_modules/dialogs/props-dialog";
 
-interface EventListDialogProps {
-    date: Date;
-    events: IEvent[];
-    maxVisibleEvents?: number;
-    children?: ReactNode;
-}
+
 
 export function EventListDialog({
                                     date,
                                     events,
                                     maxVisibleEvents = 3,
                                     children,
-                                }: EventListDialogProps) {
+                                }: Event_List_Dialog_IProps) {
     const cellEvents = events;
     const hiddenEventsCount = Math.max(cellEvents.length - maxVisibleEvents, 0);
-    const {badgeVariant, use24HourFormat} = useCalendar();
+    const {badgeVariant, use24HourFormat, EventDetailsDialog} = useCalendar();
 
     const defaultTrigger = (
         <span className="cursor-pointer">

@@ -7,7 +7,6 @@ import {
     transition,
 } from "@/components/calender_modules/animations";
 import {useCalendar} from "@/components/calender_modules/contexts/calendar-context";
-import {AddEditEventDialog} from "@/components/calender_modules/dialogs/add-edit-event-dialog";
 import {DroppableArea} from "@/components/calender_modules/dnd/droppable-area";
 import {groupEvents} from "@/components/calender_modules/helpers";
 import type {IEvent} from "@/components/calender_modules/interfaces";
@@ -24,7 +23,7 @@ interface IProps {
 }
 
 export function CalendarWeekView({singleDayEvents, multiDayEvents}: IProps) {
-    const {selectedDate, use24HourFormat} = useCalendar();
+    const {selectedDate, use24HourFormat, AddEditEventDialog} = useCalendar();
 
     const weekStart = startOfWeek(selectedDate);
     const weekDays = Array.from({length: 7}, (_, i) => addDays(weekStart, i));

@@ -4,7 +4,6 @@ import { differenceInMinutes, parseISO } from "date-fns";
 import type { HTMLAttributes } from "react";
 import { cn } from "@/lib/utils";
 import { useCalendar } from "@/components/calender_modules/contexts/calendar-context";
-import { EventDetailsDialog } from "@/components/calender_modules/dialogs/event-details-dialog";
 import { DraggableEvent } from "@/components/calender_modules/dnd/draggable-event";
 import { ResizableEvent } from "@/components/calender_modules/dnd/resizable-event";
 import { formatTime } from "@/components/calender_modules/helpers";
@@ -55,7 +54,7 @@ interface IProps
 }
 
 export function EventBlock({ event, className }: IProps) {
-	const { badgeVariant, use24HourFormat } = useCalendar();
+	const { badgeVariant, use24HourFormat, EventDetailsDialog } = useCalendar();
 
 	const start = parseISO(event.startDate);
 	const end = parseISO(event.endDate);

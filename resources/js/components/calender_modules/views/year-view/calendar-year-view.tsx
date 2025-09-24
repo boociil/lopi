@@ -6,7 +6,6 @@ import {
 	transition,
 } from "@/components/calender_modules/animations";
 import { useCalendar } from "@/components/calender_modules/contexts/calendar-context";
-import { EventListDialog } from "@/components/calender_modules/dialogs/events-list-dialog";
 import { getCalendarCells } from "@/components/calender_modules/helpers";
 import type { IEvent } from "@/components/calender_modules/interfaces";
 import { EventBullet } from "@/components/calender_modules/views/month-view/event-bullet";
@@ -34,7 +33,7 @@ const MONTHS = [
 const WEEKDAYS = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
 
 export function CalendarYearView({ singleDayEvents, multiDayEvents }: IProps) {
-	const { selectedDate, setSelectedDate } = useCalendar();
+	const { selectedDate, setSelectedDate, EventListDialog } = useCalendar();
 	const currentYear = getYear(selectedDate);
 	const allEvents = [...multiDayEvents, ...singleDayEvents];
 

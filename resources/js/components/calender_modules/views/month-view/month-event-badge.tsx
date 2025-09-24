@@ -3,7 +3,6 @@ import { cva } from "class-variance-authority";
 import { endOfDay, isSameDay, parseISO, startOfDay } from "date-fns";
 import { cn } from "@/lib/utils";
 import { useCalendar } from "@/components/calender_modules/contexts/calendar-context";
-import { EventDetailsDialog } from "@/components/calender_modules/dialogs/event-details-dialog";
 import { DraggableEvent } from "@/components/calender_modules/dnd/draggable-event";
 import { formatTime } from "@/components/calender_modules/helpers";
 import type { IEvent } from "@/components/calender_modules/interfaces";
@@ -70,7 +69,7 @@ export function MonthEventBadge({
 	className,
 	position: propPosition,
 }: IProps) {
-	const { badgeVariant, use24HourFormat } = useCalendar();
+	const { badgeVariant, use24HourFormat, EventDetailsDialog } = useCalendar();
 
 	const itemStart = startOfDay(parseISO(event.startDate));
 	const itemEnd = endOfDay(parseISO(event.endDate));

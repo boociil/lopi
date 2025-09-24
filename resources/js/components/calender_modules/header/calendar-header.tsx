@@ -18,7 +18,6 @@ import {
 	transition,
 } from "@/components/calender_modules/animations";
 import { useCalendar } from "@/components/calender_modules/contexts/calendar-context";
-import { AddEditEventDialog } from "@/components/calender_modules/dialogs/add-edit-event-dialog";
 import { DateNavigator } from "@/components/calender_modules/header/date-navigator";
 import FilterEvents from "@/components/calender_modules/header/filter";
 import { TodayButton } from "@/components/calender_modules/header/today-button";
@@ -27,7 +26,7 @@ import { Settings } from "@/components/calender_modules/settings/settings";
 import Views from "./view-tabs";
 
 export function CalendarHeader() {
-	const { view, events, settingCalender } = useCalendar();
+	const { view, events, settingCalender, AddEditEventDialog } = useCalendar();
 
 	return (
 		<div className="flex flex-col gap-4 border-b p-4 lg:flex-row lg:items-center lg:justify-between">

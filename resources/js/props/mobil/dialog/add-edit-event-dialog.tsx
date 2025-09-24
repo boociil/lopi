@@ -40,20 +40,14 @@ import {
 	eventSchema,
 	type TEventFormData,
 } from "@/components/calender_modules/schemas";
-
-interface IProps {
-	children: ReactNode;
-	startDate?: Date;
-	startTime?: { hour: number; minute: number };
-	event?: IEvent;
-}
+import { Add_Edit_Event_IProps } from "@/components/calender_modules/dialogs/props-dialog";
 
 export function AddEditEventDialog({
 	children,
 	startDate,
 	startTime,
 	event,
-}: IProps) {
+}: Add_Edit_Event_IProps) {
 	const { isOpen, onClose, onToggle } = useDisclosure();
 	const { addEvent, updateEvent } = useCalendar();
 	const isEditing = !!event;

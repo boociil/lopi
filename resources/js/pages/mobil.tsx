@@ -11,7 +11,7 @@ import * as React from "react";
 import Heading from "@/components/heading";
 
 import { pinjam_mobil, pinjam_mobil_dialog_event } from "@/props/mobil/types";
-import { PinjamMobilCalender } from "@/props/mobil/PinjamMobilCalender";
+import { PinjamMobilCalender } from "@/props/mobil/calender";
 
 
 const breadcrumbs: BreadcrumbItem[] = [

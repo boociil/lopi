@@ -12,7 +12,6 @@ import React, {
 import { toast } from "sonner";
 import { useCalendar } from "@/components/calender_modules/contexts/calendar-context";
 import type { IEvent } from "@/components/calender_modules/interfaces";
-import { DndConfirmationDialog } from "@/components/calender_modules/dialogs/dnd-confirmation-dialog";
 
 interface PendingDropData {
 	event: IEvent;
@@ -46,7 +45,7 @@ export function DndProvider({
 	children,
 	showConfirmation: showConfirmationProp = false,
 }: DndProviderProps) {
-	const { updateEvent } = useCalendar();
+	const { updateEvent, DndConfirmationDialog } = useCalendar();
 	const [dragState, setDragState] = useState<{
 		draggedEvent: IEvent | null;
 		isDragging: boolean;

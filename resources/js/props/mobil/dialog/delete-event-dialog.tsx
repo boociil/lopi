@@ -13,12 +13,9 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { useCalendar } from "@/components/calender_modules/contexts/calendar-context";
+import { Delete_Event_Dialog_IProps } from "@/components/calender_modules/dialogs/props-dialog";
 
-interface DeleteEventDialogProps {
-	eventId: string;
-}
-
-export default function DeleteEventDialog({ eventId }: DeleteEventDialogProps) {
+export default function DeleteEventDialog({ eventId }: Delete_Event_Dialog_IProps) {
 	const { removeEvent } = useCalendar();
 
 	const deleteEvent = () => {

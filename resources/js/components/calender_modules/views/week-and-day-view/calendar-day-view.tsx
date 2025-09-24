@@ -5,7 +5,6 @@ import { DayPicker } from "@/components/calender_modules/day-picker";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useCalendar } from "@/components/calender_modules/contexts/calendar-context";
 
-import { AddEditEventDialog } from "@/components/calender_modules/dialogs/add-edit-event-dialog";
 import { DroppableArea } from "@/components/calender_modules/dnd/droppable-area";
 import { groupEvents } from "@/components/calender_modules/helpers";
 import type { IEvent } from "@/components/calender_modules/interfaces";
@@ -19,7 +18,7 @@ interface IProps {
 }
 
 export function CalendarDayView({ singleDayEvents, multiDayEvents }: IProps) {
-	const { selectedDate, setSelectedDate, users, use24HourFormat } =
+	const { selectedDate, setSelectedDate, users, use24HourFormat, AddEditEventDialog } =
 		useCalendar();
 	const scrollAreaRef = useRef<HTMLDivElement>(null);
 

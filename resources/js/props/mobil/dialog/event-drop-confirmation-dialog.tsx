@@ -16,16 +16,8 @@ import type {IEvent} from "@/components/calender_modules/interfaces";
 import {formatTime, getColorClass} from "@/components/calender_modules/helpers";
 import {cn} from "@/lib/utils";
 import {useCalendar} from "@/components/calender_modules/contexts/calendar-context";
+import { Event_Drop_Confirmation_Dialog_IProps } from "@/components/calender_modules/dialogs/props-dialog";
 
-interface EventDropConfirmationDialogProps {
-    open: boolean;
-    onOpenChange: (open: boolean) => void;
-    event: IEvent | null;
-    newStartDate: Date | null;
-    newEndDate: Date | null;
-    onConfirm: () => void;
-    onCancel: () => void;
-}
 
 export function EventDropConfirmationDialog({
                                                 open,
@@ -35,7 +27,7 @@ export function EventDropConfirmationDialog({
                                                 newEndDate,
                                                 onConfirm,
                                                 onCancel,
-                                            }: EventDropConfirmationDialogProps) {
+                                            }: Event_Drop_Confirmation_Dialog_IProps) {
 
     const {use24HourFormat} = useCalendar();
 

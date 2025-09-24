@@ -11,7 +11,6 @@ import {
 } from "@/components/ui/command";
 import {cn} from "@/lib/utils";
 import {useCalendar} from "@/components/calender_modules/contexts/calendar-context";
-import {EventDetailsDialog} from "@/components/calender_modules/dialogs/event-details-dialog";
 import {
     formatTime,
     getBgColor,
@@ -22,7 +21,7 @@ import {
 import {EventBullet} from "@/components/calender_modules/views/month-view/event-bullet";
 
 export const AgendaEvents: FC = () => {
-    const {events, use24HourFormat, badgeVariant, agendaModeGroupBy, selectedDate} =
+    const {events, use24HourFormat, badgeVariant, agendaModeGroupBy, selectedDate, EventDetailsDialog} =
         useCalendar();
 
     const monthEvents = getEventsForMonth(events, selectedDate)

@@ -1,13 +1,14 @@
 "use client";
 
 import type React from "react";
-import { createContext, useContext, useState } from "react";
+import { createContext, JSX, MemoExoticComponent, useContext, useState } from "react";
 import { useLocalStorage } from "@/components/calender_modules/hooks";
 import type { IEvent, IUser, SettingCalender } from "@/components/calender_modules/interfaces";
 import type {
 	TCalendarView,
 	TEventColor,
 } from "@/components/calender_modules/types";
+import { Add_Edit_Event_IProps, Delete_Event_Dialog_IProps, Event_Details_Dialog_IProps, Event_Drop_Confirmation_Dialog_IProps, Event_List_Dialog_IProps } from "../dialogs/props-dialog";
 
 interface ICalendarContext {
 	selectedDate: Date;
@@ -32,6 +33,12 @@ interface ICalendarContext {
 	removeEvent: (eventId: string) => void;
 	clearFilter: () => void;
     settingCalender: SettingCalender;
+    AddEditEventDialog: React.ComponentType<Add_Edit_Event_IProps>;
+    DeleteEventDialog: React.ComponentType<Delete_Event_Dialog_IProps>;
+    DndConfirmationDialog: MemoExoticComponent<() => JSX.Element | null>;
+    EventDetailsDialog: React.ComponentType<Event_Details_Dialog_IProps>;
+    EventDropConfirmationDialog: React.ComponentType<Event_Drop_Confirmation_Dialog_IProps>;
+    EventListDialog: React.ComponentType<Event_List_Dialog_IProps>;
 }
 
 interface CalendarSettings {
@@ -57,13 +64,25 @@ export function CalendarProvider({
 	badge = "colored",
 	view = "day",
     settingCalender,
+    AddEditEventDialog,
+    DeleteEventDialog,
+    DndConfirmationDialog,
+    EventDetailsDialog,
+    EventDropConfirmationDialog,
+    EventListDialog
 }: {
 	children: React.ReactNode;
 	users: IUser[];
 	events: IEvent[];
 	view?: TCalendarView;
 	badge?: "dot" | "colored";
-    settingCalender: SettingCalender
+    settingCalender: SettingCalender;
+    AddEditEventDialog: React.ComponentType<Add_Edit_Event_IProps>;
+    DeleteEventDialog: React.ComponentType<Delete_Event_Dialog_IProps>;
+    DndConfirmationDialog: MemoExoticComponent<() => JSX.Element | null>;
+    EventDetailsDialog: React.ComponentType<Event_Details_Dialog_IProps>;
+    EventDropConfirmationDialog: React.ComponentType<Event_Drop_Confirmation_Dialog_IProps>;
+    EventListDialog: React.ComponentType<Event_List_Dialog_IProps>;
 }) {
 	const [settings, setSettings] = useLocalStorage<CalendarSettings>(
 		"calendar-settings",
@@ -187,33 +206,37 @@ export function CalendarProvider({
 		setSelectedUserId("all");
 	};
 
-	const value = {
-		selectedDate,
-		setSelectedDate: handleSelectDate,
-		selectedUserId,
-		setSelectedUserId,
-		badgeVariant,
-		setBadgeVariant,
-		users,
-		selectedColors,
-		filterEventsBySelectedColors,
-		filterEventsBySelectedUser,
-		events: filteredEvents,
-		view: currentView,
-		use24HourFormat,
-		toggleTimeFormat,
-		setView,
-		agendaModeGroupBy,
-		setAgendaModeGroupBy,
-		addEvent,
-		updateEvent,
-		removeEvent,
-		clearFilter,
-        settingCalender,
-	};
-
 	return (
-		<CalendarContext.Provider value={value}>
+		<CalendarContext.Provider value={{
+            selectedDate,
+            setSelectedDate: handleSelectDate,
+            selectedUserId,
+            setSelectedUserId,
+            badgeVariant,
+            setBadgeVariant,
+            users,
+            selectedColors,
+            filterEventsBySelectedColors,
+            filterEventsBySelectedUser,
+            events: filteredEvents,
+            view: currentView,
+            use24HourFormat,
+            toggleTimeFormat,
+            setView,
+            agendaModeGroupBy,
+            setAgendaModeGroupBy,
+            addEvent,
+            updateEvent,
+            removeEvent,
+            clearFilter,
+            settingCalender,
+            AddEditEventDialog,
+            DeleteEventDialog,
+            DndConfirmationDialog,
+            EventDetailsDialog,
+            EventDropConfirmationDialog,
+            EventListDialog,
+        }}>
 			{children}
 		</CalendarContext.Provider>
 	);
