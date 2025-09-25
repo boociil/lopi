@@ -2,7 +2,6 @@
 
 import { isSameDay, parseISO } from "date-fns";
 import { motion } from "framer-motion";
-import React from "react";
 import { fadeIn, transition } from "@/components/calender_modules/animations";
 import { useCalendar } from "@/components/calender_modules/contexts/calendar-context";
 import { AgendaEvents } from "@/components/calender_modules/views/agenda-view/agenda-events";

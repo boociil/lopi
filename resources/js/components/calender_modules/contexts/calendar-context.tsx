@@ -1,9 +1,9 @@
 "use client";
 
 import type React from "react";
-import { createContext, JSX, MemoExoticComponent, useContext, useState } from "react";
+import { createContext, JSX, MemoExoticComponent, useContext, useEffect, useState } from "react";
 import { useLocalStorage } from "@/components/calender_modules/hooks";
-import type { IEvent, IUser, SettingCalender } from "@/components/calender_modules/interfaces";
+import type { CalendarSettings, IEvent, IUser, SettingCalender } from "@/components/calender_modules/interfaces";
 import type {
 	TCalendarView,
 	TEventColor,
@@ -33,19 +33,13 @@ interface ICalendarContext {
 	removeEvent: (eventId: string) => void;
 	clearFilter: () => void;
     settingCalender: SettingCalender;
+
     AddEditEventDialog: React.ComponentType<Add_Edit_Event_IProps>;
     DeleteEventDialog: React.ComponentType<Delete_Event_Dialog_IProps>;
     DndConfirmationDialog: MemoExoticComponent<() => JSX.Element | null>;
     EventDetailsDialog: React.ComponentType<Event_Details_Dialog_IProps>;
     EventDropConfirmationDialog: React.ComponentType<Event_Drop_Confirmation_Dialog_IProps>;
     EventListDialog: React.ComponentType<Event_List_Dialog_IProps>;
-}
-
-interface CalendarSettings {
-	badgeVariant: "dot" | "colored";
-	view: TCalendarView;
-	use24HourFormat: boolean;
-	agendaModeGroupBy: "date" | "color";
 }
 
 const DEFAULT_SETTINGS: CalendarSettings = {
@@ -58,62 +52,70 @@ const DEFAULT_SETTINGS: CalendarSettings = {
 const CalendarContext = createContext({} as ICalendarContext);
 
 export function CalendarProvider({
-	children,
-	users,
-	events,
-	badge = "colored",
-	view = "day",
     settingCalender,
+	users,
+    setUsers,
+    settings,
+    setSettings,
+    badgeVariant,
+    setBadgeVariantState,
+    currentView,
+    setCurrentViewState,
+    use24HourFormat,
+    setUse24HourFormatState,
+    agendaModeGroupBy,
+    setAgendaModeGroupByState,
+    selectedDate,
+    setSelectedDate,
+    selectedUserId,
+    setSelectedUserId,
+    selectedColors,
+    setSelectedColors,
+    allEvents,
+    setAllEvents,
+    filteredEvents,
+    setFilteredEvents,
+
     AddEditEventDialog,
     DeleteEventDialog,
     DndConfirmationDialog,
     EventDetailsDialog,
     EventDropConfirmationDialog,
-    EventListDialog
+    EventListDialog,
+    children,
 }: {
-	children: React.ReactNode;
+	settingCalender: SettingCalender;
 	users: IUser[];
-	events: IEvent[];
-	view?: TCalendarView;
-	badge?: "dot" | "colored";
-    settingCalender: SettingCalender;
+    setUsers: (users: IUser[]) => void;
+    settings: CalendarSettings;
+    setSettings: (settings: CalendarSettings) => void;
+    badgeVariant: "dot" | "colored";
+    setBadgeVariantState: (badgeVariant: "dot" | "colored") => void;
+    currentView: TCalendarView;
+    setCurrentViewState: (currentView: TCalendarView) => void;
+    use24HourFormat: boolean;
+    setUse24HourFormatState: (use24HourFormat: boolean) => void;
+    agendaModeGroupBy: "date" | "color";
+    setAgendaModeGroupByState: (agendaModeGroupBy: "date" | "color") => void;
+    selectedDate: Date;
+    setSelectedDate: (selectedDate: Date) => void;
+    selectedUserId: IUser["id"] | "all";
+    setSelectedUserId: (selectedUserId: IUser["id"] | "all") => void;
+    selectedColors: TEventColor[];
+    setSelectedColors: (selectedColors: TEventColor[]) => void;
+    allEvents: IEvent[];
+    setAllEvents: (allEvents: IEvent[]) => void;
+    filteredEvents: IEvent[];
+    setFilteredEvents: (filteredEvents: IEvent[]) => void;
+
     AddEditEventDialog: React.ComponentType<Add_Edit_Event_IProps>;
     DeleteEventDialog: React.ComponentType<Delete_Event_Dialog_IProps>;
     DndConfirmationDialog: MemoExoticComponent<() => JSX.Element | null>;
     EventDetailsDialog: React.ComponentType<Event_Details_Dialog_IProps>;
     EventDropConfirmationDialog: React.ComponentType<Event_Drop_Confirmation_Dialog_IProps>;
     EventListDialog: React.ComponentType<Event_List_Dialog_IProps>;
+    children: React.ReactNode;
 }) {
-	const [settings, setSettings] = useLocalStorage<CalendarSettings>(
-		"calendar-settings",
-		{
-			...DEFAULT_SETTINGS,
-			badgeVariant: badge,
-			view: view,
-		},
-	);
-
-	const [badgeVariant, setBadgeVariantState] = useState<"dot" | "colored">(
-		settings.badgeVariant,
-	);
-	const [currentView, setCurrentViewState] = useState<TCalendarView>(
-		settings.view,
-	);
-	const [use24HourFormat, setUse24HourFormatState] = useState<boolean>(
-		settings.use24HourFormat,
-	);
-	const [agendaModeGroupBy, setAgendaModeGroupByState] = useState<
-		"date" | "color"
-	>(settings.agendaModeGroupBy);
-
-	const [selectedDate, setSelectedDate] = useState(new Date());
-	const [selectedUserId, setSelectedUserId] = useState<IUser["id"] | "all">(
-		"all",
-	);
-	const [selectedColors, setSelectedColors] = useState<TEventColor[]>([]);
-
-	const [allEvents, setAllEvents] = useState<IEvent[]>(events || []);
-	const [filteredEvents, setFilteredEvents] = useState<IEvent[]>(events || []);
 
 	const updateSettings = (newPartialSettings: Partial<CalendarSettings>) => {
 		setSettings({
@@ -178,8 +180,8 @@ export function CalendarProvider({
 	};
 
 	const addEvent = (event: IEvent) => {
-		setAllEvents((prev) => [...prev, event]);
-		setFilteredEvents((prev) => [...prev, event]);
+		setAllEvents([...allEvents, event]);
+		setFilteredEvents([...filteredEvents, event]);
 	};
 
 	const updateEvent = (event: IEvent) => {
@@ -189,15 +191,15 @@ export function CalendarProvider({
 			endDate: new Date(event.endDate).toISOString(),
 		};
 
-		setAllEvents((prev) => prev.map((e) => (e.id === event.id ? updated : e)));
-		setFilteredEvents((prev) =>
-			prev.map((e) => (e.id === event.id ? updated : e)),
+		setAllEvents(allEvents.map((e) => (e.id === event.id ? updated : e)));
+		setFilteredEvents(
+			filteredEvents.map((e) => (e.id === event.id ? updated : e)),
 		);
 	};
 
 	const removeEvent = (eventId: string) => {
-		setAllEvents((prev) => prev.filter((e) => e.id !== eventId));
-		setFilteredEvents((prev) => prev.filter((e) => e.id !== eventId));
+		setAllEvents(allEvents.filter((e) => e.id !== eventId));
+		setFilteredEvents(filteredEvents.filter((e) => e.id !== eventId));
 	};
 
 	const clearFilter = () => {

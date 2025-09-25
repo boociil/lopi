@@ -9,8 +9,11 @@ export interface IUser {
 
 export interface IEvent {
 	id: string;
+    repeat_id: string | null;
 	startDate: string;
 	endDate: string;
+    startTime: string;
+	endTime: string;
 	title: string;
 	color: TEventColor;
 	description: string;
@@ -53,3 +56,9 @@ export function produceCalenderUser(user_: User[]): CalenderUser[]{
     return retur_data
 }
 
+export interface CalendarSettings {
+	badgeVariant: "dot" | "colored";
+	view: TCalendarView;
+	use24HourFormat: boolean;
+	agendaModeGroupBy: "date" | "color";
+}

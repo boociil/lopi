@@ -21,8 +21,8 @@ export interface pinjam_mobil {
     berulang_id: string | null;
     tanggal_awal: string;
     tanggal_akhir: string;
-    waktu_awal: string | null;
-    waktu_akhir: string | null;
+    waktu_awal: string;
+    waktu_akhir: string;
     status: number;
     pembuat_username: string;
     confirm_username: string | null;
@@ -45,8 +45,11 @@ export function producePinjamMobilIEvent(pinjam_mobil: pinjam_mobil[]): PinjamMo
     pinjam_mobil.forEach(element => {
         retur_data.push({
             id: element.id,
+            repeat_id: element.berulang_id,
             startDate: element.tanggal_awal,
             endDate: element.tanggal_akhir,
+            startTime: element.waktu_awal,
+            endTime: element.waktu_akhir,
             title: element.kegiatan,
             color: "orange",
             description: "Peminjaman Mobil",
