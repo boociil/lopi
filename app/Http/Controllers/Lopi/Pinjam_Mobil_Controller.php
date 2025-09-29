@@ -16,6 +16,9 @@ use App\Model\Lopi\Pinjam_Mobil;
 use App\Model\Umum\User;
 use Exception;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\ValidationException;
+
+use function PHPUnit\Framework\isNull;
 
 class Pinjam_Mobil_Controller extends Controller
 {
@@ -53,8 +56,7 @@ class Pinjam_Mobil_Controller extends Controller
             "tanggal_akhir" => $request->input('tanggal_akhir'),
             "have_mobil_peran" => $have_mobil_peran ? true : false,
             "user" => $user,
-            "data" =>  Pinjam_Mobil::orWhereBetween('tanggal_awal', [$request->input('tanggal_awal'), $request->input('tanggal_akhir')])
-                            ->orWhereBetween('tanggal_akhir', [$request->input('tanggal_awal'), $request->input('tanggal_akhir')])
+            "data" =>  Pinjam_Mobil::orWhereBetween('tanggal', [$request->input('tanggal_awal'), $request->input('tanggal_akhir')])
                             ->get(),
         ]);
     }
@@ -64,11 +66,18 @@ class Pinjam_Mobil_Controller extends Controller
         $validated = $request->validate([
             'kegiatan'          => 'required|string|max:255',
             'tipe'              => 'required|in:sekali,berulang',
-            'tanggal_awal'      => 'required|date',
-            'tanggal_akhir'     => 'required|date|after_or_equal:tanggal_awal',
+            'tanggal'           => 'date',
+            'tanggal_awal'      => 'date',
+            'tanggal_akhir'     => 'date|after_or_equal:tanggal_awal',
             'waktu_awal'        => 'required|date_format:H:i',
             'waktu_akhir'       => 'required|date_format:H:i|after:waktu_awal',
         ]);
+
+        if(!isNull($request->input('tanggal')) || (!isNull($request->input('tanggal_awal')) && !isNull($request->input('tanggal_akhir')))){
+            throw ValidationException::withMessages([
+                '_status' => 'Peran tidak dapat dibuat',
+            ]);
+        }
 
         $have_mobil_peran =  Peran::where('pemilik_username', Auth::user()->username)
             ->where('tipe_peran', 'global')
@@ -79,15 +88,14 @@ class Pinjam_Mobil_Controller extends Controller
         DB::beginTransaction();
         try
         {
-            if($request->input('tipe') == 'sekali' && $request->input('tanggal_awal') ==  $request->input('tanggal_akhir')){
+            if($request->input('tipe') == 'sekali' && ! isNull($request->input('tanggal'))){
                 $pinjam_mobil = new Pinjam_Mobil();
                 $pinjam_mobil->id = Str::uuid();
                 $pinjam_mobil->kegiatan = $request->input('kegiatan');
                 $pinjam_mobil->tipe = $request->input('tipe');
 
                 $pinjam_mobil->berulang_id = null;
-                $pinjam_mobil->tanggal_awal = $request->input('tanggal_awal');
-                $pinjam_mobil->tanggal_akhir = $request->input('tanggal_akhir');
+                $pinjam_mobil->tanggal = $request->input('tanggal');
                 $pinjam_mobil->waktu_awal = $request->input('waktu_awal');
                 $pinjam_mobil->waktu_akhir = $request->input('waktu_akhir');
                 $pinjam_mobil->status = 'menunggu';
@@ -103,7 +111,7 @@ class Pinjam_Mobil_Controller extends Controller
                 $berulang_id = Str::uuid();
 
                 $startDate = Carbon::parse($request->input('tanggal_awal'));
-                $endDate = Carbon::parse($request->input('waktu_akhir'));
+                $endDate = Carbon::parse($request->input('tanggal_akhir'));
                 $period = CarbonPeriod::create($startDate, $endDate);
 
                 foreach ($period as $date) {
@@ -113,8 +121,7 @@ class Pinjam_Mobil_Controller extends Controller
                     $pinjam_mobil->tipe = $request->input('tipe');
 
                     $pinjam_mobil->berulang_id = $berulang_id;
-                    $pinjam_mobil->tanggal_awal = $date->format('Y-m-d');
-                    $pinjam_mobil->tanggal_akhir = $date->format('Y-m-d');
+                    $pinjam_mobil->tanggal = $date->format('Y-m-d');
                     $pinjam_mobil->waktu_awal = $request->input('waktu_awal');
                     $pinjam_mobil->waktu_akhir = $request->input('waktu_akhir');
                     $pinjam_mobil->status = 'menunggu';
@@ -141,11 +148,18 @@ class Pinjam_Mobil_Controller extends Controller
         $validated = $request->validate([
             'kegiatan'          => 'required|string|max:255',
             'tipe'              => 'required|in:sekali,berulang',
-            'tanggal_awal'      => 'required|date',
-            'tanggal_akhir'     => 'required|date|after_or_equal:tanggal_awal',
+            'tanggal'           => 'date',
+            'tanggal_awal'      => 'date',
+            'tanggal_akhir'     => 'date|after_or_equal:tanggal_awal',
             'waktu_awal'        => 'required|date_format:H:i',
             'waktu_akhir'       => 'required|date_format:H:i|after:waktu_awal',
         ]);
+
+        if(!isNull($request->input('tanggal')) || (!isNull($request->input('tanggal_awal')) && !isNull($request->input('tanggal_akhir')))){
+            throw ValidationException::withMessages([
+                '_status' => 'Peran tidak dapat dibuat',
+            ]);
+        }
 
         $have_mobil_peran =  Peran::where('pemilik_username', Auth::user()->username)
             ->where('tipe_peran', 'global')
@@ -165,15 +179,14 @@ class Pinjam_Mobil_Controller extends Controller
                 Pinjam_Mobil::where('berulang_id', $pinjamMobil->berulang_id)->delete();
             }
 
-            if($request->input('tipe') == 'sekali' && $request->input('tanggal_awal') ==  $request->input('tanggal_akhir')){
+            if($request->input('tipe') == 'sekali' && ! isNull($request->input('tanggal'))){
                 $pinjam_mobil = new Pinjam_Mobil();
                 $pinjam_mobil->id = Str::uuid();
                 $pinjam_mobil->kegiatan = $request->input('kegiatan');
                 $pinjam_mobil->tipe = $request->input('tipe');
 
                 $pinjam_mobil->berulang_id = null;
-                $pinjam_mobil->tanggal_awal = $request->input('tanggal_awal');
-                $pinjam_mobil->tanggal_akhir = $request->input('tanggal_akhir');
+                $pinjam_mobil->tanggal = $request->input('tanggal');
                 $pinjam_mobil->waktu_awal = $request->input('waktu_awal');
                 $pinjam_mobil->waktu_akhir = $request->input('waktu_akhir');
                 $pinjam_mobil->status = 'menunggu';
@@ -189,7 +202,7 @@ class Pinjam_Mobil_Controller extends Controller
                 $berulang_id = Str::uuid();
 
                 $startDate = Carbon::parse($request->input('tanggal_awal'));
-                $endDate = Carbon::parse($request->input('waktu_akhir'));
+                $endDate = Carbon::parse($request->input('tanggal_akhir'));
                 $period = CarbonPeriod::create($startDate, $endDate);
 
                 foreach ($period as $date) {
@@ -199,8 +212,7 @@ class Pinjam_Mobil_Controller extends Controller
                     $pinjam_mobil->tipe = $request->input('tipe');
 
                     $pinjam_mobil->berulang_id = $berulang_id;
-                    $pinjam_mobil->tanggal_awal = $date->format('Y-m-d');
-                    $pinjam_mobil->tanggal_akhir = $date->format('Y-m-d');
+                    $pinjam_mobil->tanggal = $date->format('Y-m-d');
                     $pinjam_mobil->waktu_awal = $request->input('waktu_awal');
                     $pinjam_mobil->waktu_akhir = $request->input('waktu_akhir');
                     $pinjam_mobil->status = 'menunggu';

@@ -9,6 +9,7 @@ import type {
 	TEventColor,
 } from "@/components/calender_modules/types";
 import { Add_Edit_Event_IProps, Delete_Event_Dialog_IProps, Event_Details_Dialog_IProps, Event_Drop_Confirmation_Dialog_IProps, Event_List_Dialog_IProps } from "../dialogs/props-dialog";
+import { isSameDay, parseISO } from "date-fns";
 
 interface ICalendarContext {
 	selectedDate: Date;
@@ -32,6 +33,9 @@ interface ICalendarContext {
 	updateEvent: (event: IEvent) => void;
 	removeEvent: (eventId: string) => void;
 	clearFilter: () => void;
+    getEvent: (eventId: string) => IEvent | undefined;
+    getSingleDaysEvent: () => IEvent[],
+    getMultipleDaysEvent: () => IEvent[],
     settingCalender: SettingCalender;
 
     AddEditEventDialog: React.ComponentType<Add_Edit_Event_IProps>;
@@ -184,6 +188,10 @@ export function CalendarProvider({
 		setFilteredEvents([...filteredEvents, event]);
 	};
 
+    const getEvent = (eventId: String) => {
+        return allEvents.find(item => item.id == eventId)
+	};
+
 	const updateEvent = (event: IEvent) => {
 		const updated = {
 			...event,
@@ -197,7 +205,7 @@ export function CalendarProvider({
 		);
 	};
 
-	const removeEvent = (eventId: string) => {
+    const removeEvent = (eventId: string) => {
 		setAllEvents(allEvents.filter((e) => e.id !== eventId));
 		setFilteredEvents(filteredEvents.filter((e) => e.id !== eventId));
 	};
@@ -207,6 +215,30 @@ export function CalendarProvider({
 		setSelectedColors([]);
 		setSelectedUserId("all");
 	};
+
+    const getSingleDaysEvent = () : IEvent[] => {
+        return allEvents
+    }
+    const getMultipleDaysEvent = () : IEvent[] =>  {
+        const return_data : IEvent[] = []
+        const repeat_id_s : string[] = []
+        allEvents.forEach(element => {
+            if(element.repeat_id != null){
+                if(!repeat_id_s.includes(element.repeat_id)){
+                    return_data.push(element)
+                    repeat_id_s.push(element.repeat_id)
+                }else{
+                    if(element.startDate < return_data[repeat_id_s.findIndex((item) => item == element.repeat_id)].startDate){
+                        return_data[repeat_id_s.findIndex((item) => item == element.repeat_id)].startDate = element.startDate
+                    }
+                    if(element.endDate > return_data[repeat_id_s.findIndex((item) => item == element.repeat_id)].endDate){
+                        return_data[repeat_id_s.findIndex((item) => item == element.repeat_id)].endDate = element.endDate
+                    }
+                }
+            }
+        });
+        return return_data
+    }
 
 	return (
 		<CalendarContext.Provider value={{
@@ -230,7 +262,10 @@ export function CalendarProvider({
             addEvent,
             updateEvent,
             removeEvent,
+            getEvent,
             clearFilter,
+            getSingleDaysEvent,
+            getMultipleDaysEvent,
             settingCalender,
             AddEditEventDialog,
             DeleteEventDialog,

@@ -12,8 +12,11 @@ export interface IEvent {
     repeat_id: string | null;
 	startDate: string;
 	endDate: string;
-    startTime: string;
-	endTime: string;
+    date: string;
+    _startDate: string | null;
+	_endDate: string | null;
+    _startTime: string;
+	_endTime: string;
 	title: string;
 	color: TEventColor;
 	description: string;

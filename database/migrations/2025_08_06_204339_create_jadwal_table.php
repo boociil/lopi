@@ -26,8 +26,7 @@ return new class extends Migration
 
             $table->enum('tipe', ['sekali', 'berulang'])->default('sekali');
             $table->string('berulang_id', 36)->nullable();//durasi, berulang
-            $table->date('tanggal_awal');
-            $table->date('tanggal_akhir');
+            $table->date('tanggal');
             $table->time('waktu_awal');
             $table->time('waktu_akhir');
             $table->enum('status', ['menunggu', 'disetujui', 'ditolak'])->default('menunggu');
@@ -52,8 +51,7 @@ return new class extends Migration
 
             $table->enum('tipe', ['sekali', 'berulang'])->default('sekali');
             $table->string('berulang_id', 36)->nullable();//durasi, berulang
-            $table->date('tanggal_awal');
-            $table->date('tanggal_akhir');
+            $table->date('tanggal');
             $table->time('waktu_awal');
             $table->time('waktu_akhir');
             $table->enum('status', ['menunggu', 'disetujui', 'ditolak'])->default('menunggu');
@@ -78,8 +76,7 @@ return new class extends Migration
 
             $table->enum('tipe', ['sekali', 'berulang'])->default('sekali');
             $table->string('berulang_id', 36)->nullable();//durasi, berulang
-            $table->date('tanggal_awal');
-            $table->date('tanggal_akhir');
+            $table->date('tanggal');
             $table->time('waktu_awal');
             $table->time('waktu_akhir');
             $table->enum('status', ['menunggu', 'disetujui', 'ditolak'])->default('menunggu');
@@ -106,8 +103,7 @@ return new class extends Migration
 
             $table->enum('tipe', ['sekali', 'berulang'])->default('sekali');
             $table->string('berulang_id', 36)->nullable();//durasi, berulang
-            $table->date('tanggal_awal');
-            $table->date('tanggal_akhir');
+            $table->date('tanggal');
             $table->time('waktu_awal');
             $table->time('waktu_akhir');
             $table->enum('status', ['menunggu', 'disetujui', 'ditolak'])->default('menunggu');

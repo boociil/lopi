@@ -60,15 +60,23 @@ export function PinjamMobilCalender({
 
     /////////////////////
     useEffect(() => {
+        console.log('reload_data')
         router.get(route("pinjam-mobil-index"), {selectedDate: selectedDate, view: currentView}
             , { async: true, showProgress: true,
                 onSuccess: (page) => {
                     console.log('✅ Success!', page.props.as)
-                    // do whatever you need after success here
+                    setAllEvents(producePinjamMobilIEvent(page.props.data))
+                    const filtered = allEvents.filter((event) => {
+                        const eventColor = event.color || "blue";
+                        return selectedColors.includes(eventColor);
+                    });
+                    setFilteredEvents(filtered);
                 }
             }
         )
     }, [currentView, selectedDate]);
+
+
 
     return (
         <CalendarProvider settingCalender={settingCalender}

@@ -1,8 +1,7 @@
 "use client";
 
 import { format, parseISO } from "date-fns";
-import { Calendar, Clock, Text, User } from "lucide-react";
-import type { ReactNode } from "react";
+import { Calendar, Clock, Text, Type, User } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,20 +17,26 @@ import { useCalendar } from "@/components/calender_modules/contexts/calendar-con
 import { formatTime } from "@/components/calender_modules/helpers";
 import type { IEvent } from "@/components/calender_modules/interfaces";
 import { Event_Details_Dialog_IProps } from "@/components/calender_modules/dialogs/props-dialog";
+import { router } from "@inertiajs/react";
 
 export function EventDetailsDialog({ event, children }: Event_Details_Dialog_IProps) {
 	const startDate = parseISO(event.startDate);
 	const endDate = parseISO(event.endDate);
 	const { use24HourFormat, removeEvent, AddEditEventDialog } = useCalendar();
 
-	const deleteEvent = (eventId: string) => {
-		try {
-			removeEvent(eventId);
-			toast.success("Event deleted successfully.");
-		} catch {
-			toast.error("Error deleting event.");
-		}
-	};
+    const deleteEvent = (event_id: string) => {
+            router.visit(route("pinjam-mobil-hapus", {pinjamMobil: event_id}),
+            { async: true, showProgress: true, method: 'get',
+                    onSuccess: (page) => {
+                        removeEvent(event_id);
+                        toast.success("Event deleted successfully.");
+                    },
+                    onError: (page) => {
+                        toast.error("Error deleting event.");
+                    }
+            }
+        )
+    };
 
 	return (
 		<Dialog>
@@ -46,46 +51,91 @@ export function EventDetailsDialog({ event, children }: Event_Details_Dialog_IPr
 						<div className="flex items-start gap-2">
 							<User className="mt-1 size-4 shrink-0 text-muted-foreground" />
 							<div>
-								<p className="text-sm font-medium">Responsible</p>
+								<p className="text-sm font-medium">Yang bertanggung jawab</p>
 								<p className="text-sm text-muted-foreground">
 									{event.user?.name}
 								</p>
 							</div>
 						</div>
 
-						<div className="flex items-start gap-2">
-							<Calendar className="mt-1 size-4 shrink-0 text-muted-foreground" />
+                        <div className="flex items-start gap-2">
+							<Type className="mt-1 size-4 shrink-0 text-muted-foreground" />
 							<div>
-								<p className="text-sm font-medium">Start Date</p>
+								<p className="text-sm font-medium">Tipe</p>
 								<p className="text-sm text-muted-foreground">
-									{format(startDate, "EEEE dd MMMM")}
-									<span className="mx-1">at</span>
-									{formatTime(parseISO(event.startDate), use24HourFormat)}
+                                    {event.repeat_id ? 'Berulang' : 'Sekali'}
 								</p>
 							</div>
 						</div>
+                        {event.repeat_id ?
+                        <>
+                            <div className="flex items-start gap-2">
+                                <Calendar className="mt-1 size-4 shrink-0 text-muted-foreground" />
+                                <div>
+                                    <p className="text-sm font-medium">Tanggal Awal</p>
+                                    <p className="text-sm text-muted-foreground">
+                                        {format(startDate, "EEEE dd MMMM")}
+                                    </p>
+                                </div>
+                            </div>
 
-						<div className="flex items-start gap-2">
-							<Clock className="mt-1 size-4 shrink-0 text-muted-foreground" />
-							<div>
-								<p className="text-sm font-medium">End Date</p>
-								<p className="text-sm text-muted-foreground">
-									{format(endDate, "EEEE dd MMMM")}
-									<span className="mx-1">at</span>
-									{formatTime(parseISO(event.endDate), use24HourFormat)}
-								</p>
-							</div>
-						</div>
+                             <div className="flex items-start gap-2">
+                                <Calendar className="mt-1 size-4 shrink-0 text-muted-foreground" />
+                                <div>
+                                    <p className="text-sm font-medium">Tanggal Akhir</p>
+                                    <p className="text-sm text-muted-foreground">
+                                        {format(startDate, "EEEE dd MMMM")}
+                                    </p>
+                                </div>
+                            </div>
 
-						<div className="flex items-start gap-2">
-							<Text className="mt-1 size-4 shrink-0 text-muted-foreground" />
-							<div>
-								<p className="text-sm font-medium">Description</p>
-								<p className="text-sm text-muted-foreground">
-									{event.description}
-								</p>
-							</div>
-						</div>
+                            <div className="flex items-start gap-2">
+                                <Clock className="mt-1 size-4 shrink-0 text-muted-foreground" />
+                                <div>
+                                    <p className="text-sm font-medium">Waktu Mulai</p>
+                                    <p className="text-sm text-muted-foreground">
+                                        {formatTime(parseISO(event.startDate), use24HourFormat)}
+                                    </p>
+                                </div>
+                            </div>
+                            <div className="flex items-start gap-2">
+                                <Clock className="mt-1 size-4 shrink-0 text-muted-foreground" />
+                                <div>
+                                    <p className="text-sm font-medium">Waktu Akhir</p>
+                                    <p className="text-sm text-muted-foreground">
+                                        {formatTime(parseISO(event.endDate), use24HourFormat)}
+                                    </p>
+                                </div>
+                            </div>
+                        </>
+                        :
+                        <>
+                            <div className="flex items-start gap-2">
+                                <Calendar className="mt-1 size-4 shrink-0 text-muted-foreground" />
+                                <div>
+                                    <p className="text-sm font-medium">Mulai</p>
+                                    <p className="text-sm text-muted-foreground">
+                                        {format(startDate, "EEEE dd MMMM")}
+                                        <span className="mx-1">at</span>
+                                        {formatTime(parseISO(event.startDate), use24HourFormat)}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div className="flex items-start gap-2">
+                                <Clock className="mt-1 size-4 shrink-0 text-muted-foreground" />
+                                <div>
+                                    <p className="text-sm font-medium">Berakhir</p>
+                                    <p className="text-sm text-muted-foreground">
+                                        {format(endDate, "EEEE dd MMMM")}
+                                        <span className="mx-1">at</span>
+                                        {formatTime(parseISO(event.endDate), use24HourFormat)}
+                                    </p>
+                                </div>
+                            </div>
+                        </>
+                        }
+
 					</div>
 				</ScrollArea>
 				<div className="flex justify-end gap-2">

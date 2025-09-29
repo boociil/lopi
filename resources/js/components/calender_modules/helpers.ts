@@ -278,6 +278,14 @@ export function getMonthCellEvents(
 		});
 }
 
+export function formatDate(
+	date: Date | string
+): string {
+	const parsedDate = typeof date === "string" ? parseISO(date) : date;
+	if (!isValid(parsedDate)) return "";
+	return format(parsedDate, 'yyyy-MM-dd');
+}
+
 export function formatTime(
 	date: Date | string,
 	use24HourFormat: boolean,

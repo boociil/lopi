@@ -14,37 +14,49 @@ import {
 import { Button } from "@/components/ui/button";
 import { useCalendar } from "@/components/calender_modules/contexts/calendar-context";
 import { Delete_Event_Dialog_IProps } from "@/components/calender_modules/dialogs/props-dialog";
+import { IEvent } from "@/components/calender_modules/interfaces";
+import { router } from "@inertiajs/react";
 
 export default function DeleteEventDialog({ eventId }: Delete_Event_Dialog_IProps) {
-	const { removeEvent } = useCalendar();
+	const { removeEvent , settingCalender, getEvent} = useCalendar();
 
-	const deleteEvent = () => {
-		try {
-			removeEvent(eventId);
-			toast.success("Event deleted successfully.");
-		} catch {
-			toast.error("Error deleting event.");
-		}
-	};
-
-	if (!eventId) {
+    if (!eventId) {
 		return null;
 	}
+
+    const eventItem: IEvent | undefined = getEvent(eventId)
+    if(!eventItem){
+        return null
+    }
+
+	const deleteEvent = () => {
+         router.visit(route("pinjam-mobil-hapus", {pinjamMobil: eventId}),
+            { async: true, showProgress: true, method: 'get',
+                    onSuccess: (page) => {
+                        removeEvent(eventId);
+			            toast.success("Event deleted successfully.");
+                    },
+                    onError: (page) => {
+                       toast.error("Error deleting event.");
+                    }
+            }
+        )
+	};
 
 	return (
 		<AlertDialog>
 			<AlertDialogTrigger asChild>
 				<Button variant="destructive">
 					<TrashIcon />
-					Delete
+					Hapus
 				</Button>
 			</AlertDialogTrigger>
 			<AlertDialogContent>
 				<AlertDialogHeader>
-					<AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+					<AlertDialogTitle>Apakah Anda benar-benar yakin?</AlertDialogTitle>
 					<AlertDialogDescription>
-						This action cannot be undone. This will permanently delete your
-						event and remove event data from our servers.
+						Tindakan ini tidak dapat dibatalkan.
+                        Hal ini akan menghapus {settingCalender.name_event} {eventItem.title} secara permanen.
 					</AlertDialogDescription>
 				</AlertDialogHeader>
 				<AlertDialogFooter>

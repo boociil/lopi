@@ -11,19 +11,11 @@ import { CalendarWeekView } from "@/components/calender_modules/views/week-and-d
 import { CalendarYearView } from "@/components/calender_modules/views/year-view/calendar-year-view";
 
 export function CalendarBody() {
-	const { view, events } = useCalendar();
+	const { view, getSingleDaysEvent, getMultipleDaysEvent } = useCalendar();
 
-	const singleDayEvents = events.filter((event) => {
-		const startDate = parseISO(event.startDate);
-		const endDate = parseISO(event.endDate);
-		return isSameDay(startDate, endDate);
-	});
+	const singleDayEvents = getSingleDaysEvent();
 
-	const multiDayEvents = events.filter((event) => {
-		const startDate = parseISO(event.startDate);
-		const endDate = parseISO(event.endDate);
-		return !isSameDay(startDate, endDate);
-	});
+	const multiDayEvents = getMultipleDaysEvent();
 
 	return (
 		<div className="w-full h-full overflow-scroll relative">

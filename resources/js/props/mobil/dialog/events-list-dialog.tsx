@@ -25,7 +25,7 @@ export function EventListDialog({
                                 }: Event_List_Dialog_IProps) {
     const cellEvents = events;
     const hiddenEventsCount = Math.max(cellEvents.length - maxVisibleEvents, 0);
-    const {badgeVariant, use24HourFormat, EventDetailsDialog} = useCalendar();
+    const {badgeVariant, use24HourFormat, EventDetailsDialog, settingCalender} = useCalendar();
 
     const defaultTrigger = (
         <span className="cursor-pointer">
@@ -46,7 +46,7 @@ export function EventListDialog({
                         <div className="flex items-center gap-2">
                             <EventBullet color={cellEvents[0]?.color} className=""/>
                             <p className="text-sm font-medium">
-                                Events on {format(date, "EEEE, MMMM d, yyyy")}
+                                {settingCalender.name_event} pada {format(date, "EEEE, MMMM d, yyyy")}
                             </p>
                         </div>
                     </ModalTitle>
@@ -68,7 +68,7 @@ export function EventListDialog({
                                         <div className="flex justify-between items-center w-full">
                                             <p className="text-sm font-medium">{event.title}</p>
                                             <p className="text-xs">
-                                                {formatTime(event.startDate, use24HourFormat)}
+                                                {formatTime(event.startDate, use24HourFormat)} - {formatTime(event.startDate, use24HourFormat)}
                                             </p>
                                         </div>
                                 </div>
@@ -76,7 +76,7 @@ export function EventListDialog({
                         ))
                     ) : (
                         <p className="text-sm text-muted-foreground">
-                            No events for this date.
+                           Tidak ada {settingCalender.name_event} untuk tanggal ini..
                         </p>
                     )}
                 </div>
