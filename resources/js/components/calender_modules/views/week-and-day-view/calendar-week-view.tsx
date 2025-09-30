@@ -38,7 +38,7 @@ export function CalendarWeekView({singleDayEvents, multiDayEvents}: IProps) {
             transition={transition}
         >
             <motion.div
-                className="flex flex-col items-center justify-center border-b p-4 text-sm sm:hidden"
+                className="flex flex-col items-center justify-center border-b border-accent-foreground text-accent-foreground p-4 text-sm sm:hidden"
                 initial={{opacity: 0, y: -20}}
                 animate={{opacity: 1, y: 0}}
                 transition={transition}
@@ -59,18 +59,18 @@ export function CalendarWeekView({singleDayEvents, multiDayEvents}: IProps) {
 
                     {/* Week header */}
                     <motion.div
-                        className="relative z-20 flex border-b"
+                        className="relative z-20 flex border-b border-accent-foreground text-accent-foreground"
                         initial={{opacity: 0, y: -20}}
                         animate={{opacity: 1, y: 0}}
                         transition={transition}
                     >
                         {/* Time column header - responsive width */}
                         <div className="w-18"></div>
-                        <div className="grid flex-1 grid-cols-7  border-l">
+                        <div className="grid flex-1 grid-cols-7  border-l border-accent-foreground text-accent-foreground">
                             {weekDays.map((day, index) => (
                                 <motion.span
                                     key={index}
-                                    className="py-1 sm:py-2 text-center text-xs font-medium text-t-quaternary"
+                                    className="py-1 sm:py-2 text-center text-xs font-medium text-t-quaternary text-accent-foreground"
                                     initial={{opacity: 0, y: -10}}
                                     animate={{opacity: 1, y: 0}}
                                     transition={{delay: index * 0.05, ...transition}}
@@ -78,7 +78,7 @@ export function CalendarWeekView({singleDayEvents, multiDayEvents}: IProps) {
                                     {/* Mobile: Show only day abbreviation and number */}
                                     <span className="block sm:hidden">
 									{format(day, "EEE").charAt(0)}
-                                        <span className="block font-semibold text-t-secondary text-xs">
+                                        <span className="block font-semibold text-t-secondary text-xs text-accent-foreground">
 										{format(day, "d")}
 									</span>
 								</span>
@@ -111,7 +111,7 @@ export function CalendarWeekView({singleDayEvents, multiDayEvents}: IProps) {
                                 >
                                     <div className="absolute -top-3 right-2 flex h-6 items-center">
                                         {index !== 0 && (
-                                            <span className="text-xs text-t-quaternary">
+                                            <span className="text-xs text-t-quaternary text-accent-foreground">
 												{format(
                                                     new Date().setHours(hour, 0, 0, 0),
                                                     use24HourFormat ? "HH:00" : "h a",
@@ -125,7 +125,7 @@ export function CalendarWeekView({singleDayEvents, multiDayEvents}: IProps) {
 
                         {/* Week grid */}
                         <motion.div
-                            className="relative flex-1 border-l"
+                            className="relative flex-1 border-l border-accent-foreground text-accent-foreground"
                             variants={staggerContainer}
                         >
                             <div className="grid grid-cols-7 divide-x">
@@ -156,7 +156,7 @@ export function CalendarWeekView({singleDayEvents, multiDayEvents}: IProps) {
                                                 >
                                                     {index !== 0 && (
                                                         <div
-                                                            className="pointer-events-none absolute inset-x-0 top-0 border-b"></div>
+                                                            className="pointer-events-none absolute inset-x-0 top-0 border-b border-accent-foreground text-accent-foreground"></div>
                                                     )}
 
                                                     <DroppableArea
@@ -175,7 +175,7 @@ export function CalendarWeekView({singleDayEvents, multiDayEvents}: IProps) {
                                                     </DroppableArea>
 
                                                     <div
-                                                        className="pointer-events-none absolute inset-x-0 top-1/2 border-b border-dashed border-b-tertiary"></div>
+                                                        className="pointer-events-none absolute inset-x-0 top-1/2 border-b border-dashed border-b-tertiary border-accent-foreground text-accent-foreground"></div>
 
                                                     <DroppableArea
                                                         date={day}

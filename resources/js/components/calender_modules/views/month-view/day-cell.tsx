@@ -118,7 +118,7 @@ export function DayCell({ cell, events, eventPositions }: IProps) {
     () => (
       <motion.div
         className={cn(
-          "flex h-full lg:min-h-[10rem] flex-col gap-1 border-l border-t",
+          "flex h-full lg:min-h-[10rem] flex-col gap-1 border-l border-t border-accent-foreground text-accent-foreground",
           isSunday(date) && "border-l-0"
         )}
         initial={{ opacity: 0, y: 10 }}
@@ -148,7 +148,7 @@ export function DayCell({ cell, events, eventPositions }: IProps) {
                 <AddEditEventDialog startDate={date}>
                   <Button
                     variant="ghost"
-                    className="border opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                    className="border border-accent-foreground text-accent-foreground opacity-0 group-hover:opacity-100 transition-opacity duration-200"
                   >
                     <Plus className="h-4 w-4" />
                     <span className="max-sm:hidden">Add Event</span>

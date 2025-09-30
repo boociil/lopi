@@ -1,5 +1,6 @@
 import { IEvent, IUser } from "@/components/calender_modules/interfaces"
 import { User } from "@/types"
+import { ReactNode } from "react"
 
 export type PinjamMobilProps = {
   pinjam_mobil: pinjam_mobil[]
@@ -26,11 +27,31 @@ export interface pinjam_mobil {
     confirm_username: string | null;
 }
 
+export interface pinjam_mobil_req {
+    id: string;
+    kegiatan: string;
+    tipe: string;
+    berulang_id: string | null;
+    tanggal: string | null;
+    tanggal_awal: string | null;
+    tanggal_akhir: string | null;
+    waktu_awal: string;
+    waktu_akhir: string;
+    status: number;
+    pembuat_username: string;
+    confirm_username: string | null;
+}
 
 export interface PinjamMobilIEvent extends IEvent{
     pinjam_mobil_ori: pinjam_mobil;
 }
 
+export interface Add_Edit_Event_IProps {
+	children: ReactNode;
+	startDate?: Date;
+	startTime?: { hour: number; minute: number };
+	event?: PinjamMobilIEvent;
+}
 
 
 export interface pinjam_mobil_dialog_event {

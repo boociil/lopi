@@ -13,6 +13,7 @@ import { EventDropConfirmationDialog } from "./dialog/event-drop-confirmation-di
 import { EventListDialog } from "./dialog/events-list-dialog";
 import { TCalendarView } from "@/components/calender_modules/types";
 import { router } from "@inertiajs/react";
+import { toast } from "sonner";
 
 export function PinjamMobilCalender({
         pinjam_mobil_data,
@@ -22,22 +23,28 @@ export function PinjamMobilCalender({
         user: User[]
 }) {
 
-    const settingCalender: SettingCalender = {name_event: 'kegiatan', calender_show: ["week", "month","agenda"], show_filter: false, show_filter_user: false}
+    const settingCalender: SettingCalender = {name_event: 'kegiatan', calender_show: ["week", "month", "year","agenda"], show_filter: false, show_filter_user: false}
     const _user: IUser[] = produceCalenderUser(user);
     const _allEvents: IEvent[] = producePinjamMobilIEvent(pinjam_mobil_data);
 
 
     /////////////////////
     function reload_data(selectedDate: Date, currentView: TCalendarView, setAllEventsOri: (_allEvents: IEvent[]) => void){
+        toast.info('Meload data baru !')
         router.post(route("pinjam-mobil-index"), {selectedDate: selectedDate, view: currentView}
             , { async: true, showProgress: true,
                 onSuccess: (page) => {
                     try {
                         setAllEventsOri(producePinjamMobilIEvent(page.props.data))
+                        toast.success('Berhasil mendapatkan data baru !')
                     } catch (error) {
                         console.log(error)
+                        toast.error('Gagal mendapatkan data baru !')
                     }
 
+                },
+                onError: (page) => {
+                    toast.error('Gagal mendapatkan data baru !')
                 }
             }
         )
@@ -59,7 +66,7 @@ export function PinjamMobilCalender({
                 reload_data={reload_data}
             >
             <DndProvider showConfirmation={false}>
-                <div className="w-full rounded-xl border-accent-foreground mx-2">
+                <div className="w-full rounded-xl mx-2">
                     <CalendarHeader />
                     <CalendarBody />
                 </div>

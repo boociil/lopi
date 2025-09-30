@@ -94,7 +94,7 @@ class Pinjam_Mobil_Controller extends Controller
         $have_mobil_peran =  Peran::where('pemilik_username', Auth::user()->username)
             ->where('tipe_peran', 'global')
             ->where('peran', 'mobil')
-            ->whereNull('tahun', null)
+            ->whereNull('tahun')
             ->first();
 
         DB::beginTransaction();
@@ -147,11 +147,17 @@ class Pinjam_Mobil_Controller extends Controller
                 }
             }
             DB::commit();
-            return redirect()->route('pinjam-mobil-index')->with('success', 'Berhasil membuat peminjaman mobil!');
+            return Inertia::render('mobil', [
+                "status" => true,
+                "data" => 'Berhasil membuat peminjaman mobil!',
+            ]);
         }catch(Exception $ex){
             DB::rollBack();
             Log::error($ex);
-            return redirect()->route('pinjam-mobil-index')->with('error', 'Gagal membuat peminjaman mobil!');
+            return Inertia::render('mobil', [
+                "status" => false,
+                "data" => 'Gagal membuat peminjaman mobil!',
+            ]);
         }
     }
 
@@ -176,11 +182,13 @@ class Pinjam_Mobil_Controller extends Controller
         $have_mobil_peran =  Peran::where('pemilik_username', Auth::user()->username)
             ->where('tipe_peran', 'global')
             ->where('peran', 'mobil')
-            ->whereNull('tahun', null)
+            ->whereNull('tahun')
             ->first();
 
         if(! ($have_mobil_peran || $pinjamMobil->pembuat_username == Auth::user()->username) ){
-            return redirect()->route('pinjam-mobil-index')->with('error', 'Gagal mengubah peminjaman mobil!');
+            throw ValidationException::withMessages([
+                '_status' => 'Gagal mengubah peminjaman mobil!',
+            ]);
         }
 
         DB::beginTransaction();
@@ -238,11 +246,16 @@ class Pinjam_Mobil_Controller extends Controller
                 }
             }
             DB::commit();
-            return redirect()->route('pinjam-mobil-index')->with('success', 'Berhasil mengubah peminjaman mobil!');
+            return Inertia::render('mobil', [
+                "status" => true,
+                "data" => 'Berhasil mengubah peminjaman mobil!',
+            ]);
         }catch(Exception $ex){
             DB::rollBack();
             Log::error($ex);
-            return redirect()->route('pinjam-mobil-index')->with('error', 'Gagal mengubah peminjaman mobil!');
+            throw ValidationException::withMessages([
+                '_status' => 'Gagal mengubah peminjaman mobil!',
+            ]);
         }
     }
 
@@ -254,11 +267,13 @@ class Pinjam_Mobil_Controller extends Controller
         $have_mobil_peran =  Peran::where('pemilik_username', Auth::user()->username)
             ->where('tipe_peran', 'global')
             ->where('peran', 'mobil')
-            ->whereNull('tahun', null)
+            ->whereNull('tahun')
             ->first();
 
         if(! ($have_mobil_peran || $pinjamMobil->pembuat_username == Auth::user()->username) ){
-            return redirect()->route('pinjam-mobil-index')->with('error', 'Gagal menghapus peminjaman mobil!');
+            throw ValidationException::withMessages([
+                '_status' => 'Gagal menghapus peminjaman mobil!',
+            ]);
         }
 
         DB::beginTransaction();
@@ -269,11 +284,16 @@ class Pinjam_Mobil_Controller extends Controller
                 Pinjam_Mobil::where('berulang_id', $pinjamMobil->berulang_id)->delete();
             }
             DB::commit();
-            return redirect()->route('pinjam-mobil-index')->with('success', 'Berhasil membuat peminjaman mobil!');
+            return Inertia::render('mobil', [
+                "status" => true,
+                "data" => 'Berhasil menghapus peminjaman mobil!',
+            ]);
         }catch(Exception $ex){
             DB::rollBack();
             Log::error($ex);
-            return redirect()->route('pinjam-mobil-index')->with('error', 'Gagal membuat peminjaman mobil!');
+            throw ValidationException::withMessages([
+                '_status' => 'Gagal menghapus peminjaman mobil!',
+            ]);
         }
     }
 
@@ -289,11 +309,13 @@ class Pinjam_Mobil_Controller extends Controller
         $have_mobil_peran =  Peran::where('pemilik_username', Auth::user()->username)
             ->where('tipe_peran', 'global')
             ->where('peran', 'mobil')
-            ->whereNull('tahun', null)
+            ->whereNull('tahun')
             ->first();
 
         if(! ($have_mobil_peran) ){
-            return redirect()->route('pinjam-mobil-index')->with('error', 'Gagal approval peminjaman mobil!');
+            throw ValidationException::withMessages([
+                '_status' => 'Gagal approval peminjaman mobil!',
+            ]);
         }
 
 
@@ -304,11 +326,16 @@ class Pinjam_Mobil_Controller extends Controller
             $pinjamMobil->confirm_username = Auth::user()->username;
             $pinjamMobil->save();
             DB::commit();
-            return redirect()->route('pinjam-mobil-index')->with('success', 'Berhasil approval peminjaman mobil!');
+            return Inertia::render('mobil', [
+                "status" => true,
+                "data" => 'Berhasil approval peminjaman mobil!',
+            ]);
         }catch(Exception $ex){
             DB::rollBack();
             Log::error($ex);
-            return redirect()->route('pinjam-mobil-index')->with('error', 'Gagal approval peminjaman mobil!');
+            throw ValidationException::withMessages([
+                '_status' => 'Gagal approval peminjaman mobil!',
+            ]);
         }
     }
 }

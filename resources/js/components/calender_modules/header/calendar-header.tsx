@@ -29,7 +29,7 @@ export function CalendarHeader() {
 	const { view, events, settingCalender, AddEditEventDialog } = useCalendar();
 
 	return (
-		<div className="flex flex-col gap-4 border-b p-4 lg:flex-row lg:items-center lg:justify-between">
+		<div className="flex flex-col gap-4 border-b border-accent-foreground p-4 lg:flex-row lg:items-center lg:justify-between">
 			<motion.div
 				className="flex items-center gap-3"
 				variants={slideFromLeft}

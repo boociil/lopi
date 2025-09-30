@@ -21,12 +21,8 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import { COLORS } from "@/components/calender_modules/constants";
 import { useCalendar } from "@/components/calender_modules/contexts/calendar-context";
 import { useDisclosure } from "@/components/calender_modules/hooks";
-import { type IEvent } from "@/components/calender_modules/interfaces";
-import { Add_Edit_Event_IProps } from "@/components/calender_modules/dialogs/props-dialog";
 import { Label } from "@/components/ui/label";
 import InputError from "@/components/input-error";
 import { SelectGroup } from "@radix-ui/react-select";
@@ -36,6 +32,7 @@ import {
     formatTime
 } from "@/components/calender_modules/helpers";
 import { Time24Picker } from "@/components/ui/time24-picker";
+import { Add_Edit_Event_IProps, pinjam_mobil_req, type pinjam_mobil } from "../types";
 
 export function AddEditEventDialog({
     children,
@@ -46,7 +43,7 @@ export function AddEditEventDialog({
     const { isOpen, onClose, onToggle } = useDisclosure();
     const { addEvent, updateEvent, settingCalender, use24HourFormat } = useCalendar();
     const isEditing = !!event;
-    const [tipe, setTipe] = useState<string>("sekali");
+    // const [tipe, setTipe] = useState<string>("sekali");
 
     const initialDates = useMemo(() => {
         if (!isEditing && !event) {
@@ -71,53 +68,38 @@ export function AddEditEventDialog({
         };
     }, [startDate, startTime, event, isEditing]);
 
-    function close_dialog() {
-        setData("repeat_id", "");
-        setData("startDate", new Date().toISOString());
-        setData("endDate", new Date().toISOString());
-        setData("date", formatDate(new Date().toISOString()));
-        setData("_startDate", formatDate(new Date().toISOString()));
-        setData("_endDate", formatDate(new Date().toISOString()));
-        setData("_startTime", "07:30:00");
-        setData("_endTime", "16:00:00");
-
-        setData("title", "");
-        setData("color", "orange");
-        setData("description", "Peminjaman Mobil");
-        setData("user", null);
-        return true;
-    }
-
     const { data, setData, post, processing, errors, reset } = useForm<
-        Required<IEvent>
+        Required<pinjam_mobil_req>
     >({
-        id: "",
-        repeat_id: "",
-        startDate: new Date().toISOString(),
-        endDate: new Date().toISOString(),
-        date: formatDate(new Date().toISOString()),
-        _startDate: formatDate(new Date().toISOString()),
-        _endDate: formatDate(new Date().toISOString()),
-        _startTime: "07:30:00",
-        _endTime: "16:00:00",
-        title: "Peminjaman Mobil",
-        color: "orange",
-        description: "Peminjaman Mobil",
-        user: null,
+        id: "12345",
+        kegiatan:  "Peminjaman Mobil",
+        tipe: 'string',
+        berulang_id: null,
+        tanggal: formatDate(new Date().toISOString()),
+        tanggal_awal: formatDate(new Date().toISOString()),
+        tanggal_akhir: formatDate(new Date().toISOString()),
+        waktu_awal: "07:30:00",
+        waktu_akhir: "16:00:00",
+        status: 1,
+        pembuat_username: '',
+        confirm_username: null
     });
 
     const submit: React.FormEventHandler = (e) => {
+        console.log('masukkkkkkkk')
         e.preventDefault();
         if (!isEditing) {
-            post(route("zoom-tambah"), {
-                onSuccess: () => {
-                    close_dialog();
-                },
-            });
+            post(route('pinjam-mobil-tambah')
+                , { async: true, showProgress: true,
+                    onSuccess: (page) => {
+                        addEvent()
+                    }
+                }
+            )
         } else {
-            post(route("zoom-ubah", { zoom_id: event.id }), {
+            post(route("pinjam-mobil-ubah", { pinjamMobil: event.id }), {
                 onSuccess: () => {
-                    close_dialog();
+                    updateEvent()
                 },
             });
         }
@@ -126,39 +108,46 @@ export function AddEditEventDialog({
     useEffect(() => {
 		if(event){
             if(event.repeat_id){
-                setTipe('berulang')
+                setData('tipe', 'berulang')
+                setData("id", 'xxxx-xxxx-xxxx');
+                setData("kegiatan", "Peminjaman Mobil");
+                setData('tipe', 'sekali')
+                setData("berulang_id", null);
+                setData("tanggal_awal",  formatDate(initialDates.startDate));
+                setData("tanggal_akhir",  formatDate(initialDates.endDate));
+                setData("tanggal", formatDate(initialDates.startDate));
+                setData("waktu_awal",formatTime(initialDates.startDate, use24HourFormat));
+                setData("waktu_akhir", formatTime(initialDates.endDate, use24HourFormat));
+                setData("status", 1);
+                setData('pembuat_username', '')
+                setData('confirm_username', '')
             }else{
-                setTipe('sekali')
-
-                setData("repeat_id", null);
-                setData("startDate",  `${event.date}T${event._startTime}`);
-                setData("endDate",  `${event.date}T${event._endTime}`);
-                setData("date", formatDate(event.date));
-                setData("_startDate", formatDate(event.date));
-                setData("_endDate", formatDate(event.date));
-                setData("_startTime", event._startTime);
-                setData("_endTime", event._endTime);
-
-                setData("title", event.title);
-                setData("color", "orange");
-                setData("description", "Peminjaman Mobil");
-                setData("user", null);
+                setData("id", event.id);
+                setData("kegiatan", event.title);
+                setData('tipe', 'sekali')
+                setData("berulang_id", null);
+                setData("tanggal_awal",  formatDate(event.date));
+                setData("tanggal_akhir",  formatDate(event.date));
+                setData("tanggal", formatDate(event.date));
+                setData("waktu_awal", event._startTime);
+                setData("waktu_akhir", event._endTime);
+                setData("status", event.pinjam_mobil_ori.status);
+                setData('pembuat_username', event.pinjam_mobil_ori.pembuat_username)
+                setData('confirm_username', event.pinjam_mobil_ori.confirm_username)
             }
         }else{
-            setTipe('sekali')
-            setData("repeat_id", null);
-            setData("startDate",  initialDates.startDate.toISOString());
-            setData("endDate",  initialDates.endDate.toISOString());
-            setData("date", formatDate(initialDates.startDate));
-            setData("_startDate", formatDate(initialDates.startDate));
-            setData("_endDate", formatDate(initialDates.endDate));
-            setData("_startTime", formatTime(initialDates.startDate, use24HourFormat));
-            setData("_endTime",formatTime(initialDates.endDate, use24HourFormat));
-
-            setData("title", "Peminjaman Mobil");
-            setData("color", "orange");
-            setData("description", "Peminjaman Mobil");
-            setData("user", null);
+            setData("id", 'xxxx-xxxx-xxxx');
+            setData("kegiatan", "Peminjaman Mobil");
+            setData('tipe', 'sekali')
+            setData("berulang_id", null);
+            setData("tanggal_awal",  formatDate(initialDates.startDate));
+            setData("tanggal_akhir",  formatDate(initialDates.endDate));
+            setData("tanggal", formatDate(initialDates.startDate));
+            setData("waktu_awal",formatTime(initialDates.startDate, use24HourFormat));
+            setData("waktu_akhir", formatTime(initialDates.endDate, use24HourFormat));
+            setData("status", 1);
+            setData('pembuat_username', '')
+            setData('confirm_username', '')
         }
 	}, [event, initialDates]);
 
@@ -197,13 +186,13 @@ export function AddEditEventDialog({
                                 id="title-1"
                                 name="title"
                                 required
-                                value={data.title}
+                                value={data.kegiatan}
                                 onChange={(e) =>
-                                    setData("title", e.target.value)
+                                    setData("kegiatan", e.target.value)
                                 }
                                 className="text-secondary"
                             />
-                            <InputError message={errors.title} />
+                            <InputError message={errors.kegiatan} />
                         </div>
                         <div className="grid gap-3">
                             <Label
@@ -215,9 +204,9 @@ export function AddEditEventDialog({
                             <Select
                                 name="tipe"
                                 required
-                                value={tipe}
+                                value={data.tipe}
                                 onValueChange={(value) => {
-                                    setTipe(value)
+                                    setData("tipe", value)
                                 }}
                             >
                                 <SelectTrigger
@@ -243,20 +232,21 @@ export function AddEditEventDialog({
                                 className="text-secondary"
                                 htmlFor="starttime-1"
                             >
-                                {data.title == 'sekali' ? <>Tanggal</> : <>Tanggal Awal</>}
+                                {data.tipe == 'sekali' ? <>Tanggal</> : <>Tanggal Awal</>}
                             </Label>
                             <DatePicker22
                                 value={initialDates.startDate}
                                 setValue={(value) => {
-                                    setData("date", formatDate(value.toISOString()));
-                                    setData("_startDate", formatDate(value.toISOString()));
+                                    setData("tanggal", formatDate(value.toISOString()));
+                                    setData("tanggal_awal", formatDate(value.toISOString()));
                                 }}
                                 modal={true}
                             />
-                            <InputError message={errors._startDate} />
+                            <InputError message={errors.tanggal} />
+                            <InputError message={errors.tanggal_awal} />
                         </div>
-                        {data.title == 'berulang' && <>
-                             <div className="grid gap-3">
+                        {data.tipe == 'berulang' ? <>
+                            <div className="grid gap-3">
                                 <Label
                                     className="text-secondary"
                                     htmlFor="starttime-1"
@@ -266,13 +256,13 @@ export function AddEditEventDialog({
                                 <DatePicker22
                                     value={initialDates.startDate}
                                     setValue={(value) => {
-                                        setData("_endDate", formatDate(value.toISOString()));
+                                        setData("tanggal_akhir", formatDate(value.toISOString()));
                                     }}
                                     modal={true}
                                 />
-                                <InputError message={errors._endDate} />
+                                <InputError message={errors.tanggal_akhir} />
                             </div>
-                        </>}
+                        </> : <></>}
 
                         <div className="grid gap-3">
                             <Label
@@ -282,13 +272,13 @@ export function AddEditEventDialog({
                                 Waktu Awal
                             </Label>
                             <Time24Picker
-                                value={new Date(data.startDate)}
+                                value={new Date(`${data.tanggal}T${data.waktu_awal}`)}
                                 setValue={(value) => {
-                                    setData("_startTime", value);
+                                    setData("waktu_awal", value);
                                 }}
                                 modal={true}
                             />
-                            <InputError message={errors._startTime} />
+                            <InputError message={errors.waktu_awal} />
                         </div>
                         <div className="grid gap-3">
                             <Label
@@ -298,26 +288,26 @@ export function AddEditEventDialog({
                                 Waktu Akhir
                             </Label>
                              <Time24Picker
-                                value={new Date(data.endDate)}
+                                value={new Date(`${data.tanggal}T${data.waktu_akhir}`)}
                                 setValue={(value) => {
-                                    setData("_endTime", value);
+                                    setData("waktu_akhir", value);
                                 }}
                                 modal={true}
                             />
-                            <InputError message={errors._endTime} />
+                            <InputError message={errors.waktu_akhir} />
                         </div>
                     </div>
-                </form>
-                <ModalFooter className="flex justify-end gap-2">
-                    <ModalClose asChild>
-                        <Button type="button" variant="outline" className="text-accent-foreground">
-                            Cancel
+                    <ModalFooter className="flex justify-end gap-2">
+                        <ModalClose asChild>
+                            <Button type="button" variant="outline" className="text-accent-foreground">
+                                Cancel
+                            </Button>
+                        </ModalClose>
+                        <Button type="submit">
+                            {isEditing ? "Simpan Perubahan" : "Buat"}
                         </Button>
-                    </ModalClose>
-                    <Button form="event-form" type="submit">
-                        {isEditing ? "Simpan Perubahan" : "Buat"}
-                    </Button>
-                </ModalFooter>
+                    </ModalFooter>
+                </form>
             </ModalContent>
         </Modal>
     );

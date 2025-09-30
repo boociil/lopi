@@ -53,7 +53,7 @@ export function CalendarYearView({ singleDayEvents, multiDayEvents }: IProps) {
 					return (
 						<motion.div
 							key={month}
-							className="flex flex-col border border-border rounded-lg shadow-sm overflow-hidden"
+							className="flex flex-col border border-accent-foreground text-accent-foreground rounded-lg shadow-sm overflow-hidden"
 							initial={{ opacity: 0, scale: 0.95 }}
 							animate={{ opacity: 1, scale: 1 }}
 							transition={{ delay: monthIndex * 0.05, ...transition }}
