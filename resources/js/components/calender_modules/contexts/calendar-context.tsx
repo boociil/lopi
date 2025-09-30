@@ -57,69 +57,63 @@ const CalendarContext = createContext({} as ICalendarContext);
 
 export function CalendarProvider({
     settingCalender,
-	users,
-    setUsers,
-    settings,
-    setSettings,
-    badgeVariant,
-    setBadgeVariantState,
-    currentView,
-    setCurrentViewState,
-    use24HourFormat,
-    setUse24HourFormatState,
-    agendaModeGroupBy,
-    setAgendaModeGroupByState,
-    selectedDate,
-    setSelectedDate,
-    selectedUserId,
-    setSelectedUserId,
-    selectedColors,
-    setSelectedColors,
-    allEvents,
-    setAllEvents,
-    filteredEvents,
-    setFilteredEvents,
-
+    _user,
+    _allEvents,
     AddEditEventDialog,
     DeleteEventDialog,
     DndConfirmationDialog,
     EventDetailsDialog,
     EventDropConfirmationDialog,
     EventListDialog,
+    reload_data,
     children,
 }: {
+    _user: IUser[];
+    _allEvents: IEvent[];
 	settingCalender: SettingCalender;
-	users: IUser[];
-    setUsers: (users: IUser[]) => void;
-    settings: CalendarSettings;
-    setSettings: (settings: CalendarSettings) => void;
-    badgeVariant: "dot" | "colored";
-    setBadgeVariantState: (badgeVariant: "dot" | "colored") => void;
-    currentView: TCalendarView;
-    setCurrentViewState: (currentView: TCalendarView) => void;
-    use24HourFormat: boolean;
-    setUse24HourFormatState: (use24HourFormat: boolean) => void;
-    agendaModeGroupBy: "date" | "color";
-    setAgendaModeGroupByState: (agendaModeGroupBy: "date" | "color") => void;
-    selectedDate: Date;
-    setSelectedDate: (selectedDate: Date) => void;
-    selectedUserId: IUser["id"] | "all";
-    setSelectedUserId: (selectedUserId: IUser["id"] | "all") => void;
-    selectedColors: TEventColor[];
-    setSelectedColors: (selectedColors: TEventColor[]) => void;
-    allEvents: IEvent[];
-    setAllEvents: (allEvents: IEvent[]) => void;
-    filteredEvents: IEvent[];
-    setFilteredEvents: (filteredEvents: IEvent[]) => void;
-
     AddEditEventDialog: React.ComponentType<Add_Edit_Event_IProps>;
     DeleteEventDialog: React.ComponentType<Delete_Event_Dialog_IProps>;
     DndConfirmationDialog: MemoExoticComponent<() => JSX.Element | null>;
     EventDetailsDialog: React.ComponentType<Event_Details_Dialog_IProps>;
     EventDropConfirmationDialog: React.ComponentType<Event_Drop_Confirmation_Dialog_IProps>;
     EventListDialog: React.ComponentType<Event_List_Dialog_IProps>;
+    reload_data: (selectedDate: Date, currentView: TCalendarView, setAllEventsOri: (_allEvents: IEvent[]) => void) => void;
     children: React.ReactNode;
 }) {
+
+    const [users, setUsers] = useState<IUser[]>(_user);
+    const [allEvents, setAllEvents] = useState<IEvent[]>(_allEvents || []);
+    const [filteredEvents, setFilteredEvents] = useState<IEvent[]>(_allEvents || []);
+
+    const [settings, setSettings] = useLocalStorage<CalendarSettings>(
+        "pinjam_mobil_calender",
+        {
+            badgeVariant: "colored",
+            use24HourFormat: true,
+            agendaModeGroupBy: "date",
+            view: "week",
+        },
+    );
+
+    const [badgeVariant, setBadgeVariantState] = useState<"dot" | "colored">(
+        settings.badgeVariant,
+    );
+    const [currentView, setCurrentViewState] = useState<TCalendarView>(
+        settings.view,
+    );
+    const [use24HourFormat, setUse24HourFormatState] = useState<boolean>(
+        settings.use24HourFormat,
+    );
+    const [agendaModeGroupBy, setAgendaModeGroupByState] = useState<
+        "date" | "color"
+    >(settings.agendaModeGroupBy);
+
+    const [selectedDate, setSelectedDate] = useState(new Date());
+    const [selectedUserId, setSelectedUserId] = useState<IUser["id"] | "all">(
+        "all",
+    );
+    const [selectedColors, setSelectedColors] = useState<TEventColor[]>([]);
+
 
 	const updateSettings = (newPartialSettings: Partial<CalendarSettings>) => {
 		setSettings({
@@ -136,6 +130,7 @@ export function CalendarProvider({
 	const setView = (newView: TCalendarView) => {
 		setCurrentViewState(newView);
 		updateSettings({ view: newView });
+        reload_data(selectedDate, currentView, setAllEventsOri)
 	};
 
 	const toggleTimeFormat = () => {
@@ -154,33 +149,23 @@ export function CalendarProvider({
 		const newColors = isColorSelected
 			? selectedColors.filter((c) => c !== color)
 			: [...selectedColors, color];
-
-		if (newColors.length > 0) {
-			const filtered = allEvents.filter((event) => {
-				const eventColor = event.color || "blue";
-				return newColors.includes(eventColor);
-			});
-			setFilteredEvents(filtered);
-		} else {
-			setFilteredEvents(allEvents);
-		}
-
 		setSelectedColors(newColors);
+
+        runFilter();
 	};
 
 	const filterEventsBySelectedUser = (userId: IUser["id"] | "all") => {
+        if(userId == null){
+            return
+        }
 		setSelectedUserId(userId);
-		if (userId === "all") {
-			setFilteredEvents(allEvents);
-		} else {
-			const filtered = allEvents.filter((event) => event.user?.id === userId);
-			setFilteredEvents(filtered);
-		}
+		runFilter();
 	};
 
 	const handleSelectDate = (date: Date | undefined) => {
 		if (!date) return;
 		setSelectedDate(date);
+        reload_data(selectedDate, currentView, setAllEventsOri)
 	};
 
 	const addEvent = (event: IEvent) => {
@@ -238,6 +223,29 @@ export function CalendarProvider({
             }
         });
         return return_data
+    }
+
+    function setAllEventsOri(_oriAllEvent: IEvent[]){
+        setAllEvents(_oriAllEvent)
+        runFilter()
+    }
+
+    function runFilter(){
+		if (selectedUserId === "all" && selectedColors.length == 0) {
+			setFilteredEvents(allEvents);
+		}else {
+			let filtered = allEvents;
+            if(selectedUserId != 'all'){
+                filtered = filtered.filter((event) => event.user?.id === selectedUserId);
+            }
+            if(selectedColors.length > 0){
+                filtered = filtered.filter((event) => {
+                    const eventColor = event.color || "blue";
+                    return selectedColors.includes(eventColor);
+                });
+            }
+			setFilteredEvents(filtered);
+		}
     }
 
 	return (

@@ -16,6 +16,7 @@ use App\Model\Lopi\Pinjam_Mobil;
 use App\Model\Umum\User;
 use Exception;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
 use function PHPUnit\Framework\isNull;
@@ -25,19 +26,30 @@ class Pinjam_Mobil_Controller extends Controller
     public function index(Request $request)
     {
         $validated = $request->validate([
-            'tanggal_awal'      => 'date',
-            'tanggal_akhir'     => 'date|after_or_equal:tanggal_awal',
+            'selectedDate'  => 'date',
+            'view'          => 'string',
+            'view'          => Rule::in(['day', 'week', 'month', 'year', 'agenda'])
         ]);
 
         $tanggal_awal = null;
         $tanggal_akhir = null;
 
-        if($request->has('tanggal_awal') && $request->has('tanggal_akhir')){
-            $tanggal_awal = $request->input('tanggal_awal');
-            $tanggal_akhir = $request->input('tanggal_akhir');
-        }
-
-        if(! ($tanggal_awal && $tanggal_akhir) ){
+        if($request->has('selectedDate') && $request->has('view')){
+            $date = Carbon::parse($request->input('selectedDate'));
+            if($request->has('view') == 'day'){
+                $tanggal_awal = $date->copy();
+                $tanggal_akhir = $date->copy();
+            }else  if($request->has('view') == 'week'){
+                $tanggal_awal = $date->copy()->startOfWeek(Carbon::SUNDAY);
+                $tanggal_akhir = $date->copy()->endOfWeek(Carbon::SUNDAY);
+            }else if($request->has('view') == 'month' || $request->has('view') == 'agenda'){
+                $tanggal_awal = $date->copy()->startOfMonth();
+                $tanggal_akhir = $date->copy()->endOfMonth();
+            }else if($request->has('view') == 'year'){
+                $tanggal_awal = $date->copy()->startOfYear();
+                $tanggal_akhir = $date->copy()->endOfYear();
+            }
+        }else{
             $date = Carbon::today();
             $tanggal_awal = $date->startOfWeek(Carbon::SUNDAY);
             $tanggal_akhir = $date->endOfWeek(Carbon::SUNDAY);
@@ -52,11 +64,11 @@ class Pinjam_Mobil_Controller extends Controller
         $user = User::all();
 
         return Inertia::render('mobil', [
-            "tanggal_awal" => $request->input('tanggal_awal'),
-            "tanggal_akhir" => $request->input('tanggal_akhir'),
+            "tanggal_awal" => $tanggal_awal->format('Y-m-d'),
+            "tanggal_akhir" => $tanggal_akhir->format('Y-m-d'),
             "have_mobil_peran" => $have_mobil_peran ? true : false,
             "user" => $user,
-            "data" =>  Pinjam_Mobil::orWhereBetween('tanggal', [$request->input('tanggal_awal'), $request->input('tanggal_akhir')])
+            "data" =>  Pinjam_Mobil::orWhereBetween('tanggal', [$tanggal_awal->format('Y-m-d'), $tanggal_akhir->format('Y-m-d')])
                             ->get(),
         ]);
     }

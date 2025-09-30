@@ -35,6 +35,7 @@ import {
     formatDate,
     formatTime
 } from "@/components/calender_modules/helpers";
+import { Time24Picker } from "@/components/ui/time24-picker";
 
 export function AddEditEventDialog({
     children,
@@ -99,7 +100,7 @@ export function AddEditEventDialog({
         _endDate: formatDate(new Date().toISOString()),
         _startTime: "07:30:00",
         _endTime: "16:00:00",
-        title: "",
+        title: "Peminjaman Mobil",
         color: "orange",
         description: "Peminjaman Mobil",
         user: null,
@@ -145,7 +146,19 @@ export function AddEditEventDialog({
             }
         }else{
             setTipe('sekali')
-            close_dialog()
+            setData("repeat_id", null);
+            setData("startDate",  initialDates.startDate.toISOString());
+            setData("endDate",  initialDates.endDate.toISOString());
+            setData("date", formatDate(initialDates.startDate));
+            setData("_startDate", formatDate(initialDates.startDate));
+            setData("_endDate", formatDate(initialDates.endDate));
+            setData("_startTime", formatTime(initialDates.startDate, use24HourFormat));
+            setData("_endTime",formatTime(initialDates.endDate, use24HourFormat));
+
+            setData("title", "Peminjaman Mobil");
+            setData("color", "orange");
+            setData("description", "Peminjaman Mobil");
+            setData("user", null);
         }
 	}, [event, initialDates]);
 
@@ -158,24 +171,23 @@ export function AddEditEventDialog({
                 <ModalHeader>
                     <ModalTitle>
                         {isEditing ? (
-                            <>"Ubah " {settingCalender.name_event}</>
+                            <>Ubah {settingCalender.name_event}</>
                         ) : (
-                            <>"Tambah" {settingCalender.name_event}</>
+                            <>Tambah {settingCalender.name_event}</>
                         )}
                     </ModalTitle>
                     <ModalDescription>
                         {isEditing ? (
                             <>
-                                "Ubah " {settingCalender.name_event} " yang
-                                sudah ada."
+                                Ubah {settingCalender.name_event} yang sudah ada.
                             </>
                         ) : (
-                            <>Buat acara baru untuk kalender Anda.</>
+                            <>Buat {settingCalender.name_event} baru untuk kalender Anda.</>
                         )}
                     </ModalDescription>
                 </ModalHeader>
 
-                <form className="flex flex-col gap-6" onSubmit={submit}>
+                <form className="flex flex-col gap-6 mt-5 mb-5" onSubmit={submit}>
                     <div className="grid gap-4">
                         <div className="grid gap-3">
                             <Label className="text-secondary" htmlFor="title-1">
@@ -211,7 +223,9 @@ export function AddEditEventDialog({
                                 <SelectTrigger
                                     name="zoom_status"
                                     className="text-secondary"
-                                ></SelectTrigger>
+                                >
+                                    <SelectValue placeholder="Pilih Tipe" />
+                                </SelectTrigger>
                                 <SelectContent>
                                     <SelectGroup>
                                         <SelectItem value="sekali">
@@ -229,7 +243,7 @@ export function AddEditEventDialog({
                                 className="text-secondary"
                                 htmlFor="starttime-1"
                             >
-                                Tanggal Awal
+                                {data.title == 'sekali' ? <>Tanggal</> : <>Tanggal Awal</>}
                             </Label>
                             <DatePicker22
                                 value={initialDates.startDate}
@@ -241,22 +255,25 @@ export function AddEditEventDialog({
                             />
                             <InputError message={errors._startDate} />
                         </div>
-                        <div className="grid gap-3">
-                            <Label
-                                className="text-secondary"
-                                htmlFor="starttime-1"
-                            >
-                                Tanggal Akhir
-                            </Label>
-                            <DatePicker22
-                                value={initialDates.startDate}
-                                setValue={(value) => {
-                                    setData("_endDate", formatDate(value.toISOString()));
-                                }}
-                                modal={true}
-                            />
-                            <InputError message={errors._endDate} />
-                        </div>
+                        {data.title == 'berulang' && <>
+                             <div className="grid gap-3">
+                                <Label
+                                    className="text-secondary"
+                                    htmlFor="starttime-1"
+                                >
+                                    Tanggal Akhir
+                                </Label>
+                                <DatePicker22
+                                    value={initialDates.startDate}
+                                    setValue={(value) => {
+                                        setData("_endDate", formatDate(value.toISOString()));
+                                    }}
+                                    modal={true}
+                                />
+                                <InputError message={errors._endDate} />
+                            </div>
+                        </>}
+
                         <div className="grid gap-3">
                             <Label
                                 className="text-secondary"
@@ -264,16 +281,12 @@ export function AddEditEventDialog({
                             >
                                 Waktu Awal
                             </Label>
-                            <Input
-                                type="time"
-                                id="time-picker"
-                                step="1"
-                                defaultValue="10:30:00"
-                                className="bg-background appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none"
-                                value={data._startTime}
-                                onChange={(e) =>
-                                    setData("_startTime", e.target.value)
-                                }
+                            <Time24Picker
+                                value={new Date(data.startDate)}
+                                setValue={(value) => {
+                                    setData("_startTime", value);
+                                }}
+                                modal={true}
                             />
                             <InputError message={errors._startTime} />
                         </div>
@@ -284,16 +297,12 @@ export function AddEditEventDialog({
                             >
                                 Waktu Akhir
                             </Label>
-                            <Input
-                                type="time"
-                                id="time-picker"
-                                step="1"
-                                defaultValue="10:30:00"
-                                className="bg-background appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none"
-                                value={data._endTime}
-                                onChange={(e) =>
-                                    setData("_startTime", e.target.value)
-                                }
+                             <Time24Picker
+                                value={new Date(data.endDate)}
+                                setValue={(value) => {
+                                    setData("_endTime", value);
+                                }}
+                                modal={true}
                             />
                             <InputError message={errors._endTime} />
                         </div>
@@ -301,7 +310,7 @@ export function AddEditEventDialog({
                 </form>
                 <ModalFooter className="flex justify-end gap-2">
                     <ModalClose asChild>
-                        <Button type="button" variant="outline">
+                        <Button type="button" variant="outline" className="text-accent-foreground">
                             Cancel
                         </Button>
                     </ModalClose>

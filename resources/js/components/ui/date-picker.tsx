@@ -30,14 +30,14 @@ export function DatePicker22({
                 <Button
                     variant="outline"
                     id="date"
-                    className="w-48 justify-between font-normal"
+                    className="justify-between font-normal text-secondary"
                 >
-                    {date ? date.toLocaleDateString() : "Select date"}
+                    {date ? date.toLocaleDateString() : "Pilih Tanggal"}
                     <ChevronDownIcon />
                 </Button>
             </PopoverTrigger>
             <PopoverContent
-                className="w-auto overflow-hidden p-0"
+                className="w-auto overflow-hidden p-0 text-secondary"
                 align="start"
             >
                 <Calendar
