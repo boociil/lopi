@@ -23,7 +23,7 @@ interface IProps {
 }
 
 export function CalendarWeekView({singleDayEvents, multiDayEvents}: IProps) {
-    const {selectedDate, use24HourFormat, AddEditEventDialog} = useCalendar();
+    const {selectedDate, use24HourFormat, AddEditEventDialog, canAdd} = useCalendar();
 
     const weekStart = startOfWeek(selectedDate);
     const weekDays = Array.from({length: 7}, (_, i) => addDays(weekStart, i));
@@ -165,13 +165,16 @@ export function CalendarWeekView({singleDayEvents, multiDayEvents}: IProps) {
                                                         minute={0}
                                                         className="absolute inset-x-0 top-0  h-[48px]"
                                                     >
-                                                        <AddEditEventDialog
-                                                            startDate={day}
-                                                            startTime={{hour, minute: 0}}
-                                                        >
-                                                            <div
-                                                                className="absolute inset-0 cursor-pointer transition-colors hover:bg-secondary"/>
-                                                        </AddEditEventDialog>
+                                                        {canAdd() &&
+                                                            <AddEditEventDialog
+                                                                startDate={day}
+                                                                startTime={{hour, minute: 0}}
+                                                            >
+                                                                <div
+                                                                    className="absolute inset-0 cursor-pointer transition-colors hover:bg-secondary"/>
+                                                            </AddEditEventDialog>
+                                                        }
+
                                                     </DroppableArea>
 
                                                     <div
@@ -183,13 +186,16 @@ export function CalendarWeekView({singleDayEvents, multiDayEvents}: IProps) {
                                                         minute={30}
                                                         className="absolute inset-x-0 bottom-0 h-[48px]"
                                                     >
-                                                        <AddEditEventDialog
-                                                            startDate={day}
-                                                            startTime={{hour, minute: 30}}
-                                                        >
-                                                            <div
-                                                                className="absolute inset-0 cursor-pointer transition-colors hover:bg-secondary"/>
-                                                        </AddEditEventDialog>
+                                                         {canAdd() &&
+                                                            <AddEditEventDialog
+                                                                startDate={day}
+                                                                startTime={{hour, minute: 30}}
+                                                            >
+                                                                <div
+                                                                    className="absolute inset-0 cursor-pointer transition-colors hover:bg-secondary"/>
+                                                            </AddEditEventDialog>
+                                                        }
+
                                                     </DroppableArea>
                                                 </motion.div>
                                             ))}

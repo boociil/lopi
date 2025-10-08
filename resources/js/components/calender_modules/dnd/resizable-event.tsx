@@ -32,7 +32,8 @@ export function ResizableEvent({
 	children,
 	className,
 }: ResizableEventBlockProps) {
-	const { updateEvent, use24HourFormat } = useCalendar();
+	const { updateEventDragRezise, use24HourFormat } = useCalendar();
+    const { canChange } = useCalendar();
 
 	const [isResizing, setIsResizing] = useState(false);
 	const [resizePreview, setResizePreview] = useState<{
@@ -86,12 +87,12 @@ export function ResizableEvent({
 				newEnd = resizeBoundaries.dayEnd;
 			}
 
-			setResizePreview({
-				start: format(newStart, use24HourFormat ? "HH:mm" : "h:mm a"),
-				end: format(newEnd, use24HourFormat ? "HH:mm" : "h:mm a"),
-			});
+            setResizePreview({
+                start: format(newStart, use24HourFormat ? "HH:mm" : "h:mm a"),
+                end: format(newEnd, use24HourFormat ? "HH:mm" : "h:mm a"),
+            });
 
-			updateEvent({
+			updateEventDragRezise({
 				...event,
 				startDate: newStart.toISOString(),
 				endDate: newEnd.toISOString(),
@@ -103,7 +104,7 @@ export function ResizableEvent({
 			durationInMinutes,
 			resizeBoundaries,
 			use24HourFormat,
-			updateEvent,
+			updateEventDragRezise,
 			event,
 		],
 	);
@@ -118,8 +119,8 @@ export function ResizableEvent({
 			minHeight: 15,
 			maxHeight: 1440,
 			enable: {
-				top: true,
-				bottom: true,
+				top: canChange(event),
+				bottom: canChange(event),
 				topRight: false,
 				bottomRight: false,
 				bottomLeft: false,

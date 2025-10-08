@@ -69,7 +69,7 @@ function Views() {
                                 "flex h-8 items-center justify-center overflow-hidden rounded-md",
                                 isActive ? "flex-1" : "flex-none",
                             )}
-                            onClick={() => setView(value as TCalendarView)}
+                            // onClick={() => setView(value as TCalendarView)}
                             initial={false}
                             animate={{
                                 width: isActive ? 120 : 32,

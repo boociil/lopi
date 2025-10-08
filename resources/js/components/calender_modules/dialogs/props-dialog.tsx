@@ -2,6 +2,13 @@ import { ReactNode } from "react";
 import { IEvent } from "../interfaces";
 import { PinjamMobilIEvent } from "@/props/mobil/types";
 
+export interface Add_Edit_Event_IProps {
+    children: ReactNode;
+    startDate?: Date;
+    startTime?: { hour: number; minute: number };
+    event?: IEvent;
+}
+
 export interface Delete_Event_Dialog_IProps {
 	eventId: string;
 }

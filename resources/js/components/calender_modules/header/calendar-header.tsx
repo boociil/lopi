@@ -26,7 +26,7 @@ import { Settings } from "@/components/calender_modules/settings/settings";
 import Views from "./view-tabs";
 
 export function CalendarHeader() {
-	const { view, events, settingCalender, AddEditEventDialog } = useCalendar();
+	const { view, events, settingCalender, AddEditEventDialog, canAdd } = useCalendar();
 
 	return (
 		<div className="flex flex-col gap-4 border-b border-accent-foreground p-4 lg:flex-row lg:items-center lg:justify-between">
@@ -60,12 +60,14 @@ export function CalendarHeader() {
                         (<UserSelect />)
                     }
 
-					<AddEditEventDialog>
-						<Button>
-							<Plus className="h-4 w-4" />
-							Add Event
-						</Button>
-					</AddEditEventDialog>
+                    {canAdd() &&
+                        <AddEditEventDialog>
+                            <Button>
+                                <Plus className="h-4 w-4" />
+                                Add Event
+                            </Button>
+                        </AddEditEventDialog>
+                    }
 				</div>
 				{/* <Settings /> */}
 			</motion.div>

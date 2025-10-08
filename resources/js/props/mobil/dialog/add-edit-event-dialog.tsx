@@ -32,7 +32,10 @@ import {
     formatTime
 } from "@/components/calender_modules/helpers";
 import { Time24Picker } from "@/components/ui/time24-picker";
-import { Add_Edit_Event_IProps, pinjam_mobil_req, type pinjam_mobil } from "../types";
+import { pinjam_mobil_req, PinjamMobilIEvent, producePinjamMobilIEvent, type pinjam_mobil } from "../types";
+import { IEvent } from "@/components/calender_modules/interfaces";
+import { Add_Edit_Event_IProps } from "@/components/calender_modules/dialogs/props-dialog";
+import { useApiForm } from "@/lib/API/useAPIForm";
 
 export function AddEditEventDialog({
     children,
@@ -41,7 +44,7 @@ export function AddEditEventDialog({
     event,
 }: Add_Edit_Event_IProps) {
     const { isOpen, onClose, onToggle } = useDisclosure();
-    const { addEvent, updateEvent, settingCalender, use24HourFormat } = useCalendar();
+    const { addEvent, updateEvent, getRepeatEventById, settingCalender, use24HourFormat } = useCalendar();
     const isEditing = !!event;
     // const [tipe, setTipe] = useState<string>("sekali");
 
@@ -62,13 +65,23 @@ export function AddEditEventDialog({
             return { startDate: start, endDate: end };
         }
 
-        return {
-            startDate: new Date(event.startDate),
-            endDate: new Date(event.endDate),
-        };
+        if(event.repeat_id == null){
+             return {
+                startDate: new Date(event.startDate),
+                endDate: new Date(event.endDate),
+            };
+        }else{
+            const repeatEvent: IEvent[] = getRepeatEventById(event.repeat_id)
+            return {
+                startDate: new Date(repeatEvent[0].startDate),
+                endDate: new Date(repeatEvent[repeatEvent.length - 1].endDate),
+            };
+        }
+
+
     }, [startDate, startTime, event, isEditing]);
 
-    const { data, setData, post, processing, errors, reset } = useForm<
+    const { data, setData, post, processing, errors, reset } = useApiForm<
         Required<pinjam_mobil_req>
     >({
         id: "12345",
@@ -80,34 +93,58 @@ export function AddEditEventDialog({
         tanggal_akhir: formatDate(new Date().toISOString()),
         waktu_awal: "07:30:00",
         waktu_akhir: "16:00:00",
-        status: 1,
+        status: 'menunggu',
         pembuat_username: '',
         confirm_username: null
     });
 
     const submit: React.FormEventHandler = (e) => {
-        console.log('masukkkkkkkk')
         e.preventDefault();
         if (!isEditing) {
+            toast.info('Mencoba menambahkan data baru !')
             post(route('pinjam-mobil-tambah')
                 , { async: true, showProgress: true,
                     onSuccess: (page) => {
-                        addEvent()
+                        try {
+                            const return_data = page.props.data as pinjam_mobil[]
+                            addEvent(producePinjamMobilIEvent(return_data))
+                            toast.success('Berhasil menambahkan data baru !')
+                        } catch (error) {
+                            console.log(error)
+                            toast.error('Gagal menambahkan data baru !')
+                        }
+                    },
+                    onError: (page) => {
+                        toast.error('Gagal menambahkan data baru !')
                     }
                 }
             )
         } else {
-            post(route("pinjam-mobil-ubah", { pinjamMobil: event.id }), {
-                onSuccess: () => {
-                    updateEvent()
-                },
-            });
+            toast.info('Mencoba mengubah data !')
+            post(route("pinjam-mobil-ubah", { pinjamMobil: event.id })
+                , { async: true, showProgress: true,
+                    onSuccess: (page) => {
+                        try {
+                            const return_data = page.props.data as pinjam_mobil[]
+                            updateEvent(producePinjamMobilIEvent(return_data))
+                            toast.success('Berhasil mengubah data !')
+                        } catch (error) {
+                            console.log(error)
+                            toast.error('Gagal mengubah data !')
+                        }
+                    },
+                    onError: (page) => {
+                        toast.error('Gagal mengubah data !')
+                    }
+                });
         }
     };
 
     useEffect(() => {
 		if(event){
+            const event_: PinjamMobilIEvent = event as PinjamMobilIEvent
             if(event.repeat_id){
+                const repeatEvent: IEvent[] = getRepeatEventById(event.repeat_id)
                 setData('tipe', 'berulang')
                 setData("id", 'xxxx-xxxx-xxxx');
                 setData("kegiatan", "Peminjaman Mobil");
@@ -118,9 +155,9 @@ export function AddEditEventDialog({
                 setData("tanggal", formatDate(initialDates.startDate));
                 setData("waktu_awal",formatTime(initialDates.startDate, use24HourFormat));
                 setData("waktu_akhir", formatTime(initialDates.endDate, use24HourFormat));
-                setData("status", 1);
-                setData('pembuat_username', '')
-                setData('confirm_username', '')
+                setData("status", event_.pinjam_mobil_ori.status);
+                setData('pembuat_username', event_.pinjam_mobil_ori.pembuat_username)
+                setData('confirm_username', event_.pinjam_mobil_ori.confirm_username)
             }else{
                 setData("id", event.id);
                 setData("kegiatan", event.title);
@@ -131,9 +168,9 @@ export function AddEditEventDialog({
                 setData("tanggal", formatDate(event.date));
                 setData("waktu_awal", event._startTime);
                 setData("waktu_akhir", event._endTime);
-                setData("status", event.pinjam_mobil_ori.status);
-                setData('pembuat_username', event.pinjam_mobil_ori.pembuat_username)
-                setData('confirm_username', event.pinjam_mobil_ori.confirm_username)
+                setData("status", event_.pinjam_mobil_ori.status);
+                setData('pembuat_username', event_.pinjam_mobil_ori.pembuat_username)
+                setData('confirm_username', event_.pinjam_mobil_ori.confirm_username)
             }
         }else{
             setData("id", 'xxxx-xxxx-xxxx');
@@ -145,7 +182,7 @@ export function AddEditEventDialog({
             setData("tanggal", formatDate(initialDates.startDate));
             setData("waktu_awal",formatTime(initialDates.startDate, use24HourFormat));
             setData("waktu_akhir", formatTime(initialDates.endDate, use24HourFormat));
-            setData("status", 1);
+            setData("status", 'menunggu');
             setData('pembuat_username', '')
             setData('confirm_username', '')
         }

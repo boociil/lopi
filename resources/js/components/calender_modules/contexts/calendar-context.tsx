@@ -29,13 +29,15 @@ interface ICalendarContext {
 	filterEventsBySelectedUser: (userId: IUser["id"] | "all") => void;
 	users: IUser[];
 	events: IEvent[];
-	addEvent: (event: IEvent) => void;
-	updateEvent: (event: IEvent) => void;
+	addEvent: (event: IEvent[]) => void;
+    updateEventDragRezise: (event: IEvent) => void;
+	updateEvent: (event: IEvent[]) => void;
 	removeEvent: (eventId: string) => void;
 	clearFilter: () => void;
     getEvent: (eventId: string) => IEvent | undefined;
     getSingleDaysEvent: () => IEvent[],
     getMultipleDaysEvent: () => IEvent[],
+    getRepeatEventById: (repeat_id: string) => IEvent[],
     settingCalender: SettingCalender;
 
     AddEditEventDialog: React.ComponentType<Add_Edit_Event_IProps>;
@@ -44,14 +46,11 @@ interface ICalendarContext {
     EventDetailsDialog: React.ComponentType<Event_Details_Dialog_IProps>;
     EventDropConfirmationDialog: React.ComponentType<Event_Drop_Confirmation_Dialog_IProps>;
     EventListDialog: React.ComponentType<Event_List_Dialog_IProps>;
-}
 
-const DEFAULT_SETTINGS: CalendarSettings = {
-	badgeVariant: "colored",
-	view: "day",
-	use24HourFormat: true,
-	agendaModeGroupBy: "date",
-};
+    canAdd: () => boolean;
+    canChange: (event: IEvent) => boolean;
+    canApprove: (event: IEvent) => boolean;
+}
 
 const CalendarContext = createContext({} as ICalendarContext);
 
@@ -66,6 +65,10 @@ export function CalendarProvider({
     EventDropConfirmationDialog,
     EventListDialog,
     reload_data,
+    updateDataRequest,
+    canAdd,
+    canChange,
+    canApprove,
     children,
 }: {
     _user: IUser[];
@@ -78,6 +81,10 @@ export function CalendarProvider({
     EventDropConfirmationDialog: React.ComponentType<Event_Drop_Confirmation_Dialog_IProps>;
     EventListDialog: React.ComponentType<Event_List_Dialog_IProps>;
     reload_data: (selectedDate: Date, currentView: TCalendarView, setAllEventsOri: (_allEvents: IEvent[]) => void) => void;
+    updateDataRequest: (event: IEvent, use24HourFormat: boolean, updateEvent: (event: IEvent[]) => void) => void;
+    canAdd: () => boolean;
+    canChange: (event: IEvent) => boolean;
+    canApprove: (event: IEvent) => boolean;
     children: React.ReactNode;
 }) {
 
@@ -130,7 +137,7 @@ export function CalendarProvider({
 	const setView = (newView: TCalendarView) => {
 		setCurrentViewState(newView);
 		updateSettings({ view: newView });
-        reload_data(selectedDate, currentView, setAllEventsOri)
+        reload_data(selectedDate, newView, setAllEventsOri)
 	};
 
 	const toggleTimeFormat = () => {
@@ -165,34 +172,37 @@ export function CalendarProvider({
 	const handleSelectDate = (date: Date | undefined) => {
 		if (!date) return;
 		setSelectedDate(date);
-        reload_data(selectedDate, currentView, setAllEventsOri)
+        reload_data(date, currentView, setAllEventsOri)
 	};
 
-	const addEvent = (event: IEvent) => {
-		setAllEvents([...allEvents, event]);
-		setFilteredEvents([...filteredEvents, event]);
+	const addEvent = (event: IEvent[]) => {
+		setAllEvents([...allEvents, ...event]);
+        runFilter();
+		// setFilteredEvents([...filteredEvents, ...event]);
 	};
 
     const getEvent = (eventId: String) => {
         return allEvents.find(item => item.id == eventId)
 	};
 
-	const updateEvent = (event: IEvent) => {
-		const updated = {
-			...event,
-			startDate: new Date(event.startDate).toISOString(),
-			endDate: new Date(event.endDate).toISOString(),
-		};
+    const updateEventDragRezise = (event: IEvent) => {
+        updateDataRequest(event, use24HourFormat, updateEvent)
+	};
 
-		setAllEvents(allEvents.map((e) => (e.id === event.id ? updated : e)));
-		setFilteredEvents(
-			filteredEvents.map((e) => (e.id === event.id ? updated : e)),
-		);
+	const updateEvent = (event: IEvent[]) => {
+        event.forEach(element => {
+            setAllEvents(allEvents.map((e) => (e.id === element.id ? element : e)));
+        });
+
+        runFilter()
 	};
 
     const removeEvent = (eventId: string) => {
-		setAllEvents(allEvents.filter((e) => e.id !== eventId));
-		setFilteredEvents(filteredEvents.filter((e) => e.id !== eventId));
+        if(eventId == null){
+            return
+        }
+       	setAllEvents(allEvents.filter((e) => e.id !== eventId || e.repeat_id !== eventId));
+		runFilter()
 	};
 
 	const clearFilter = () => {
@@ -248,6 +258,30 @@ export function CalendarProvider({
 		}
     }
 
+    function getRepeatEventById(repeat_id: string): IEvent[]{
+        const returnData :IEvent[] = []
+        allEvents.forEach(element => {
+            if(element.repeat_id == repeat_id){
+                returnData.push(element)
+            }
+        });
+        returnData.sort((a,b) => {
+            if(a.startDate < b.startDate){
+                return -1
+            }else if(a.startDate > b.startDate){
+                return 1
+            }else{
+                if(a.endDate < b.endDate){
+                    return -1
+                }else if(a.endDate > b.endDate){
+                    return 1
+                }
+            }
+            return 0
+        })
+        return returnData
+    }
+
 	return (
 		<CalendarContext.Provider value={{
             selectedDate,
@@ -269,11 +303,13 @@ export function CalendarProvider({
             setAgendaModeGroupBy,
             addEvent,
             updateEvent,
+            updateEventDragRezise,
             removeEvent,
             getEvent,
             clearFilter,
             getSingleDaysEvent,
             getMultipleDaysEvent,
+            getRepeatEventById,
             settingCalender,
             AddEditEventDialog,
             DeleteEventDialog,
@@ -281,6 +317,10 @@ export function CalendarProvider({
             EventDetailsDialog,
             EventDropConfirmationDialog,
             EventListDialog,
+
+            canAdd,
+            canChange,
+            canApprove,
         }}>
 			{children}
 		</CalendarContext.Provider>

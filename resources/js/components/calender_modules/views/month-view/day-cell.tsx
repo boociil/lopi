@@ -112,7 +112,7 @@ export function DayCell({ cell, events, eventPositions }: IProps) {
 
   const showMobileMore = isMobile && currentMonth && showMoreCount > 0;
   const showDesktopMore = !isMobile && currentMonth && showMoreCount > 0;
-  const { AddEditEventDialog, EventListDialog } = useCalendar();
+  const { AddEditEventDialog, EventListDialog, canAdd } = useCalendar();
 
   const cellContent = useMemo(
     () => (
@@ -145,15 +145,17 @@ export function DayCell({ cell, events, eventPositions }: IProps) {
           >
             {(cellEvents.length === 0 && !isMobile) ? (
               <div className="w-full h-full flex justify-center items-center group">
-                <AddEditEventDialog startDate={date}>
-                  <Button
-                    variant="ghost"
-                    className="border border-accent-foreground text-accent-foreground opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-                  >
-                    <Plus className="h-4 w-4" />
-                    <span className="max-sm:hidden">Add Event</span>
-                  </Button>
-                </AddEditEventDialog>
+                 {canAdd() &&
+                    <AddEditEventDialog startDate={date}>
+                    <Button
+                        variant="ghost"
+                        className="border border-accent-foreground text-accent-foreground opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                    >
+                        <Plus className="h-4 w-4" />
+                        <span className="max-sm:hidden">Add Event</span>
+                    </Button>
+                    </AddEditEventDialog>
+                }
               </div>
             ) : (
               [0, 1, 2].map(renderEventAtPosition)

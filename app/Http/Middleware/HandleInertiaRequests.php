@@ -3,7 +3,6 @@
 namespace App\Http\Middleware;
 
 use App\Model\Umum\Peran;
-use Illuminate\Foundation\Inspiring;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 use Tighten\Ziggy\Ziggy;

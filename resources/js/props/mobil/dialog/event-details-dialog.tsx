@@ -22,7 +22,7 @@ import { router } from "@inertiajs/react";
 export function EventDetailsDialog({ event, children }: Event_Details_Dialog_IProps) {
 	const startDate = parseISO(event.startDate);
 	const endDate = parseISO(event.endDate);
-	const { use24HourFormat, removeEvent, AddEditEventDialog } = useCalendar();
+	const { use24HourFormat, removeEvent, AddEditEventDialog, canChange, canApprove } = useCalendar();
 
     const deleteEvent = (event_id: string) => {
             router.visit(route("pinjam-mobil-hapus", {pinjamMobil: event_id}),
@@ -139,9 +139,13 @@ export function EventDetailsDialog({ event, children }: Event_Details_Dialog_IPr
 					</div>
 				</ScrollArea>
 				<div className="flex justify-end gap-2">
-					<AddEditEventDialog event={event}>
-						<Button variant="outline">Edit</Button>
-					</AddEditEventDialog>
+                    {canChange(event) &&
+                        <AddEditEventDialog event={event}>
+                            <Button variant="outline">Edit</Button>
+                        </AddEditEventDialog>
+                    }
+                    {/* {canApprove(event) && } */}
+
 					<Button
 						variant="destructive"
 						onClick={() => {

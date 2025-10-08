@@ -34,10 +34,20 @@ export default function Index({
     user: User[],
     data: pinjam_mobil[];
 }>) {
-    const [eventDialog, setEventDialog] = React.useState<pinjam_mobil_dialog_event>({
-        status: null,
-        data: null,
-    });
+
+    const auth = usePage<SharedData>().props.auth;
+    const peran = auth.peran;
+
+    let havePinjamMobilPeran = false;
+    if(peran.find(item => {
+        if(item.peran == 'mobil' && item.tipe_peran == 'global' && item.tahun == null){
+            return true
+        }
+    })){
+        havePinjamMobilPeran = true
+    }else{
+        havePinjamMobilPeran = false
+    }
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -51,7 +61,8 @@ export default function Index({
                         />
                         <PinjamMobilCalender
                             pinjam_mobil_data={data}
-                            user={user}>
+                            user={user}
+                            havePinjamMobilPeran={havePinjamMobilPeran}>
                         </PinjamMobilCalender>
                     </div>
                 </div>

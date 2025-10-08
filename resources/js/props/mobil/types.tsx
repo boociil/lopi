@@ -1,4 +1,4 @@
-import { IEvent, IUser } from "@/components/calender_modules/interfaces"
+import { CalenderUser, IEvent, IUser } from "@/components/calender_modules/interfaces"
 import { User } from "@/types"
 import { ReactNode } from "react"
 
@@ -22,7 +22,7 @@ export interface pinjam_mobil {
     tanggal: string;
     waktu_awal: string;
     waktu_akhir: string;
-    status: number;
+    status: 'menunggu' | 'disetujui' | 'ditolak';
     pembuat_username: string;
     confirm_username: string | null;
 }
@@ -37,20 +37,13 @@ export interface pinjam_mobil_req {
     tanggal_akhir: string | null;
     waktu_awal: string;
     waktu_akhir: string;
-    status: number;
+    status: 'menunggu' | 'disetujui' | 'ditolak';
     pembuat_username: string;
     confirm_username: string | null;
 }
 
 export interface PinjamMobilIEvent extends IEvent{
     pinjam_mobil_ori: pinjam_mobil;
-}
-
-export interface Add_Edit_Event_IProps {
-	children: ReactNode;
-	startDate?: Date;
-	startTime?: { hour: number; minute: number };
-	event?: PinjamMobilIEvent;
 }
 
 
@@ -62,24 +55,35 @@ export interface pinjam_mobil_dialog_event {
 export function producePinjamMobilIEvent(pinjam_mobil: pinjam_mobil[]): PinjamMobilIEvent[]{
     const retur_data: PinjamMobilIEvent[] = []
     pinjam_mobil.forEach(element => {
-        retur_data.push({
-            id: element.id,
-            repeat_id: element.berulang_id,
-            startDate: `${element.tanggal}T${element.waktu_awal}`,
-            endDate: `${element.tanggal}T${element.waktu_akhir}`,
-            date: element.tanggal,
-            _startDate: element.tanggal,
-            _endDate: element.tanggal,
-            _startTime: element.waktu_awal,
-            _endTime: element.waktu_akhir,
-            title: element.kegiatan,
-            color: "orange",
-            description: "Peminjaman Mobil",
-            user: null,
-            pinjam_mobil_ori: element,
-        })
-    });
+        if(element.status != 'ditolak'){
+             retur_data.push({
+                id: element.id,
+                repeat_id: element.berulang_id,
+                startDate: `${element.tanggal}T${element.waktu_awal}`,
+                endDate: `${element.tanggal}T${element.waktu_akhir}`,
+                date: element.tanggal,
+                _startDate: element.tanggal,
+                _endDate: element.tanggal,
+                _startTime: element.waktu_awal,
+                _endTime: element.waktu_akhir,
+                title: element.kegiatan,
+                color: element.status == 'disetujui' ?  "green" : "blue",
+                description: "Peminjaman Mobil",
+                user: null,
+                pinjam_mobil_ori: element,
+            })
+        }
 
+    });
     return retur_data
+}
+
+export function pairIEventDenganUser(pinjam_mobil_event: PinjamMobilIEvent[], users: CalenderUser[]){
+    for(let i=0; i<pinjam_mobil_event.length; i++){
+        const user = users.find(e => e.username == pinjam_mobil_event[i].pinjam_mobil_ori.pembuat_username)
+        if(user){
+            pinjam_mobil_event[i].user = user
+        }
+    }
 }
 

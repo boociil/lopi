@@ -35,25 +35,26 @@ class Pinjam_Mobil_Controller extends Controller
         $tanggal_akhir = null;
 
         if($request->has('selectedDate') && $request->has('view')){
-            $date = Carbon::parse($request->input('selectedDate'));
             if($request->has('view') == 'day'){
-                $tanggal_awal = $date->copy();
-                $tanggal_akhir = $date->copy();
+                $tanggal_awal = Carbon::parse($request->input('selectedDate'));
+                $tanggal_akhir = Carbon::parse($request->input('selectedDate'));
             }else  if($request->has('view') == 'week'){
-                $tanggal_awal = $date->copy()->startOfWeek(Carbon::SUNDAY);
-                $tanggal_akhir = $date->copy()->endOfWeek(Carbon::SUNDAY);
+                $tanggal_awal = Carbon::parse($request->input('selectedDate'))->startOfWeek(Carbon::SUNDAY);
+                $tanggal_akhir = Carbon::parse($request->input('selectedDate'))->endOfWeek(Carbon::SUNDAY);
             }else if($request->has('view') == 'month' || $request->has('view') == 'agenda'){
-                $tanggal_awal = $date->copy()->startOfMonth();
-                $tanggal_akhir = $date->copy()->endOfMonth();
+                $tanggal_awal = Carbon::parse($request->input('selectedDate'))->startOfMonth();
+                $tanggal_akhir = Carbon::parse($request->input('selectedDate'))->endOfMonth();
             }else if($request->has('view') == 'year'){
-                $tanggal_awal = $date->copy()->startOfYear();
-                $tanggal_akhir = $date->copy()->endOfYear();
+                $tanggal_awal = Carbon::parse($request->input('selectedDate'))->startOfYear();
+                $tanggal_akhir = Carbon::parse($request->input('selectedDate'))->endOfYear();
             }
         }else{
-            $date = Carbon::today();
-            $tanggal_awal = $date->startOfWeek(Carbon::SUNDAY);
-            $tanggal_akhir = $date->endOfWeek(Carbon::SUNDAY);
+            $tanggal_awal =  Carbon::today()->startOfWeek(Carbon::SUNDAY);
+            $tanggal_akhir =  Carbon::today()->endOfWeek(Carbon::SUNDAY);
         }
+
+        Log::alert($tanggal_awal);
+        Log::alert($tanggal_akhir);
 
         $have_mobil_peran =  Peran::where('pemilik_username', Auth::user()->username)
             ->where('tipe_peran', 'global')
@@ -100,7 +101,8 @@ class Pinjam_Mobil_Controller extends Controller
         DB::beginTransaction();
         try
         {
-            if($request->input('tipe') == 'sekali' && ! isNull($request->input('tanggal'))){
+            $return_data = [];
+            if($request->input('tipe') == 'sekali'){
                 $pinjam_mobil = new Pinjam_Mobil();
                 $pinjam_mobil->id = Str::uuid();
                 $pinjam_mobil->kegiatan = $request->input('kegiatan');
@@ -118,6 +120,7 @@ class Pinjam_Mobil_Controller extends Controller
                     $pinjam_mobil->confirm_username = Auth::user()->username;
                 }
                 $pinjam_mobil->save();
+                array_push($return_data, $pinjam_mobil);
 
             }else if($request->input('tipe') == 'berulang'){
                 $berulang_id = Str::uuid();
@@ -144,19 +147,22 @@ class Pinjam_Mobil_Controller extends Controller
                         $pinjam_mobil->confirm_username = Auth::user()->username;
                     }
                     $pinjam_mobil->save();
+                    array_push($return_data, $pinjam_mobil);
                 }
+            }
+            if(count($return_data) == 0){
+                throw new Exception('Return Kosong');
             }
             DB::commit();
             return Inertia::render('mobil', [
-                "status" => true,
-                "data" => 'Berhasil membuat peminjaman mobil!',
+                "_status" => 'Berhasil membuat peminjaman mobil!',
+                "data" => $return_data
             ]);
         }catch(Exception $ex){
             DB::rollBack();
             Log::error($ex);
-            return Inertia::render('mobil', [
-                "status" => false,
-                "data" => 'Gagal membuat peminjaman mobil!',
+            throw ValidationException::withMessages([
+                '_status' => 'Gagal membuat peminjaman mobil!',
             ]);
         }
     }
@@ -194,12 +200,13 @@ class Pinjam_Mobil_Controller extends Controller
         DB::beginTransaction();
         try
         {
+            $return_data = [];
             $pinjamMobil->delete();
             if($pinjamMobil->berulang_id){
                 Pinjam_Mobil::where('berulang_id', $pinjamMobil->berulang_id)->delete();
             }
 
-            if($request->input('tipe') == 'sekali' && ! isNull($request->input('tanggal'))){
+            if($request->input('tipe') == 'sekali'){
                 $pinjam_mobil = new Pinjam_Mobil();
                 $pinjam_mobil->id = Str::uuid();
                 $pinjam_mobil->kegiatan = $request->input('kegiatan');
@@ -217,7 +224,7 @@ class Pinjam_Mobil_Controller extends Controller
                     $pinjam_mobil->confirm_username = Auth::user()->username;
                 }
                 $pinjam_mobil->save();
-
+                array_push($return_data, $pinjam_mobil);
             }else if($request->input('tipe') == 'berulang'){
                 $berulang_id = Str::uuid();
 
@@ -243,12 +250,13 @@ class Pinjam_Mobil_Controller extends Controller
                         $pinjam_mobil->confirm_username = Auth::user()->username;
                     }
                     $pinjam_mobil->save();
+                    array_push($return_data, $pinjam_mobil);
                 }
             }
             DB::commit();
             return Inertia::render('mobil', [
                 "status" => true,
-                "data" => 'Berhasil mengubah peminjaman mobil!',
+                "data" => $return_data
             ]);
         }catch(Exception $ex){
             DB::rollBack();

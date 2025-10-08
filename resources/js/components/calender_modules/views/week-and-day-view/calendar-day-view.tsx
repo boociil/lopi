@@ -18,7 +18,7 @@ interface IProps {
 }
 
 export function CalendarDayView({ singleDayEvents, multiDayEvents }: IProps) {
-	const { selectedDate, setSelectedDate, users, use24HourFormat, AddEditEventDialog } =
+	const { selectedDate, setSelectedDate, users, use24HourFormat, AddEditEventDialog, canAdd } =
 		useCalendar();
 	const scrollAreaRef = useRef<HTMLDivElement>(null);
 
@@ -137,12 +137,15 @@ export function CalendarDayView({ singleDayEvents, multiDayEvents }: IProps) {
 											minute={0}
 											className="absolute inset-x-0 top-0 h-[48px]"
 										>
-											<AddEditEventDialog
-												startDate={selectedDate}
-												startTime={{ hour, minute: 0 }}
-											>
-												<div className="absolute inset-0 cursor-pointer transition-colors hover:bg-secondary" />
-											</AddEditEventDialog>
+                                            {canAdd() &&
+                                                <AddEditEventDialog
+                                                    startDate={selectedDate}
+                                                    startTime={{ hour, minute: 0 }}
+                                                >
+                                                    <div className="absolute inset-0 cursor-pointer transition-colors hover:bg-secondary" />
+                                                </AddEditEventDialog>
+                                            }
+
 										</DroppableArea>
 
 										<div className="pointer-events-none absolute inset-x-0 top-1/2 border-b border-dashed border-b-tertiary"></div>
@@ -153,12 +156,15 @@ export function CalendarDayView({ singleDayEvents, multiDayEvents }: IProps) {
 											minute={30}
 											className="absolute inset-x-0 bottom-0 h-[48px]"
 										>
-											<AddEditEventDialog
-												startDate={selectedDate}
-												startTime={{ hour, minute: 30 }}
-											>
-												<div className="absolute inset-0 cursor-pointer transition-colors hover:bg-secondary" />
-											</AddEditEventDialog>
+                                            {canAdd() &&
+                                                <AddEditEventDialog
+                                                    startDate={selectedDate}
+                                                    startTime={{ hour, minute: 30 }}
+                                                >
+                                                    <div className="absolute inset-0 cursor-pointer transition-colors hover:bg-secondary" />
+                                                </AddEditEventDialog>
+                                            }
+
 										</DroppableArea>
 									</div>
 								))}
