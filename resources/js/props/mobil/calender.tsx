@@ -113,7 +113,7 @@ export function PinjamMobilCalender({
     }
 
     function canAdd():  boolean{
-        return false
+        return true
     }
     function canChange(event: IEvent):  boolean{
         const event_ = event as PinjamMobilIEvent
