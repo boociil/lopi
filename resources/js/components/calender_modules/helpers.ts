@@ -447,3 +447,10 @@ export const toCapitalize = (str: string): string => {
 	if (!str) return "";
 	return str.charAt(0).toUpperCase() + str.slice(1);
 };
+
+export const capitalizeWords = (str: string): string => {
+  return str
+    .split(' ') // Split the string into an array of words
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1)) // Capitalize the first letter of each word
+    .join(' '); // Join the capitalized words back into a string
+}

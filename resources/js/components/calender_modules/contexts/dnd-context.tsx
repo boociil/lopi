@@ -12,6 +12,7 @@ import React, {
 import { toast } from "sonner";
 import { useCalendar } from "@/components/calender_modules/contexts/calendar-context";
 import type { IEvent } from "@/components/calender_modules/interfaces";
+import { formatDate, formatTime } from "../helpers";
 
 interface PendingDropData {
 	event: IEvent;
@@ -163,12 +164,16 @@ export function DndProvider({
 	const handleEventUpdate = useCallback(
 		(event: IEvent, newStartDate: Date, newEndDate: Date) => {
 			try {
-				const updatedEvent = {
-					...event,
-					startDate: newStartDate.toISOString(),
+                updateEventDragRezise({
+                    ...event,
+                    date: formatDate(newStartDate.toISOString()),
+                    startDate: newStartDate.toISOString(),
 					endDate: newEndDate.toISOString(),
-				};
-				updateEventDragRezise(updatedEvent);
+                    _startDate: formatDate(newStartDate.toISOString()),
+                    _endDate: formatDate(newEndDate.toISOString()),
+                    _startTime: formatTime(newStartDate.toISOString(), true),
+                    _endTime: formatTime(newEndDate.toISOString(), true),
+                });
 				// toast.success("Event updated successfully");
 			} catch {
 				// toast.error("Failed to update event");

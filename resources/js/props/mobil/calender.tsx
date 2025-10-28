@@ -17,6 +17,7 @@ import { useApiForm } from "@/lib/API/useAPIForm";
 import { usePage } from "@inertiajs/react";
 import { useState } from "react";
 import { formatDate, formatTime } from "@/components/calender_modules/helpers";
+import { useApi } from "@/lib/API/useApi";
 
 export function PinjamMobilCalender({
         pinjam_mobil_data,
@@ -28,32 +29,7 @@ export function PinjamMobilCalender({
         havePinjamMobilPeran: boolean;
 }) {
 
-    const refresForm = useApiForm<{
-        selectedDate: string;
-        currentView: string;
-    }>({
-        selectedDate: ""+(new Date()).toISOString(),
-        currentView: 'week',
-    });
-
-    const updateForm = useApiForm<
-        Required<pinjam_mobil_req>
-    >({
-        id: "12345",
-        kegiatan:  "Peminjaman Mobil",
-        tipe: 'string',
-        berulang_id: null,
-        tanggal: formatDate(new Date().toISOString()),
-        tanggal_awal: formatDate(new Date().toISOString()),
-        tanggal_akhir: formatDate(new Date().toISOString()),
-        waktu_awal: "07:30:00",
-        waktu_akhir: "16:00:00",
-        status: 'menunggu',
-        pembuat_username: '',
-        confirm_username: null
-    });
-
-
+    const axiosClient = useApi();
     const auth = usePage<SharedData>().props.auth;
 
     const settingCalender: SettingCalender = {name_event: 'kegiatan', calender_show: ["week", "month","agenda"], show_filter: false, show_filter_user: false}
@@ -63,53 +39,60 @@ export function PinjamMobilCalender({
 
     /////////////////////
     function reload_data(selectedDate: Date, currentView: TCalendarView, setAllEventsOri: (_allEvents: IEvent[]) => void){
-        refresForm.post(route("pinjam-mobil-index"),
-            { async: true, showProgress: true,
-                onBefore:  (page) => {
-                    toast.info('Meload data baru !')
-                    refresForm.setData('selectedDate', selectedDate.toISOString())
-                    refresForm.setData('currentView', currentView)
-                },
-                onSuccess: (page) => {
-                    const _allEvents_: IEvent[] = producePinjamMobilIEvent(page.props.data as pinjam_mobil[]);
+        toast.info('Meload data baru !')
+        axiosClient.post(route("pinjam-mobil-index"), {'selectedDate': selectedDate.toISOString(), view: currentView})
+            .then(function (response: any) {
+                try {
+                    const _allEvents_: IEvent[] = producePinjamMobilIEvent(response.data.data as pinjam_mobil[]);
                     pairIEventDenganUser(_allEvents_ as PinjamMobilIEvent[], _user as CalenderUser[])
                     setAllEventsOri(_allEvents_)
                     toast.success('Berhasil mendapatkan data baru !')
-                },
-                onError: (page) => {
+                } catch (error) {
+                    console.log(error)
                     toast.error('Gagal mendapatkan data baru !')
                 }
-            }
-        )
+            })
+            .catch(function (error: any) {
+                console.log(error)
+                toast.error('Gagal mendapatkan data baru !')
+            });
     }
 
-     function updateDataRequest(event: IEvent, use24HourFormat: boolean, updateEvent: (event: IEvent[]) => void){
-        updateForm.setData("id", event.id);
-        updateForm.setData("kegiatan", event.title);
-        updateForm.setData('tipe', 'sekali')
-        updateForm.setData("berulang_id", null);
-        updateForm.setData("tanggal_awal",  formatDate(event.startDate));
-        updateForm.setData("tanggal_akhir",  formatDate(event.startDate));
-        updateForm.setData("tanggal", formatDate(event.startDate));
-        updateForm.setData("waktu_awal", formatTime(event.startDate, use24HourFormat));
-        updateForm.setData("waktu_akhir", formatTime(event.endDate, use24HourFormat));
-        updateForm.post(route("pinjam-mobil-ubah", { pinjamMobil: event.id }),
-            { async: true, showProgress: true,
-                onSuccess: (page) => {
-                    try {
-                        const return_data = page.props.data as pinjam_mobil[]
-                        updateEvent(producePinjamMobilIEvent(return_data))
-                        toast.success('Berhasil mengubah data !')
-                    } catch (error) {
-                        console.log(error)
-                        toast.error('Gagal mengubah data !')
+     function updateDataRequest(event: IEvent, use24HourFormat: boolean, updateEvent: (newEvent: IEvent[], oldEventIds: string[], oldBerulangEventIds: string[]) => void, cancel: () => void){
+        const data = {
+            id: event.id,
+            kegiatan:  event.title,
+            tipe: 'sekali',
+            berulang_id: null,
+            tanggal:  formatDate(event.startDate),
+            tanggal_awal: formatDate(event.startDate),
+            tanggal_akhir: formatDate(event.startDate),
+            waktu_awal: formatTime(event.startDate, use24HourFormat),
+            waktu_akhir:  formatTime(event.endDate, use24HourFormat),
+            status: 'menunggu',
+        }
+
+        axiosClient.post(route("pinjam-mobil-ubah", { pinjamMobil: event.id }), data)
+            .then(function (response: any) {
+                try {
+                    const return_data: IEvent[] = producePinjamMobilIEvent(response.data.data as pinjam_mobil[]);
+                    pairIEventDenganUser(return_data  as PinjamMobilIEvent[], _user as CalenderUser[])
+                    if(event.repeat_id){
+                        updateEvent(return_data, [event.id], [event.repeat_id])
+                    }else{
+                        updateEvent(return_data, [event.id], [])
                     }
-                },
-                onError: (page) => {
+                    toast.success('Berhasil mengubah data !')
+                } catch (error) {
+                    console.log(error)
                     toast.error('Gagal mengubah data !')
+                    cancel()
                 }
-            }
-        )
+            })
+            .catch(function (error: any) {
+                console.log(error)
+                toast.error('Gagal mengubah data !')
+            });
     }
 
     function canAdd():  boolean{

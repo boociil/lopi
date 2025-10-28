@@ -18,7 +18,7 @@ import { IEvent } from "@/components/calender_modules/interfaces";
 import { router } from "@inertiajs/react";
 
 export default function DeleteEventDialog({ eventId }: Delete_Event_Dialog_IProps) {
-	const { removeEvent , settingCalender, getEvent} = useCalendar();
+	const { removeEvent , settingCalender, getEvent, axiosClient} = useCalendar();
 
     if (!eventId) {
 		return null;
@@ -30,17 +30,14 @@ export default function DeleteEventDialog({ eventId }: Delete_Event_Dialog_IProp
     }
 
 	const deleteEvent = () => {
-         router.visit(route("pinjam-mobil-hapus", {pinjamMobil: eventId}),
-            { async: true, showProgress: true, method: 'get',
-                    onSuccess: (page) => {
-                        removeEvent(eventId);
-			            toast.success("Event deleted successfully.");
-                    },
-                    onError: (page) => {
-                       toast.error("Error deleting event.");
-                    }
-            }
-        )
+        axiosClient.post(route("pinjam-mobil-hapus", {pinjamMobil: eventId}))
+            .then(function (response) {
+                removeEvent(eventId);
+                toast.success(settingCalender.name_event+" telah dihapus dengan sukses.");
+            })
+            .catch(function (error) {
+                toast.error("Kesalahan saat menghapus "+settingCalender.name_event+".");
+            });
 	};
 
 	return (

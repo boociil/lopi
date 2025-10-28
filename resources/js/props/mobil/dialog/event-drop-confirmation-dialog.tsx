@@ -29,7 +29,7 @@ export function EventDropConfirmationDialog({
                                                 onCancel,
                                             }: Event_Drop_Confirmation_Dialog_IProps) {
 
-    const {use24HourFormat} = useCalendar();
+    const {use24HourFormat, settingCalender} = useCalendar();
 
     if (!event || !newStartDate || !newEndDate) {
         return null;
@@ -55,21 +55,21 @@ export function EventDropConfirmationDialog({
         <AlertDialog open={open} onOpenChange={onOpenChange}>
             <AlertDialogContent>
                 <AlertDialogHeader>
-                    <AlertDialogTitle>Confirm Event Move</AlertDialogTitle>
+                    <AlertDialogTitle>Konfirmasi Pemindahan {settingCalender.name_event}</AlertDialogTitle>
                     <AlertDialogDescription>
-                        Are you sure you want to move
+                        Apakah Anda yakin ingin memindahkan
                         <span className={cn(getColorClass(event.color), "mx-1 py-0.5 px-1 rounded-md")}>
 							{event.title}
 						</span>
-                        event from
-                        <strong className="mx-1">{formatDate(originalStart)}</strong> to
+                        dari
+                        <strong className="mx-1">{formatDate(originalStart)}</strong> ke
                         <strong className="mx-1">{formatDate(newStartDate)}</strong>?
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                     <AlertDialogCancel onClick={handleCancel}>Cancel</AlertDialogCancel>
                     <AlertDialogAction onClick={handleConfirm}>
-                        Move Event
+                        Pindahkan
                     </AlertDialogAction>
                 </AlertDialogFooter>
             </AlertDialogContent>

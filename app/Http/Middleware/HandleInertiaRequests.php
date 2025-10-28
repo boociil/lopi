@@ -37,25 +37,34 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
-        return [
-            ...parent::share($request),
-            'name' => config('app.name'),
-            'auth' => [
-                'user' => $request->user(),
-                'peran' => Peran::get_my_peran(),
-            ],
-            'tahun_active' => session('tahun_active'),
-            'flash' => [
-                'success' => fn () => $request->session()->get('success'),
-                'error' => fn () => $request->session()->get('error'),
-                'info' => fn () => $request->session()->get('info'),
-                // Add other flash message types as needed
-            ],
-            'ziggy' => fn (): array => [
-                ...(new Ziggy)->toArray(),
-                'location' => $request->url(),
-            ],
-            'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
-        ];
+        if($request->isMethod('get')){
+            return [
+                ...parent::share($request),
+                'name' => config('app.name'),
+                'auth' => [
+                    'user' => $request->user(),
+                    'peran' => Peran::get_my_peran(),
+                ],
+                'tahun_active' => session('tahun_active'),
+                'flash' => [
+                    'success' => fn () => $request->session()->get('success'),
+                    'error' => fn () => $request->session()->get('error'),
+                    'info' => fn () => $request->session()->get('info'),
+                    // Add other flash message types as needed
+                ],
+                'ziggy' => fn (): array => [
+                    ...(new Ziggy)->toArray(),
+                    'location' => $request->url(),
+                ],
+                'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
+            ];
+        }else if($request->isMethod('post')){
+            return [
+                ...parent::share($request),
+                'name' => config('app.name'),
+            ];
+        }
+
+        return [];
     }
 }

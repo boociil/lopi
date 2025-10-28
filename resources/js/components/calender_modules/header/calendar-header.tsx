@@ -22,8 +22,8 @@ import { DateNavigator } from "@/components/calender_modules/header/date-navigat
 import FilterEvents from "@/components/calender_modules/header/filter";
 import { TodayButton } from "@/components/calender_modules/header/today-button";
 import { UserSelect } from "@/components/calender_modules/header/user-select";
-import { Settings } from "@/components/calender_modules/settings/settings";
 import Views from "./view-tabs";
+import { capitalizeWords } from "../helpers";
 
 export function CalendarHeader() {
 	const { view, events, settingCalender, AddEditEventDialog, canAdd } = useCalendar();
@@ -64,7 +64,7 @@ export function CalendarHeader() {
                         <AddEditEventDialog>
                             <Button>
                                 <Plus className="h-4 w-4" />
-                                Add Event
+                                Add {capitalizeWords(settingCalender.name_event)}
                             </Button>
                         </AddEditEventDialog>
                     }

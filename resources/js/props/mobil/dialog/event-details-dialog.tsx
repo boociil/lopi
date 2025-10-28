@@ -15,27 +15,23 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useCalendar } from "@/components/calender_modules/contexts/calendar-context";
 import { formatTime } from "@/components/calender_modules/helpers";
-import type { IEvent } from "@/components/calender_modules/interfaces";
 import { Event_Details_Dialog_IProps } from "@/components/calender_modules/dialogs/props-dialog";
-import { router } from "@inertiajs/react";
 
 export function EventDetailsDialog({ event, children }: Event_Details_Dialog_IProps) {
 	const startDate = parseISO(event.startDate);
 	const endDate = parseISO(event.endDate);
-	const { use24HourFormat, removeEvent, AddEditEventDialog, canChange, canApprove } = useCalendar();
+	const { settingCalender, use24HourFormat, removeEvent, AddEditEventDialog, canChange, canApprove, axiosClient } = useCalendar();
+
 
     const deleteEvent = (event_id: string) => {
-            router.visit(route("pinjam-mobil-hapus", {pinjamMobil: event_id}),
-            { async: true, showProgress: true, method: 'get',
-                    onSuccess: (page) => {
-                        removeEvent(event_id);
-                        toast.success("Event deleted successfully.");
-                    },
-                    onError: (page) => {
-                        toast.error("Error deleting event.");
-                    }
-            }
-        )
+       axiosClient.post(route("pinjam-mobil-hapus", {pinjamMobil: event_id}))
+            .then(function (response) {
+                removeEvent(event_id);
+                toast.success(settingCalender.name_event+" telah dihapus dengan sukses.");
+            })
+            .catch(function (error) {
+                toast.error("Kesalahan saat menghapus "+settingCalender.name_event+".");
+            });
     };
 
 	return (

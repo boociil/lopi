@@ -9,13 +9,30 @@ import { CalendarMonthView } from "@/components/calender_modules/views/month-vie
 import { CalendarDayView } from "@/components/calender_modules/views/week-and-day-view/calendar-day-view";
 import { CalendarWeekView } from "@/components/calender_modules/views/week-and-day-view/calendar-week-view";
 import { CalendarYearView } from "@/components/calender_modules/views/year-view/calendar-year-view";
+import { IEvent } from "./interfaces";
 
 export function CalendarBody() {
-	const { view, getSingleDaysEvent, getMultipleDaysEvent } = useCalendar();
+	const { view, events } = useCalendar();
 
-	const singleDayEvents = getSingleDaysEvent();
+	const singleDayEvents = events;
 
-	const multiDayEvents = getMultipleDaysEvent();
+    const multiDayEvents : IEvent[] = []
+    const repeat_id_s : string[] = []
+    events.forEach(element => {
+        if(element.repeat_id != null){
+            if(!repeat_id_s.includes(element.repeat_id)){
+                multiDayEvents.push(element)
+                repeat_id_s.push(element.repeat_id)
+            }else{
+                if(element.startDate < multiDayEvents[repeat_id_s.findIndex((item) => item == element.repeat_id)].startDate){
+                    multiDayEvents[repeat_id_s.findIndex((item) => item == element.repeat_id)].startDate = element.startDate
+                }
+                if(element.endDate > multiDayEvents[repeat_id_s.findIndex((item) => item == element.repeat_id)].endDate){
+                    multiDayEvents[repeat_id_s.findIndex((item) => item == element.repeat_id)].endDate = element.endDate
+                }
+            }
+        }
+    });
 
 	return (
 		<div className="w-full h-full overflow-scroll relative">

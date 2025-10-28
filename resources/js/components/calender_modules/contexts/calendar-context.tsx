@@ -10,6 +10,8 @@ import type {
 } from "@/components/calender_modules/types";
 import { Add_Edit_Event_IProps, Delete_Event_Dialog_IProps, Event_Details_Dialog_IProps, Event_Drop_Confirmation_Dialog_IProps, Event_List_Dialog_IProps } from "../dialogs/props-dialog";
 import { isSameDay, parseISO } from "date-fns";
+import { useApi } from '@/lib/API/useApi';
+import { AxiosInstance } from 'axios';
 
 interface ICalendarContext {
 	selectedDate: Date;
@@ -31,12 +33,11 @@ interface ICalendarContext {
 	events: IEvent[];
 	addEvent: (event: IEvent[]) => void;
     updateEventDragRezise: (event: IEvent) => void;
-	updateEvent: (event: IEvent[]) => void;
+	updateEvent: (event: IEvent[], oldEventIds: string[], oldBerulangEventIds: string[]) => void;
+    updateEventLokal: (event: IEvent) => void;
 	removeEvent: (eventId: string) => void;
 	clearFilter: () => void;
     getEvent: (eventId: string) => IEvent | undefined;
-    getSingleDaysEvent: () => IEvent[],
-    getMultipleDaysEvent: () => IEvent[],
     getRepeatEventById: (repeat_id: string) => IEvent[],
     settingCalender: SettingCalender;
 
@@ -50,6 +51,8 @@ interface ICalendarContext {
     canAdd: () => boolean;
     canChange: (event: IEvent) => boolean;
     canApprove: (event: IEvent) => boolean;
+
+    axiosClient: AxiosInstance;
 }
 
 const CalendarContext = createContext({} as ICalendarContext);
@@ -81,7 +84,7 @@ export function CalendarProvider({
     EventDropConfirmationDialog: React.ComponentType<Event_Drop_Confirmation_Dialog_IProps>;
     EventListDialog: React.ComponentType<Event_List_Dialog_IProps>;
     reload_data: (selectedDate: Date, currentView: TCalendarView, setAllEventsOri: (_allEvents: IEvent[]) => void) => void;
-    updateDataRequest: (event: IEvent, use24HourFormat: boolean, updateEvent: (event: IEvent[]) => void) => void;
+    updateDataRequest: (event: IEvent, use24HourFormat: boolean, updateEvent: (newEvent: IEvent[], oldEventIds: string[], oldBerulangEventIds: string[]) => void, cancel: () => void) => void;
     canAdd: () => boolean;
     canChange: (event: IEvent) => boolean;
     canApprove: (event: IEvent) => boolean;
@@ -120,6 +123,11 @@ export function CalendarProvider({
         "all",
     );
     const [selectedColors, setSelectedColors] = useState<TEventColor[]>([]);
+
+
+    useEffect(() => {
+        runFilter()
+    }, [allEvents, selectedUserId, selectedColors]);
 
 
 	const updateSettings = (newPartialSettings: Partial<CalendarSettings>) => {
@@ -166,7 +174,6 @@ export function CalendarProvider({
             return
         }
 		setSelectedUserId(userId);
-		runFilter();
 	};
 
 	const handleSelectDate = (date: Date | undefined) => {
@@ -177,7 +184,6 @@ export function CalendarProvider({
 
 	const addEvent = (event: IEvent[]) => {
 		setAllEvents([...allEvents, ...event]);
-        runFilter();
 		// setFilteredEvents([...filteredEvents, ...event]);
 	};
 
@@ -186,15 +192,37 @@ export function CalendarProvider({
 	};
 
     const updateEventDragRezise = (event: IEvent) => {
-        updateDataRequest(event, use24HourFormat, updateEvent)
+        if(event.repeat_id){
+            return
+        }
+        updateDataRequest(event, use24HourFormat, updateEvent, runFilter)
 	};
 
-	const updateEvent = (event: IEvent[]) => {
-        event.forEach(element => {
-            setAllEvents(allEvents.map((e) => (e.id === element.id ? element : e)));
+	const updateEvent = (newEvent: IEvent[], oldEventIds: string[], oldBerulangEventIds: string[]) => {
+        const newAllEvent: IEvent[] = []
+        allEvents.forEach(element1 => {
+            if(element1.repeat_id){
+                if(!( oldEventIds.includes(element1.id) || oldBerulangEventIds.includes(element1.repeat_id))){
+                    newAllEvent.push(element1)
+                }
+            }else{
+                if(!oldEventIds.includes(element1.id)){
+                    newAllEvent.push(element1)
+                }
+            }
         });
+        newAllEvent.push(...newEvent)
+        setAllEvents(newAllEvent)
+	};
 
-        runFilter()
+    const updateEventLokal = (event: IEvent) => {
+		const updated = {
+			...event,
+			startDate: new Date(event.startDate).toISOString(),
+			endDate: new Date(event.endDate).toISOString(),
+		};
+
+		setFilteredEvents((prev) => prev.map((e) => (e.id === event.id ? updated : e)));
 	};
 
     const removeEvent = (eventId: string) => {
@@ -210,30 +238,6 @@ export function CalendarProvider({
 		setSelectedColors([]);
 		setSelectedUserId("all");
 	};
-
-    const getSingleDaysEvent = () : IEvent[] => {
-        return allEvents
-    }
-    const getMultipleDaysEvent = () : IEvent[] =>  {
-        const return_data : IEvent[] = []
-        const repeat_id_s : string[] = []
-        allEvents.forEach(element => {
-            if(element.repeat_id != null){
-                if(!repeat_id_s.includes(element.repeat_id)){
-                    return_data.push(element)
-                    repeat_id_s.push(element.repeat_id)
-                }else{
-                    if(element.startDate < return_data[repeat_id_s.findIndex((item) => item == element.repeat_id)].startDate){
-                        return_data[repeat_id_s.findIndex((item) => item == element.repeat_id)].startDate = element.startDate
-                    }
-                    if(element.endDate > return_data[repeat_id_s.findIndex((item) => item == element.repeat_id)].endDate){
-                        return_data[repeat_id_s.findIndex((item) => item == element.repeat_id)].endDate = element.endDate
-                    }
-                }
-            }
-        });
-        return return_data
-    }
 
     function setAllEventsOri(_oriAllEvent: IEvent[]){
         setAllEvents(_oriAllEvent)
@@ -282,6 +286,8 @@ export function CalendarProvider({
         return returnData
     }
 
+    const axiosClient = useApi();
+
 	return (
 		<CalendarContext.Provider value={{
             selectedDate,
@@ -303,12 +309,11 @@ export function CalendarProvider({
             setAgendaModeGroupBy,
             addEvent,
             updateEvent,
+            updateEventLokal,
             updateEventDragRezise,
             removeEvent,
             getEvent,
             clearFilter,
-            getSingleDaysEvent,
-            getMultipleDaysEvent,
             getRepeatEventById,
             settingCalender,
             AddEditEventDialog,
@@ -321,6 +326,7 @@ export function CalendarProvider({
             canAdd,
             canChange,
             canApprove,
+            axiosClient,
         }}>
 			{children}
 		</CalendarContext.Provider>

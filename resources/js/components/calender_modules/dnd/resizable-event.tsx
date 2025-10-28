@@ -32,7 +32,7 @@ export function ResizableEvent({
 	children,
 	className,
 }: ResizableEventBlockProps) {
-	const { updateEventDragRezise, use24HourFormat } = useCalendar();
+	const { updateEventDragRezise, updateEventLokal, use24HourFormat } = useCalendar();
     const { canChange } = useCalendar();
 
 	const [isResizing, setIsResizing] = useState(false);
@@ -87,12 +87,12 @@ export function ResizableEvent({
 				newEnd = resizeBoundaries.dayEnd;
 			}
 
-            setResizePreview({
-                start: format(newStart, use24HourFormat ? "HH:mm" : "h:mm a"),
-                end: format(newEnd, use24HourFormat ? "HH:mm" : "h:mm a"),
-            });
+			setResizePreview({
+				start: format(newStart, use24HourFormat ? "HH:mm" : "h:mm a"),
+				end: format(newEnd, use24HourFormat ? "HH:mm" : "h:mm a"),
+			});
 
-			updateEventDragRezise({
+			updateEventLokal({
 				...event,
 				startDate: newStart.toISOString(),
 				endDate: newEnd.toISOString(),
@@ -104,23 +104,44 @@ export function ResizableEvent({
 			durationInMinutes,
 			resizeBoundaries,
 			use24HourFormat,
-			updateEventDragRezise,
+			updateEventLokal,
 			event,
 		],
 	);
 
 	const handleResizeStop = useCallback(() => {
+        if(resizePreview){
+            updateEventDragRezise({
+                ...event,
+                startDate: `${event.date}T${resizePreview.start}`,
+                endDate: `${event.date}T${resizePreview.end}`,
+                _startTime: resizePreview.start,
+                _endTime: resizePreview.end,
+            });
+        }
+
+
 		setIsResizing(false);
 		setResizePreview(null);
-	}, []);
+	}, [
+			start,
+			end,
+			durationInMinutes,
+			resizeBoundaries,
+			use24HourFormat,
+			updateEventDragRezise,
+			event,
+		],
+	);
+
 
 	const resizeConfig = useMemo(
 		() => ({
 			minHeight: 15,
 			maxHeight: 1440,
 			enable: {
-				top: canChange(event),
-				bottom: canChange(event),
+				top: canChange(event) && !event.repeat_id,
+				bottom: canChange(event) && !event.repeat_id,
 				topRight: false,
 				bottomRight: false,
 				bottomLeft: false,

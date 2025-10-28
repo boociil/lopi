@@ -1,6 +1,6 @@
 import { addMinutes, format, set } from "date-fns";
 import { useEffect, useMemo, useState } from "react";
-import {router, useForm, usePage } from "@inertiajs/react";
+import { useForm } from "@inertiajs/react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -35,7 +35,6 @@ import { Time24Picker } from "@/components/ui/time24-picker";
 import { pinjam_mobil_req, PinjamMobilIEvent, producePinjamMobilIEvent, type pinjam_mobil } from "../types";
 import { IEvent } from "@/components/calender_modules/interfaces";
 import { Add_Edit_Event_IProps } from "@/components/calender_modules/dialogs/props-dialog";
-import { useApiForm } from "@/lib/API/useAPIForm";
 
 export function AddEditEventDialog({
     children,
@@ -44,7 +43,7 @@ export function AddEditEventDialog({
     event,
 }: Add_Edit_Event_IProps) {
     const { isOpen, onClose, onToggle } = useDisclosure();
-    const { addEvent, updateEvent, getRepeatEventById, settingCalender, use24HourFormat } = useCalendar();
+    const { addEvent, updateEvent, getRepeatEventById, settingCalender, use24HourFormat, axiosClient } = useCalendar();
     const isEditing = !!event;
     // const [tipe, setTipe] = useState<string>("sekali");
 
@@ -81,7 +80,7 @@ export function AddEditEventDialog({
 
     }, [startDate, startTime, event, isEditing]);
 
-    const { data, setData, post, processing, errors, reset } = useApiForm<
+    const { data, setData, progress, errors, reset, clearErrors, setError } = useForm<
         Required<pinjam_mobil_req>
     >({
         id: "12345",
@@ -102,39 +101,55 @@ export function AddEditEventDialog({
         e.preventDefault();
         if (!isEditing) {
             toast.info('Mencoba menambahkan data baru !')
-            post(route('pinjam-mobil-tambah')
-                , { async: true, showProgress: true,
-                    onSuccess: (page) => {
-                        try {
-                            const return_data = page.props.data as pinjam_mobil[]
-                            addEvent(producePinjamMobilIEvent(return_data))
-                            toast.success('Berhasil menambahkan data baru !')
-                        } catch (error) {
-                            console.log(error)
-                            toast.error('Gagal menambahkan data baru !')
-                        }
-                    },
-                    onError: (page) => {
+            axiosClient.post(route('pinjam-mobil-tambah'), data)
+                .then(function (response: any) {
+                    try {
+                        const return_data = response.data.data as pinjam_mobil[]
+                        addEvent(producePinjamMobilIEvent(return_data))
+                        toast.success('Berhasil menambahkan data baru !')
+                        clearErrors()
+                        onToggle()
+                    } catch (error) {
+                        console.log(error)
                         toast.error('Gagal menambahkan data baru !')
                     }
-                }
-            )
+                })
+                .catch(function (error: any) {
+                    console.log(error)
+                    toast.error('Gagal menambahkan data baru !')
+
+                    clearErrors();
+                    if (error.response?.status === 422) {
+                        Object.keys(error.response.data.errors).forEach((key) => {
+                            setError(key, error.response.data.errors[key][0]);
+                        });
+                    }
+                });
+
         } else {
             toast.info('Mencoba mengubah data !')
-            post(route("pinjam-mobil-ubah", { pinjamMobil: event.id })
-                , { async: true, showProgress: true,
-                    onSuccess: (page) => {
-                        try {
-                            const return_data = page.props.data as pinjam_mobil[]
-                            updateEvent(producePinjamMobilIEvent(return_data))
-                            toast.success('Berhasil mengubah data !')
-                        } catch (error) {
-                            console.log(error)
-                            toast.error('Gagal mengubah data !')
-                        }
-                    },
-                    onError: (page) => {
+            axiosClient.post(route("pinjam-mobil-ubah", { pinjamMobil: event.id }), data)
+                .then(function (response: any) {
+                    try {
+                        const return_data = response.data.data as pinjam_mobil[]
+                        updateEvent(producePinjamMobilIEvent(return_data), [data.id], [data.repeat_id])
+                        toast.success('Berhasil mengubah data !')
+                        clearErrors()
+                        onToggle()
+                    } catch (error) {
+                        console.log(error)
                         toast.error('Gagal mengubah data !')
+                    }
+                })
+                .catch(function (error: any) {
+                    console.log(error)
+                    toast.error('Gagal mengubah data !')
+
+                    clearErrors();
+                    if (error.response?.status === 422) {
+                        Object.keys(error.response.data.errors).forEach((key) => {
+                            setError(key, error.response.data.errors[key][0]);
+                        });
                     }
                 });
         }
@@ -144,20 +159,19 @@ export function AddEditEventDialog({
 		if(event){
             const event_: PinjamMobilIEvent = event as PinjamMobilIEvent
             if(event.repeat_id){
-                const repeatEvent: IEvent[] = getRepeatEventById(event.repeat_id)
-                setData('tipe', 'berulang')
-                setData("id", 'xxxx-xxxx-xxxx');
+                const repeatEvent: PinjamMobilIEvent[] = getRepeatEventById(event.repeat_id) as PinjamMobilIEvent[]
+                setData("id", repeatEvent[0].id);
                 setData("kegiatan", "Peminjaman Mobil");
                 setData('tipe', 'sekali')
-                setData("berulang_id", null);
-                setData("tanggal_awal",  formatDate(initialDates.startDate));
-                setData("tanggal_akhir",  formatDate(initialDates.endDate));
-                setData("tanggal", formatDate(initialDates.startDate));
-                setData("waktu_awal",formatTime(initialDates.startDate, use24HourFormat));
-                setData("waktu_akhir", formatTime(initialDates.endDate, use24HourFormat));
-                setData("status", event_.pinjam_mobil_ori.status);
-                setData('pembuat_username', event_.pinjam_mobil_ori.pembuat_username)
-                setData('confirm_username', event_.pinjam_mobil_ori.confirm_username)
+                setData("berulang_id", repeatEvent[0].repeat_id);
+                setData("tanggal_awal",  formatDate( repeatEvent[0].date));
+                setData("tanggal_akhir",  formatDate( repeatEvent[repeatEvent.length-1].date));
+                setData("tanggal", formatDate( repeatEvent[0].date));
+                setData("waktu_awal",formatTime( repeatEvent[0].startDate, use24HourFormat));
+                setData("waktu_akhir", formatTime( repeatEvent[0].endDate, use24HourFormat));
+                setData("status",  repeatEvent[0].pinjam_mobil_ori.status);
+                setData('pembuat_username', repeatEvent[0].pinjam_mobil_ori.pembuat_username)
+                setData('confirm_username', repeatEvent[0].pinjam_mobil_ori.confirm_username)
             }else{
                 setData("id", event.id);
                 setData("kegiatan", event.title);
@@ -166,8 +180,8 @@ export function AddEditEventDialog({
                 setData("tanggal_awal",  formatDate(event.date));
                 setData("tanggal_akhir",  formatDate(event.date));
                 setData("tanggal", formatDate(event.date));
-                setData("waktu_awal", event._startTime);
-                setData("waktu_akhir", event._endTime);
+                setData("waktu_awal", formatTime(event.startDate, use24HourFormat));
+                setData("waktu_akhir", formatTime(event.endDate, use24HourFormat));
                 setData("status", event_.pinjam_mobil_ori.status);
                 setData('pembuat_username', event_.pinjam_mobil_ori.pembuat_username)
                 setData('confirm_username', event_.pinjam_mobil_ori.confirm_username)
