@@ -18,6 +18,7 @@ import { usePage } from "@inertiajs/react";
 import { useState } from "react";
 import { formatDate, formatTime } from "@/components/calender_modules/helpers";
 import { useApi } from "@/lib/API/useApi";
+import { progress } from '@inertiajs/react'
 
 export function PinjamMobilCalender({
         pinjam_mobil_data,
@@ -39,22 +40,26 @@ export function PinjamMobilCalender({
 
     /////////////////////
     function reload_data(selectedDate: Date, currentView: TCalendarView, setAllEventsOri: (_allEvents: IEvent[]) => void){
-        toast.info('Meload data baru !')
+        toast.info('Meload data baru')
+        progress.start()
         axiosClient.post(route("pinjam-mobil-index"), {'selectedDate': selectedDate.toISOString(), view: currentView})
             .then(function (response: any) {
                 try {
                     const _allEvents_: IEvent[] = producePinjamMobilIEvent(response.data.data as pinjam_mobil[]);
                     pairIEventDenganUser(_allEvents_ as PinjamMobilIEvent[], _user as CalenderUser[])
                     setAllEventsOri(_allEvents_)
-                    toast.success('Berhasil mendapatkan data baru !')
+                    progress.finish()
+                    toast.success('Berhasil mendapatkan data baru')
                 } catch (error) {
                     console.log(error)
-                    toast.error('Gagal mendapatkan data baru !')
+                    progress.finish()
+                    toast.error('Gagal mendapatkan data baru')
                 }
             })
             .catch(function (error: any) {
                 console.log(error)
-                toast.error('Gagal mendapatkan data baru !')
+                progress.finish()
+                toast.error('Gagal mendapatkan data baru!')
             });
     }
 
@@ -72,6 +77,8 @@ export function PinjamMobilCalender({
             status: 'menunggu',
         }
 
+        toast.info('Mencoba mengubah data')
+        progress.start()
         axiosClient.post(route("pinjam-mobil-ubah", { pinjamMobil: event.id }), data)
             .then(function (response: any) {
                 try {
@@ -82,16 +89,19 @@ export function PinjamMobilCalender({
                     }else{
                         updateEvent(return_data, [event.id], [])
                     }
-                    toast.success('Berhasil mengubah data !')
+                    progress.finish()
+                    toast.success('Berhasil mengubah data')
                 } catch (error) {
                     console.log(error)
-                    toast.error('Gagal mengubah data !')
+                    progress.finish()
+                    toast.error('Gagal mengubah data')
                     cancel()
                 }
             })
             .catch(function (error: any) {
                 console.log(error)
-                toast.error('Gagal mengubah data !')
+                progress.finish()
+                toast.error('Gagal mengubah data')
             });
     }
 
@@ -107,6 +117,7 @@ export function PinjamMobilCalender({
         }
     }
     function canApprove(event: IEvent):  boolean{
+        return true
         if(havePinjamMobilPeran){
             return true
         }else{

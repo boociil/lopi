@@ -226,11 +226,22 @@ export function CalendarProvider({
 	};
 
     const removeEvent = (eventId: string) => {
-        if(eventId == null){
+        const item = allEvents.find(e => e.id == eventId)
+        if(!item){
             return
         }
-       	setAllEvents(allEvents.filter((e) => e.id !== eventId || e.repeat_id !== eventId));
-		runFilter()
+        const repeat_id: string | null = item.repeat_id
+       	setAllEvents(allEvents.filter((e) => {
+            if(repeat_id){
+                if(e.id !== eventId && e.repeat_id !== repeat_id){
+                    return true
+                }
+            }else{
+                if(e.id !== eventId){
+                    return true
+                }
+            }
+        }));
 	};
 
 	const clearFilter = () => {

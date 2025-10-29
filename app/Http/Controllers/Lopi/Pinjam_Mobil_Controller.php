@@ -341,9 +341,16 @@ class Pinjam_Mobil_Controller extends Controller
             $pinjamMobil->status = $request->input('status');
             $pinjamMobil->confirm_username = Auth::user()->username;
             $pinjamMobil->save();
+            if($pinjamMobil->berulang_id){
+                Pinjam_Mobil::where('berulang_id', $pinjamMobil->berulang_id)->update([
+                    'status' => $request->input('status'),
+                    'confirm_username' => Auth::user()->username,
+                ]);
+            }
             DB::commit();
             return [
                 "_status" => 'Berhasil approval peminjaman mobil!',
+                "data" => Pinjam_Mobil::where('id', $pinjamMobil->id)->orWhere('berulang_id', $pinjamMobil->berulang_id)->get()
             ];
         }catch(Exception $ex){
             DB::rollBack();

@@ -32,9 +32,10 @@ import {
     formatTime
 } from "@/components/calender_modules/helpers";
 import { Time24Picker } from "@/components/ui/time24-picker";
-import { pinjam_mobil_req, PinjamMobilIEvent, producePinjamMobilIEvent, type pinjam_mobil } from "../types";
-import { IEvent } from "@/components/calender_modules/interfaces";
+import { pairIEventDenganUser, pinjam_mobil_req, PinjamMobilIEvent, producePinjamMobilIEvent, type pinjam_mobil } from "../types";
+import { CalenderUser, IEvent } from "@/components/calender_modules/interfaces";
 import { Add_Edit_Event_IProps } from "@/components/calender_modules/dialogs/props-dialog";
+import { progress as progressIndikator } from '@inertiajs/react'
 
 export function AddEditEventDialog({
     children,
@@ -43,8 +44,9 @@ export function AddEditEventDialog({
     event,
 }: Add_Edit_Event_IProps) {
     const { isOpen, onClose, onToggle } = useDisclosure();
-    const { addEvent, updateEvent, getRepeatEventById, settingCalender, use24HourFormat, axiosClient } = useCalendar();
+    const { users, addEvent, updateEvent, getRepeatEventById, settingCalender, use24HourFormat, axiosClient } = useCalendar();
     const isEditing = !!event;
+
     // const [tipe, setTipe] = useState<string>("sekali");
 
     const initialDates = useMemo(() => {
@@ -100,23 +102,28 @@ export function AddEditEventDialog({
     const submit: React.FormEventHandler = (e) => {
         e.preventDefault();
         if (!isEditing) {
-            toast.info('Mencoba menambahkan data baru !')
+            toast.info('Mencoba menambahkan data baru')
+            progressIndikator.start()
             axiosClient.post(route('pinjam-mobil-tambah'), data)
                 .then(function (response: any) {
                     try {
-                        const return_data = response.data.data as pinjam_mobil[]
-                        addEvent(producePinjamMobilIEvent(return_data))
-                        toast.success('Berhasil menambahkan data baru !')
+                        const return_data: IEvent[] = producePinjamMobilIEvent(response.data.data as pinjam_mobil[]);
+                        pairIEventDenganUser(return_data as PinjamMobilIEvent[], users as CalenderUser[])
+                        addEvent(return_data)
+                        progressIndikator.finish()
+                        toast.success('Berhasil menambahkan data baru')
                         clearErrors()
                         onToggle()
                     } catch (error) {
                         console.log(error)
-                        toast.error('Gagal menambahkan data baru !')
+                        progressIndikator.finish()
+                        toast.error('Gagal menambahkan data baru')
                     }
                 })
                 .catch(function (error: any) {
                     console.log(error)
-                    toast.error('Gagal menambahkan data baru !')
+                    progressIndikator.finish()
+                    toast.error('Gagal menambahkan data baru')
 
                     clearErrors();
                     if (error.response?.status === 422) {
@@ -127,23 +134,35 @@ export function AddEditEventDialog({
                 });
 
         } else {
-            toast.info('Mencoba mengubah data !')
+            toast.info('Mencoba mengubah data')
+            progressIndikator.start()
             axiosClient.post(route("pinjam-mobil-ubah", { pinjamMobil: event.id }), data)
                 .then(function (response: any) {
                     try {
-                        const return_data = response.data.data as pinjam_mobil[]
-                        updateEvent(producePinjamMobilIEvent(return_data), [data.id], [data.repeat_id])
-                        toast.success('Berhasil mengubah data !')
+
+                        const return_data: IEvent[] = producePinjamMobilIEvent(response.data.data as pinjam_mobil[]);
+                        pairIEventDenganUser(return_data as PinjamMobilIEvent[], users as CalenderUser[])
+
+                        if(event.repeat_id){
+                            updateEvent(return_data, [event.id], [event.repeat_id])
+                        }else{
+                            updateEvent(return_data, [event.id], [])
+                        }
+
+                        progressIndikator.finish()
+                        toast.success('Berhasil mengubah data')
                         clearErrors()
                         onToggle()
                     } catch (error) {
                         console.log(error)
-                        toast.error('Gagal mengubah data !')
+                        progressIndikator.finish()
+                        toast.error('Gagal mengubah data')
                     }
                 })
                 .catch(function (error: any) {
                     console.log(error)
-                    toast.error('Gagal mengubah data !')
+                    progressIndikator.finish()
+                    toast.error('Gagal mengubah data')
 
                     clearErrors();
                     if (error.response?.status === 422) {
