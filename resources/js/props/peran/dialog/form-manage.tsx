@@ -35,6 +35,8 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectVa
 import { type peran_lopi } from "../types";
 import { Check, ChevronsUpDown, LoaderCircle } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { toast } from "sonner";
+import { progress as progressIndikator } from '@inertiajs/react'
 
 type PeranForm = {
     peran: string;
@@ -44,11 +46,12 @@ type PeranForm = {
 };
 
 export default function DialogFormManage() {
-    const { eventDialog, setEventDialog, satuanKerjaTahun, userDict } = usePeranContext();
+    const { eventDialog, setEventDialog, satuanKerjaTahun, userDict, axiosClient, addPeran } = usePeranContext();
     const [penggunaArr, setPenggunaArr] = React.useState<peran_lopi[]>([])
     const [openPengguna, setOpenPengguna] = React.useState(false)
+    const [processing, setProcessing] = React.useState(false)
 
-    const { data, setData, post, processing, errors, setError, clearErrors } = useForm<
+    const { data, setData, errors, setError, clearErrors } = useForm<
         Required<PeranForm>
     >({
         peran: "zoom",
@@ -64,11 +67,36 @@ export default function DialogFormManage() {
             setError("username", "Pengguna harus terisi")
             return
         }
-        post(route("peran-tambah"), {
-            onSuccess: () => {
-                close_dialog()
-            }
-        });
+        setProcessing(true)
+        axiosClient.post(route("peran-tambah"), data)
+            .then(function (response: any) {
+                try {
+                    const return_data: peran_lopi = response.data as peran_lopi;
+                    addPeran(return_data)
+                    progressIndikator.finish()
+                    toast.success('Berhasil menambahkan data baru')
+                    clearErrors()
+                    close_dialog()
+                } catch (error) {
+                    console.log(error)
+                    progressIndikator.finish()
+                    toast.error('Gagal menambahkan data baru')
+                }
+                setProcessing(false)
+            })
+            .catch(function (error: any) {
+                console.log(error)
+                progressIndikator.finish()
+                toast.error('Gagal menambahkan peran baru')
+
+                clearErrors();
+                if (error.response?.status === 422) {
+                    Object.keys(error.response.data.errors).forEach((key) => {
+                        setError(key, error.response.data.errors[key][0]);
+                    });
+                }
+                setProcessing(false)
+            });
     };
 
     function setPenggunaArrMeta(value: String){
@@ -125,6 +153,7 @@ export default function DialogFormManage() {
                                         <SelectGroup>
                                             <SelectItem value="zoom">Zoom</SelectItem>
                                             <SelectItem value="ruang">Ruang</SelectItem>
+                                            <SelectItem value="mobil">Mobil</SelectItem>
                                         </SelectGroup>
                                     </SelectContent>
                                 </Select>

@@ -1,4 +1,5 @@
 import {  User } from "@/types";
+import { AxiosInstance } from "axios";
 
 export type PeranProps = {
     peranLopi: peran_lopi[];
@@ -11,6 +12,8 @@ export type PeranProps = {
 export type PeranContextType = PeranProps & {
     eventDialog: peran_dialog_event;
     setEventDialog: (eventDialog: peran_dialog_event) => void;
+    addPeran: (peran_lopi_: peran_lopi) => void;
+    axiosClient: AxiosInstance;
 };
 
 export interface peran_lopi {

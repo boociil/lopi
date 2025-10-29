@@ -16,8 +16,8 @@ import { PinjamMobilCalender } from "@/props/mobil/calender";
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: "Peran",
-        href: "/peran",
+        title: "Peminjaman Mobil",
+        href: "/pinjam/mobil",
     },
 ];
 
@@ -52,7 +52,6 @@ export default function Index({
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Peminjaman Mobil" />
-
                 <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4 overflow-x-auto">
                     <div className="w-full">
                         <Heading

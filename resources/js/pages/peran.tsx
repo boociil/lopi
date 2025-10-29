@@ -37,6 +37,9 @@ import {
     type peran_dialog_event,
     type satuan_kerja_tahun,
 } from "@/props/peran/types";
+import { useApi } from "@/lib/API/useApi";
+import { progress as progressIndikator } from '@inertiajs/react'
+import { toast } from "sonner";
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -54,12 +57,14 @@ export default function Index({
     user: User[];
     satuanKerjaTahun: satuan_kerja_tahun[];
 }>) {
+
+    const [allPeran, setAllPeran] = React.useState<peran_lopi[]>(peranLopi);
     const [eventDialog, setEventDialog] = React.useState<peran_dialog_event>({
         status: null,
         data: null,
     });
 
-
+    const axiosClient = useApi();
     const [userDict, setUserDict] = React.useState<Map<string, string>>(new Map<string, string>);
     const [satuanKerjaTahunDict, setSatuanKerjaTahunDict] = React.useState<Map<string, string>>(new Map<string, string>);
 
@@ -77,8 +82,22 @@ export default function Index({
         setSatuanKerjaTahunDict(satuanKerjaTahunDict_)
     }, [user, satuanKerjaTahun]);
 
-    function hapus(peran_lopi_: peran_lopi){
-        router.post(route('peran-hapus', {'peran_id': peran_lopi_.id}))
+    function hapusPeran(peran_lopi_: peran_lopi){
+        progressIndikator.start()
+        axiosClient.post(route('peran-hapus', {'peran_id': peran_lopi_.id}))
+            .then(function (response) {
+                setAllPeran((prev) => prev.filter((item) => item.id !== peran_lopi_.id));
+                progressIndikator.finish()
+                toast.success("Berhasil meghapus peran.");
+            })
+            .catch(function (error) {
+                progressIndikator.finish()
+                toast.success("Gagal meghapus peran.");
+            });
+    };
+
+    function addPeran(peran_lopi_: peran_lopi){
+        setAllPeran([...allPeran, peran_lopi_]);
     };
 
 
@@ -86,13 +105,14 @@ export default function Index({
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Peran" />
             <PeranProvider
-                peranLopi={peranLopi}
+                peranLopi={allPeran}
                 user={user}
                 satuanKerjaTahun={satuanKerjaTahun}
                 eventDialog={eventDialog}
                 setEventDialog={setEventDialog}
                 userDict={userDict}
                 satuanKerjaTahunDict={satuanKerjaTahunDict}
+                addPeran={addPeran}
             >
                 <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4 overflow-x-auto">
                     <div className="w-full">
@@ -134,8 +154,8 @@ export default function Index({
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody className="text-accent-foreground">
-                                    {peranLopi.length > 0 ? (
-                                        peranLopi.map((item, index) => {
+                                    {allPeran.length > 0 ? (
+                                        allPeran.map((item, index) => {
                                             return (
                                                 <TableRow key={"-" + item.id}>
                                                     <TableCell className="text-center">
@@ -150,6 +170,7 @@ export default function Index({
                                                     <TableCell className="text-center">
                                                         {(item.peran == "zoom") && (<>Zoom</>)}
                                                         {(item.peran == "ruang") && (<>Ruang</>)}
+                                                        {(item.peran == "mobil") && (<>Mobil</>)}
                                                     </TableCell>
                                                     <TableCellWrap>
                                                         {satuanKerjaTahunDict.has(item.parent_id) ?
@@ -164,17 +185,17 @@ export default function Index({
                                                             </AlertDialogTrigger>
                                                             <AlertDialogContent>
                                                                 <AlertDialogHeader>
-                                                                <AlertDialogTitle>Apakah kamu yakin?</AlertDialogTitle>
+                                                                <AlertDialogTitle className="text-secondary">Apakah kamu yakin?</AlertDialogTitle>
                                                                     <AlertDialogDescription>
                                                                         Apakah anda yakin untuk menghapus peran {item.peran} <br/>
                                                                         pada pengguna {userDict.has(item.pemilik_username) ? userDict.get(item.pemilik_username) : item.pemilik_username} ?
                                                                     </AlertDialogDescription>
                                                                 </AlertDialogHeader>
                                                                 <AlertDialogFooter>
-                                                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                                    <AlertDialogCancel className="text-secondary">Cancel</AlertDialogCancel>
                                                                     <AlertDialogAction
                                                                         onClick={e =>{
-                                                                            hapus(item)}}>Hapus</AlertDialogAction>
+                                                                            hapusPeran(item)}}>Hapus</AlertDialogAction>
                                                                 </AlertDialogFooter>
                                                             </AlertDialogContent>
                                                         </AlertDialog>

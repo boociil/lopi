@@ -13,9 +13,7 @@ import { EventDropConfirmationDialog } from "./dialog/event-drop-confirmation-di
 import { EventListDialog } from "./dialog/events-list-dialog";
 import { TCalendarView } from "@/components/calender_modules/types";
 import { toast } from "sonner";
-import { useApiForm } from "@/lib/API/useAPIForm";
 import { usePage } from "@inertiajs/react";
-import { useState } from "react";
 import { formatDate, formatTime } from "@/components/calender_modules/helpers";
 import { useApi } from "@/lib/API/useApi";
 import { progress } from '@inertiajs/react'
@@ -117,7 +115,6 @@ export function PinjamMobilCalender({
         }
     }
     function canApprove(event: IEvent):  boolean{
-        return true
         if(havePinjamMobilPeran){
             return true
         }else{
@@ -142,7 +139,7 @@ export function PinjamMobilCalender({
                 canChange={canChange}
                 canApprove={canApprove}
             >
-            <DndProvider showConfirmation={false}>
+            <DndProvider showConfirmation={true}>
                 <div className="w-full rounded-xl mx-2">
                     <CalendarHeader />
                     <CalendarBody />

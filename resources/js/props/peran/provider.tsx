@@ -6,6 +6,7 @@ import {
 } from "./types";
 import DialogFormManage from "./dialog/form-manage";
 import {type User } from "@/types";
+import { useApi } from "@/lib/API/useApi";
 
 export default function PeranProvider({
     peranLopi,
@@ -16,6 +17,8 @@ export default function PeranProvider({
     eventDialog,
     setEventDialog,
     children,
+    addPeran,
+
 }: {
     peranLopi: peran_lopi[];
     user: User[];
@@ -24,8 +27,12 @@ export default function PeranProvider({
     satuanKerjaTahunDict: Map<string, string>,
     eventDialog: peran_dialog_event;
     setEventDialog: (eventDialog: peran_dialog_event) => void;
+    addPeran: (peran_lopi_: peran_lopi) => void;
     children: React.ReactNode;
 }) {
+
+    const axiosClient = useApi();
+
     return (
         <PeranContext.Provider
             value={{
@@ -35,7 +42,9 @@ export default function PeranProvider({
                 userDict,
                 satuanKerjaTahunDict,
                 eventDialog,
+                addPeran,
                 setEventDialog,
+                axiosClient,
             }}
         >
             <DialogFormManage></DialogFormManage>
