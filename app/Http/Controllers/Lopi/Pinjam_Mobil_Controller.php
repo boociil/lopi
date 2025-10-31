@@ -31,26 +31,37 @@ class Pinjam_Mobil_Controller extends Controller
             'view'          => Rule::in(['day', 'week', 'month', 'year', 'agenda'])
         ]);
 
+        $selectedDate = null;
+        $view = null;
+
+        if($request->has('selectedDate') && $request->has('view')){
+            $selectedDate = $request->input('selectedDate');
+            $view = $request->input('view');
+        }else if(session()->has('pinjam_mobil_index')){
+            $selectedDate = Carbon::today()->format('Y-m-d');
+            $view = session('pinjam_mobil_index')['view'];
+        }else{
+            $selectedDate = Carbon::today()->format('Y-m-d');
+            $view = 'week';
+        }
+
+        session()->put('pinjam_mobil_index', ['view' => $view]);
+
         $tanggal_awal = null;
         $tanggal_akhir = null;
 
-        if($request->has('selectedDate') && $request->has('view')){
-            if($request->input('view') == 'day'){
-                $tanggal_awal = Carbon::parse($request->input('selectedDate'));
-                $tanggal_akhir = Carbon::parse($request->input('selectedDate'));
-            }else  if($request->input('view') == 'week'){
-                $tanggal_awal = Carbon::parse($request->input('selectedDate'))->startOfWeek(Carbon::SUNDAY);
-                $tanggal_akhir = Carbon::parse($request->input('selectedDate'))->endOfWeek(Carbon::SUNDAY);
-            }else if($request->input('view') == 'month' || $request->has('view') == 'agenda'){
-                $tanggal_awal = Carbon::parse($request->input('selectedDate'))->startOfMonth();
-                $tanggal_akhir = Carbon::parse($request->input('selectedDate'))->endOfMonth();
-            }else if($request->input('view') == 'year'){
-                $tanggal_awal = Carbon::parse($request->input('selectedDate'))->startOfYear();
-                $tanggal_akhir = Carbon::parse($request->input('selectedDate'))->endOfYear();
-            }
-        }else{
-            $tanggal_awal =  Carbon::today()->startOfWeek(Carbon::SUNDAY);
-            $tanggal_akhir =  Carbon::today()->endOfWeek(Carbon::SUNDAY);
+        if($view == 'day'){
+            $tanggal_awal = Carbon::parse($selectedDate);
+            $tanggal_akhir = Carbon::parse($selectedDate);
+        }else  if($view == 'week'){
+            $tanggal_awal = Carbon::parse($selectedDate)->startOfWeek(Carbon::SUNDAY);
+            $tanggal_akhir = Carbon::parse($selectedDate)->endOfWeek(Carbon::SUNDAY);
+        }else if($view == 'month' || $view == 'agenda'){
+            $tanggal_awal = Carbon::parse($selectedDate)->startOfMonth();
+            $tanggal_akhir = Carbon::parse($selectedDate)->endOfMonth();
+        }else if($view == 'year'){
+            $tanggal_awal = Carbon::parse($selectedDate)->startOfYear();
+            $tanggal_akhir = Carbon::parse($selectedDate)->endOfYear();
         }
 
 
@@ -60,27 +71,17 @@ class Pinjam_Mobil_Controller extends Controller
             ->whereNull('tahun')
             ->first();
 
-        $user = User::all();
-
         if($request->isMethod('get')){
             return Inertia::render('mobil', [
-                "tanggal_awal" => $tanggal_awal->format('Y-m-d'),
-                "tanggal_akhir" => $tanggal_akhir->format('Y-m-d'),
-                "have_mobil_peran" => $have_mobil_peran ? true : false,
-                "user" => $user,
-                "data" =>  Pinjam_Mobil::orWhereBetween('tanggal', [$tanggal_awal->format('Y-m-d'), $tanggal_akhir->format('Y-m-d')])
-                                ->get(),
+                "user" => User::all(),
+                'have_mobil_peran' => $have_mobil_peran,
+                "data" =>  Pinjam_Mobil::orWhereBetween('tanggal', [$tanggal_awal->format('Y-m-d'), $tanggal_akhir->format('Y-m-d')])->get(),
             ]);
         }else if($request->isMethod('post')){
              return [
-                "tanggal_awal" => $tanggal_awal->format('Y-m-d'),
-                "tanggal_akhir" => $tanggal_akhir->format('Y-m-d'),
-                "have_mobil_peran" => $have_mobil_peran ? true : false,
                 "data" =>  Pinjam_Mobil::orWhereBetween('tanggal', [$tanggal_awal->format('Y-m-d'), $tanggal_akhir->format('Y-m-d')])->get(),
             ];
         }
-
-
     }
 
     public function tambah(Request $request)

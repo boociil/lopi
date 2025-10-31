@@ -252,7 +252,6 @@ export function CalendarProvider({
 
     function setAllEventsOri(_oriAllEvent: IEvent[]){
         setAllEvents(_oriAllEvent)
-        runFilter()
     }
 
     function runFilter(){
