@@ -73,7 +73,7 @@ class Pinjam_Mobil_Controller extends Controller
             ->first();
 
         if($request->isMethod('get')){
-            return Inertia::render('mobil', [
+            return Inertia::render('pinjam_mobil', [
                 "user" => User::all(),
                 'have_mobil_peran' => $have_mobil_peran,
                 "data" =>  Pinjam_Mobil::orWhere(function (Builder $query) use ($tanggal_awal, $tanggal_akhir){

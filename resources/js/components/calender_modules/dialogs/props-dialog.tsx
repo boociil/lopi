@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
 import { IEvent } from "../interfaces";
-import { PinjamMobilIEvent } from "@/props/mobil/types";
+import { PinjamMobilIEvent } from "@/props/pinjam-mobil/types";
 
 export interface Add_Edit_Event_IProps {
     children: ReactNode;

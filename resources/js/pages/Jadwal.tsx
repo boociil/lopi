@@ -9,8 +9,8 @@ import { Head } from "@inertiajs/react";
 import * as React from "react";
 import Heading from "@/components/heading";
 
-import { pinjam_mobil } from "@/props/mobil/types";
-import { PinjamMobilCalender } from "@/props/mobil/calender";
+import { pinjam_mobil } from "@/props/pinjam-mobil/types";
+import { PinjamMobilCalender } from "@/props/pinjam-mobil/calender";
 
 
 const breadcrumbs: BreadcrumbItem[] = [
