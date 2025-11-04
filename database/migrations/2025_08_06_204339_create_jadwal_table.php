@@ -25,8 +25,9 @@ return new class extends Migration
             $table->text('description')->nullable();
 
             $table->enum('tipe', ['sekali', 'berulang'])->default('sekali');
-            $table->string('berulang_id', 36)->nullable();//durasi, berulang
-            $table->date('tanggal');
+            $table->date('tanggal')->nullable();
+            $table->date('berulang_tanggal_awal')->nullable();
+            $table->date('berulang_tanggal_akhir')->nullable();
             $table->time('waktu_awal');
             $table->time('waktu_akhir');
             $table->enum('status', ['menunggu', 'disetujui', 'ditolak'])->default('menunggu');
@@ -50,8 +51,9 @@ return new class extends Migration
             $table->string('kegiatan');
 
             $table->enum('tipe', ['sekali', 'berulang'])->default('sekali');
-            $table->string('berulang_id', 36)->nullable();//durasi, berulang
-            $table->date('tanggal');
+            $table->date('tanggal')->nullable();
+            $table->date('berulang_tanggal_awal')->nullable();
+            $table->date('berulang_tanggal_akhir')->nullable();
             $table->time('waktu_awal');
             $table->time('waktu_akhir');
             $table->enum('status', ['menunggu', 'disetujui', 'ditolak'])->default('menunggu');
@@ -75,8 +77,10 @@ return new class extends Migration
             $table->string('ruang', 100);
 
             $table->enum('tipe', ['sekali', 'berulang'])->default('sekali');
-            $table->string('berulang_id', 36)->nullable();//durasi, berulang
-            $table->date('tanggal');
+            $table->date('tanggal')->nullable();
+            $table->date('berulang_tanggal_awal')->nullable();
+            $table->date('berulang_tanggal_akhir')->nullable();
+
             $table->time('waktu_awal');
             $table->time('waktu_akhir');
             $table->enum('status', ['menunggu', 'disetujui', 'ditolak'])->default('menunggu');
@@ -102,8 +106,10 @@ return new class extends Migration
             $table->string('password', 10);
 
             $table->enum('tipe', ['sekali', 'berulang'])->default('sekali');
-            $table->string('berulang_id', 36)->nullable();//durasi, berulang
-            $table->date('tanggal');
+            $table->date('tanggal')->nullable();
+            $table->date('berulang_tanggal_awal')->nullable();
+            $table->date('berulang_tanggal_akhir')->nullable();
+
             $table->time('waktu_awal');
             $table->time('waktu_akhir');
             $table->enum('status', ['menunggu', 'disetujui', 'ditolak'])->default('menunggu');

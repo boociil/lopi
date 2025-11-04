@@ -25,7 +25,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useCalendar } from "@/components/calender_modules/contexts/calendar-context";
-import { formatTime } from "@/components/calender_modules/helpers";
+import { capitalizeWords, formatTime } from "@/components/calender_modules/helpers";
 import { Event_Details_Dialog_IProps } from "@/components/calender_modules/dialogs/props-dialog";
 import { progress as progressIndikator } from '@inertiajs/react'
 import { CalenderUser, IEvent } from "@/components/calender_modules/interfaces";
@@ -43,27 +43,23 @@ export function EventDetailsDialog({ event, children }: Event_Details_Dialog_IPr
             .then(function (response) {
                 removeEvent(event_id);
                 progressIndikator.finish()
-                toast.success(settingCalender.name_event+" telah dihapus dengan sukses.");
+                toast.success(capitalizeWords(settingCalender.name_event)+" telah dihapus dengan sukses.");
             })
             .catch(function (error) {
                 progressIndikator.finish()
-                toast.error("Kesalahan saat menghapus "+settingCalender.name_event+".");
+                toast.error("Kesalahan saat menghapus "+capitalizeWords(settingCalender.name_event)+".");
             });
     };
 
-    const approvalEvent = (event_id: string, repeat_id: string|null, status: 'disetujui'|'ditolak') => {
+    const approvalEvent = (event_id: string, status: 'disetujui'|'ditolak') => {
         progressIndikator.start()
         axiosClient.post(route("pinjam-mobil-approval", {pinjamMobil: event_id}), {status: status})
             .then(function (response) {
                  try {
-                    const return_data: IEvent[] = producePinjamMobilIEvent(response.data.data as pinjam_mobil[]);
+                    const return_data: IEvent[] = producePinjamMobilIEvent([response.data.data] as pinjam_mobil[]);
                     pairIEventDenganUser(return_data as PinjamMobilIEvent[], users  as CalenderUser[])
+                    updateEvent(return_data[0])
 
-                    if(repeat_id){
-                        updateEvent(return_data, [event_id], [repeat_id])
-                    }else{
-                        updateEvent(return_data, [event_id], [])
-                    }
                     progressIndikator.finish()
                     toast.success('Berhasil mengubah data')
                 } catch (error) {
@@ -74,7 +70,7 @@ export function EventDetailsDialog({ event, children }: Event_Details_Dialog_IPr
             })
             .catch(function (error) {
                 progressIndikator.finish()
-                toast.error("Kesalahan saat menghapus "+settingCalender.name_event+".");
+                toast.error("Kesalahan saat menghapus "+capitalizeWords(settingCalender.name_event)+".");
             });
     };
 
@@ -103,11 +99,11 @@ export function EventDetailsDialog({ event, children }: Event_Details_Dialog_IPr
 							<div>
 								<p className="text-sm font-medium text-secondary">Tipe</p>
 								<p className="text-sm text-muted-foreground">
-                                    {event.repeat_id ? 'Berulang' : 'Sekali'}
+                                    {event._startDate != event._endDate ? 'Berulang' : 'Sekali'}
 								</p>
 							</div>
 						</div>
-                        {event.repeat_id ?
+                        {event._startDate != event._endDate ?
                         <>
                             <div className="flex items-start gap-2">
                                 <Calendar className="mt-1 size-4 shrink-0 text-muted-foreground" />
@@ -124,7 +120,7 @@ export function EventDetailsDialog({ event, children }: Event_Details_Dialog_IPr
                                 <div>
                                     <p className="text-sm font-medium text-secondary">Tanggal Akhir</p>
                                     <p className="text-sm text-muted-foreground">
-                                        {format(startDate, "EEEE dd MMMM")}
+                                        {format(endDate, "EEEE dd MMMM")}
                                     </p>
                                 </div>
                             </div>
@@ -193,8 +189,8 @@ export function EventDetailsDialog({ event, children }: Event_Details_Dialog_IPr
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
                                 <AlertDialogCancel className="text-secondary">Tutup</AlertDialogCancel>
-                                <AlertDialogAction onClick={() => approvalEvent(event.id, event.repeat_id, 'ditolak')}>Tolak</AlertDialogAction>
-                                <AlertDialogAction onClick={() => approvalEvent(event.id, event.repeat_id, 'disetujui')}>Setujui</AlertDialogAction>
+                                <AlertDialogAction onClick={() => approvalEvent(event.id, 'ditolak')}>Tolak</AlertDialogAction>
+                                <AlertDialogAction onClick={() => approvalEvent(event.id, 'disetujui')}>Setujui</AlertDialogAction>
                                 </AlertDialogFooter>
                             </AlertDialogContent>
                         </AlertDialog>

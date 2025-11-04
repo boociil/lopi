@@ -28,6 +28,7 @@ import InputError from "@/components/input-error";
 import { SelectGroup } from "@radix-ui/react-select";
 import { DatePicker22 } from "@/components/ui/date-picker";
 import {
+    capitalizeWords,
     formatDate,
     formatTime
 } from "@/components/calender_modules/helpers";
@@ -44,7 +45,7 @@ export function AddEditEventDialog({
     event,
 }: Add_Edit_Event_IProps) {
     const { isOpen, onClose, onToggle } = useDisclosure();
-    const { users, addEvent, updateEvent, getRepeatEventById, settingCalender, use24HourFormat, axiosClient } = useCalendar();
+    const { users, addEvent, updateEvent, settingCalender, use24HourFormat, axiosClient } = useCalendar();
     const isEditing = !!event;
 
     // const [tipe, setTipe] = useState<string>("sekali");
@@ -66,19 +67,10 @@ export function AddEditEventDialog({
             return { startDate: start, endDate: end };
         }
 
-        if(event.repeat_id == null){
-             return {
-                startDate: new Date(event.startDate),
-                endDate: new Date(event.endDate),
-            };
-        }else{
-            const repeatEvent: IEvent[] = getRepeatEventById(event.repeat_id)
-            return {
-                startDate: new Date(repeatEvent[0].startDate),
-                endDate: new Date(repeatEvent[repeatEvent.length - 1].endDate),
-            };
-        }
-
+        return {
+            startDate: new Date(event.startDate),
+            endDate: new Date(event.endDate),
+        };
 
     }, [startDate, startTime, event, isEditing]);
 
@@ -88,7 +80,6 @@ export function AddEditEventDialog({
         id: "12345",
         kegiatan:  "Peminjaman Mobil",
         tipe: 'string',
-        berulang_id: null,
         tanggal: formatDate(new Date().toISOString()),
         tanggal_awal: formatDate(new Date().toISOString()),
         tanggal_akhir: formatDate(new Date().toISOString()),
@@ -107,9 +98,9 @@ export function AddEditEventDialog({
             axiosClient.post(route('pinjam-mobil-tambah'), data)
                 .then(function (response: any) {
                     try {
-                        const return_data: IEvent[] = producePinjamMobilIEvent(response.data.data as pinjam_mobil[]);
-                        pairIEventDenganUser(return_data as PinjamMobilIEvent[], users as CalenderUser[])
-                        addEvent(return_data)
+                        const return_data: IEvent[] = producePinjamMobilIEvent([response.data.data] as pinjam_mobil[]);
+                        pairIEventDenganUser(return_data  as PinjamMobilIEvent[], users as CalenderUser[])
+                        addEvent(return_data[0])
                         progressIndikator.finish()
                         toast.success('Berhasil menambahkan data baru')
                         clearErrors()
@@ -139,15 +130,9 @@ export function AddEditEventDialog({
             axiosClient.post(route("pinjam-mobil-ubah", { pinjamMobil: event.id }), data)
                 .then(function (response: any) {
                     try {
-
-                        const return_data: IEvent[] = producePinjamMobilIEvent(response.data.data as pinjam_mobil[]);
-                        pairIEventDenganUser(return_data as PinjamMobilIEvent[], users as CalenderUser[])
-
-                        if(event.repeat_id){
-                            updateEvent(return_data, [event.id], [event.repeat_id])
-                        }else{
-                            updateEvent(return_data, [event.id], [])
-                        }
+                        const return_data: IEvent[] = producePinjamMobilIEvent([response.data.data] as pinjam_mobil[]);
+                        pairIEventDenganUser(return_data  as PinjamMobilIEvent[], users as CalenderUser[])
+                        updateEvent(return_data[0])
 
                         progressIndikator.finish()
                         toast.success('Berhasil mengubah data')
@@ -177,39 +162,24 @@ export function AddEditEventDialog({
     useEffect(() => {
 		if(event){
             const event_: PinjamMobilIEvent = event as PinjamMobilIEvent
-            if(event.repeat_id){
-                const repeatEvent: PinjamMobilIEvent[] = getRepeatEventById(event.repeat_id) as PinjamMobilIEvent[]
-                setData("id", repeatEvent[0].id);
-                setData("kegiatan", "Peminjaman Mobil");
-                setData('tipe', 'sekali')
-                setData("berulang_id", repeatEvent[0].repeat_id);
-                setData("tanggal_awal",  formatDate( repeatEvent[0].date));
-                setData("tanggal_akhir",  formatDate( repeatEvent[repeatEvent.length-1].date));
-                setData("tanggal", formatDate( repeatEvent[0].date));
-                setData("waktu_awal",formatTime( repeatEvent[0].startDate, use24HourFormat));
-                setData("waktu_akhir", formatTime( repeatEvent[0].endDate, use24HourFormat));
-                setData("status",  repeatEvent[0].pinjam_mobil_ori.status);
-                setData('pembuat_username', repeatEvent[0].pinjam_mobil_ori.pembuat_username)
-                setData('confirm_username', repeatEvent[0].pinjam_mobil_ori.confirm_username)
-            }else{
-                setData("id", event.id);
-                setData("kegiatan", event.title);
-                setData('tipe', 'sekali')
-                setData("berulang_id", null);
-                setData("tanggal_awal",  formatDate(event.date));
-                setData("tanggal_akhir",  formatDate(event.date));
-                setData("tanggal", formatDate(event.date));
-                setData("waktu_awal", formatTime(event.startDate, use24HourFormat));
-                setData("waktu_akhir", formatTime(event.endDate, use24HourFormat));
-                setData("status", event_.pinjam_mobil_ori.status);
-                setData('pembuat_username', event_.pinjam_mobil_ori.pembuat_username)
-                setData('confirm_username', event_.pinjam_mobil_ori.confirm_username)
+            setData("id", event.id);
+            setData("kegiatan", event.title);
+            setData('tipe', 'sekali')
+            if(event._startDate != event._endDate){
+                setData('tipe', 'berulang')
             }
+            setData("tanggal_awal",  event._startDate);
+            setData("tanggal_akhir",  event._endDate);
+            setData("tanggal", event.date);
+            setData("waktu_awal", formatTime(event.startDate, use24HourFormat));
+            setData("waktu_akhir", formatTime(event.endDate, use24HourFormat));
+            setData("status", event_.pinjam_mobil_ori.status);
+            setData('pembuat_username', event_.pinjam_mobil_ori.pembuat_username)
+            setData('confirm_username', event_.pinjam_mobil_ori.confirm_username)
         }else{
             setData("id", 'xxxx-xxxx-xxxx');
             setData("kegiatan", "Peminjaman Mobil");
             setData('tipe', 'sekali')
-            setData("berulang_id", null);
             setData("tanggal_awal",  formatDate(initialDates.startDate));
             setData("tanggal_akhir",  formatDate(initialDates.endDate));
             setData("tanggal", formatDate(initialDates.startDate));
@@ -230,18 +200,18 @@ export function AddEditEventDialog({
                 <ModalHeader>
                     <ModalTitle>
                         {isEditing ? (
-                            <>Ubah {settingCalender.name_event}</>
+                            <>Ubah {capitalizeWords(settingCalender.name_event)}</>
                         ) : (
-                            <>Tambah {settingCalender.name_event}</>
+                            <>Tambah {capitalizeWords(settingCalender.name_event)}</>
                         )}
                     </ModalTitle>
                     <ModalDescription>
                         {isEditing ? (
                             <>
-                                Ubah {settingCalender.name_event} yang sudah ada.
+                                Ubah {capitalizeWords(settingCalender.name_event)} yang sudah ada.
                             </>
                         ) : (
-                            <>Buat {settingCalender.name_event} baru untuk kalender Anda.</>
+                            <>Buat {capitalizeWords(settingCalender.name_event)} baru untuk kalender Anda.</>
                         )}
                     </ModalDescription>
                 </ModalHeader>
@@ -324,7 +294,7 @@ export function AddEditEventDialog({
                                     Tanggal Akhir
                                 </Label>
                                 <DatePicker22
-                                    value={initialDates.startDate}
+                                    value={initialDates.endDate}
                                     setValue={(value) => {
                                         setData("tanggal_akhir", formatDate(value.toISOString()));
                                     }}

@@ -140,8 +140,8 @@ export function ResizableEvent({
 			minHeight: 15,
 			maxHeight: 1440,
 			enable: {
-				top: canChange(event) && !event.repeat_id,
-				bottom: canChange(event) && !event.repeat_id,
+				top: canChange(event) && event._startDate != event._endDate,
+				bottom: canChange(event) && event._startDate != event._endDate,
 				topRight: false,
 				bottomRight: false,
 				bottomLeft: false,

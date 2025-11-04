@@ -1,4 +1,5 @@
 import {format} from "date-fns";
+import { id } from 'date-fns/locale';
 import type {ReactNode} from "react";
 import {
     Modal,
@@ -9,7 +10,7 @@ import {
 } from "@/components/ui/responsive-modal";
 import {cn} from "@/lib/utils";
 import {useCalendar} from "@/components/calender_modules/contexts/calendar-context";
-import {formatTime} from "@/components/calender_modules/helpers";
+import {capitalizeWords, formatTime} from "@/components/calender_modules/helpers";
 import type {IEvent} from "@/components/calender_modules/interfaces";
 import {dayCellVariants} from "@/components/calender_modules/views/month-view/day-cell";
 import {EventBullet} from "@/components/calender_modules/views/month-view/event-bullet";
@@ -46,7 +47,7 @@ export function EventListDialog({
                         <div className="flex items-center gap-2">
                             <EventBullet color={cellEvents[0]?.color} className=""/>
                             <p className="text-sm font-medium">
-                                {settingCalender.name_event} pada {format(date, "EEEE, MMMM d, yyyy")}
+                                {capitalizeWords(settingCalender.name_event)} pada {format(date, "EEEE, MMMM d, yyyy", {locale: id})}
                             </p>
                         </div>
                     </ModalTitle>
@@ -68,7 +69,7 @@ export function EventListDialog({
                                         <div className="flex justify-between items-center w-full">
                                             <p className="text-sm font-medium">{event.title}</p>
                                             <p className="text-xs">
-                                                {formatTime(event.startDate, use24HourFormat)} - {formatTime(event.startDate, use24HourFormat)}
+                                                {formatTime(event.startDate, use24HourFormat)} - {formatTime(event.endDate, use24HourFormat)}
                                             </p>
                                         </div>
                                 </div>
@@ -76,7 +77,7 @@ export function EventListDialog({
                         ))
                     ) : (
                         <p className="text-sm text-muted-foreground">
-                           Tidak ada {settingCalender.name_event} untuk tanggal ini..
+                           Tidak ada {capitalizeWords(settingCalender.name_event)} untuk tanggal ini..
                         </p>
                     )}
                 </div>

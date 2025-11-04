@@ -1,6 +1,5 @@
-import { CalenderUser, IEvent, IUser } from "@/components/calender_modules/interfaces"
+import { CalenderUser, IEvent } from "@/components/calender_modules/interfaces"
 import { User } from "@/types"
-import { ReactNode } from "react"
 
 export type PinjamMobilProps = {
   pinjam_mobil: pinjam_mobil[]
@@ -18,8 +17,9 @@ export interface pinjam_mobil {
     id: string;
     kegiatan: string;
     tipe: string;
-    berulang_id: string | null;
-    tanggal: string;
+    tanggal: string | null;
+    berulang_tanggal_awal: string | null;
+    berulang_tanggal_akhir: string | null;
     waktu_awal: string;
     waktu_akhir: string;
     status: 'menunggu' | 'disetujui' | 'ditolak';
@@ -31,7 +31,6 @@ export interface pinjam_mobil_req {
     id: string;
     kegiatan: string;
     tipe: string;
-    berulang_id: string | null;
     tanggal: string | null;
     tanggal_awal: string | null;
     tanggal_akhir: string | null;
@@ -56,14 +55,29 @@ export function producePinjamMobilIEvent(pinjam_mobil: pinjam_mobil[]): PinjamMo
     const retur_data: PinjamMobilIEvent[] = []
     pinjam_mobil.forEach(element => {
         if(element.status != 'ditolak'){
+            let tanggal: string =  ''
+            let tanggal_awal: string = ''
+            let tanggal_akhir: string = ''
+
+            if(element.tipe == 'sekali' && element.tanggal){
+                tanggal = element.tanggal
+                tanggal_awal = element.tanggal
+                tanggal_akhir = element.tanggal
+            }else if(element.tipe == 'berulang'){
+                if(element.berulang_tanggal_awal && element.berulang_tanggal_akhir){
+                    tanggal = element.berulang_tanggal_awal
+                    tanggal_awal = element.berulang_tanggal_awal
+                    tanggal_akhir = element.berulang_tanggal_akhir
+                }
+            }
+
              retur_data.push({
                 id: element.id,
-                repeat_id: element.berulang_id,
-                startDate: `${element.tanggal}T${element.waktu_awal}`,
-                endDate: `${element.tanggal}T${element.waktu_akhir}`,
-                date: element.tanggal,
-                _startDate: element.tanggal,
-                _endDate: element.tanggal,
+                startDate: `${tanggal_awal}T${element.waktu_awal}`,
+                endDate: `${tanggal_akhir}T${element.waktu_akhir}`,
+                date: tanggal,
+                _startDate: tanggal_awal,
+                _endDate: tanggal_akhir,
                 _startTime: element.waktu_awal,
                 _endTime: element.waktu_akhir,
                 title: element.kegiatan,

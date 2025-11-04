@@ -64,7 +64,7 @@ export function CalendarHeader() {
                         <AddEditEventDialog>
                             <Button>
                                 <Plus className="h-4 w-4" />
-                                Add {capitalizeWords(settingCalender.name_event)}
+                                Tambah {capitalizeWords(settingCalender.name_event)}
                             </Button>
                         </AddEditEventDialog>
                     }

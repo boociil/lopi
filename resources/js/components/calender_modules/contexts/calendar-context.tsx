@@ -31,14 +31,13 @@ interface ICalendarContext {
 	filterEventsBySelectedUser: (userId: IUser["id"] | "all") => void;
 	users: IUser[];
 	events: IEvent[];
-	addEvent: (event: IEvent[]) => void;
+	addEvent: (event: IEvent) => void;
     updateEventDragRezise: (event: IEvent) => void;
-	updateEvent: (event: IEvent[], oldEventIds: string[], oldBerulangEventIds: string[]) => void;
+	updateEvent: (event: IEvent) => void;
     updateEventLokal: (event: IEvent) => void;
 	removeEvent: (eventId: string) => void;
 	clearFilter: () => void;
     getEvent: (eventId: string) => IEvent | undefined;
-    getRepeatEventById: (repeat_id: string) => IEvent[],
     settingCalender: SettingCalender;
 
     AddEditEventDialog: React.ComponentType<Add_Edit_Event_IProps>;
@@ -84,7 +83,7 @@ export function CalendarProvider({
     EventDropConfirmationDialog: React.ComponentType<Event_Drop_Confirmation_Dialog_IProps>;
     EventListDialog: React.ComponentType<Event_List_Dialog_IProps>;
     reload_data: (selectedDate: Date, currentView: TCalendarView, setAllEventsOri: (_allEvents: IEvent[]) => void) => void;
-    updateDataRequest: (event: IEvent, use24HourFormat: boolean, updateEvent: (newEvent: IEvent[], oldEventIds: string[], oldBerulangEventIds: string[]) => void, cancel: () => void) => void;
+    updateDataRequest: (event: IEvent, use24HourFormat: boolean, updateEvent: (newEvent: IEvent) => void, cancel: () => void) => void;
     canAdd: () => boolean;
     canChange: (event: IEvent) => boolean;
     canApprove: (event: IEvent) => boolean;
@@ -182,8 +181,8 @@ export function CalendarProvider({
         reload_data(date, currentView, setAllEventsOri)
 	};
 
-	const addEvent = (event: IEvent[]) => {
-		setAllEvents([...allEvents, ...event]);
+	const addEvent = (event: IEvent) => {
+        setAllEvents((prev) => [...prev, event]);
 		// setFilteredEvents([...filteredEvents, ...event]);
 	};
 
@@ -192,27 +191,11 @@ export function CalendarProvider({
 	};
 
     const updateEventDragRezise = (event: IEvent) => {
-        if(event.repeat_id){
-            return
-        }
         updateDataRequest(event, use24HourFormat, updateEvent, runFilter)
 	};
 
-	const updateEvent = (newEvent: IEvent[], oldEventIds: string[], oldBerulangEventIds: string[]) => {
-        const newAllEvent: IEvent[] = []
-        allEvents.forEach(element1 => {
-            if(element1.repeat_id){
-                if(!( oldEventIds.includes(element1.id) || oldBerulangEventIds.includes(element1.repeat_id))){
-                    newAllEvent.push(element1)
-                }
-            }else{
-                if(!oldEventIds.includes(element1.id)){
-                    newAllEvent.push(element1)
-                }
-            }
-        });
-        newAllEvent.push(...newEvent)
-        setAllEvents(newAllEvent)
+    const updateEvent = (newEvent: IEvent) => {
+		setAllEvents((prev) => prev.map((e) => (e.id === newEvent.id ? newEvent : e)));
 	};
 
     const updateEventLokal = (event: IEvent) => {
@@ -230,16 +213,9 @@ export function CalendarProvider({
         if(!item){
             return
         }
-        const repeat_id: string | null = item.repeat_id
        	setAllEvents(allEvents.filter((e) => {
-            if(repeat_id){
-                if(e.id !== eventId && e.repeat_id !== repeat_id){
-                    return true
-                }
-            }else{
-                if(e.id !== eventId){
-                    return true
-                }
+            if(e.id !== eventId){
+                return true
             }
         }));
 	};
@@ -272,30 +248,6 @@ export function CalendarProvider({
 		}
     }
 
-    function getRepeatEventById(repeat_id: string): IEvent[]{
-        const returnData :IEvent[] = []
-        allEvents.forEach(element => {
-            if(element.repeat_id == repeat_id){
-                returnData.push(element)
-            }
-        });
-        returnData.sort((a,b) => {
-            if(a.startDate < b.startDate){
-                return -1
-            }else if(a.startDate > b.startDate){
-                return 1
-            }else{
-                if(a.endDate < b.endDate){
-                    return -1
-                }else if(a.endDate > b.endDate){
-                    return 1
-                }
-            }
-            return 0
-        })
-        return returnData
-    }
-
     const axiosClient = useApi();
 
 	return (
@@ -324,7 +276,6 @@ export function CalendarProvider({
             removeEvent,
             getEvent,
             clearFilter,
-            getRepeatEventById,
             settingCalender,
             AddEditEventDialog,
             DeleteEventDialog,

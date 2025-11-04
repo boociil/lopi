@@ -17,7 +17,8 @@ class Jadwal extends Model
 
     protected $fillable = ['id', 'pembuat_username', 'pemilik_tipe_str', 'pemilik_type', 'pemilik_id'
         , 'topic', 'description'
-        , 'tipe', 'berulang_id', 'tanggal_awal', 'tanggal_akhir', 'waktu_awal', 'waktu_akhir', 'status'
+        , 'tipe', 'berulang_tanggal_awal', 'berulang_tanggal_akhir'
+        , 'tanggal_awal', 'tanggal_akhir', 'waktu_awal', 'waktu_akhir', 'status'
         , 'url_daftar_hadir', 'url_notulensi', 'url_dokumentasi', 'url_dokumentasi', 'url_undangan'
         , 'zoom_id', 'ruang_id' ];
 

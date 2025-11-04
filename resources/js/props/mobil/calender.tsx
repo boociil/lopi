@@ -61,12 +61,11 @@ export function PinjamMobilCalender({
             });
     }
 
-     function updateDataRequest(event: IEvent, use24HourFormat: boolean, updateEvent: (newEvent: IEvent[], oldEventIds: string[], oldBerulangEventIds: string[]) => void, cancel: () => void){
+     function updateDataRequest(event: IEvent, use24HourFormat: boolean, updateEvent: (newEvent: IEvent) => void, cancel: () => void){
         const data = {
             id: event.id,
             kegiatan:  event.title,
             tipe: 'sekali',
-            berulang_id: null,
             tanggal:  formatDate(event.startDate),
             tanggal_awal: formatDate(event.startDate),
             tanggal_akhir: formatDate(event.startDate),
@@ -80,13 +79,9 @@ export function PinjamMobilCalender({
         axiosClient.post(route("pinjam-mobil-ubah", { pinjamMobil: event.id }), data)
             .then(function (response: any) {
                 try {
-                    const return_data: IEvent[] = producePinjamMobilIEvent(response.data.data as pinjam_mobil[]);
+                    const return_data: IEvent[] = producePinjamMobilIEvent([response.data.data] as pinjam_mobil[]);
                     pairIEventDenganUser(return_data  as PinjamMobilIEvent[], _user as CalenderUser[])
-                    if(event.repeat_id){
-                        updateEvent(return_data, [event.id], [event.repeat_id])
-                    }else{
-                        updateEvent(return_data, [event.id], [])
-                    }
+                    updateEvent(return_data[0])
                     progress.finish()
                     toast.success('Berhasil mengubah data')
                 } catch (error) {

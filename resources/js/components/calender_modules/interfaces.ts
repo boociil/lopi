@@ -9,12 +9,11 @@ export interface IUser {
 
 export interface IEvent {
 	id: string;
-    repeat_id: string | null;
 	startDate: string;
 	endDate: string;
     date: string;
-    _startDate: string | null;
-	_endDate: string | null;
+    _startDate: string;
+	_endDate: string;
     _startTime: string;
 	_endTime: string;
 	title: string;

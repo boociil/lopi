@@ -13,7 +13,7 @@ import {
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import type {IEvent} from "@/components/calender_modules/interfaces";
-import {formatTime, getColorClass} from "@/components/calender_modules/helpers";
+import {capitalizeWords, formatTime, getColorClass} from "@/components/calender_modules/helpers";
 import {cn} from "@/lib/utils";
 import {useCalendar} from "@/components/calender_modules/contexts/calendar-context";
 import { Event_Drop_Confirmation_Dialog_IProps } from "@/components/calender_modules/dialogs/props-dialog";
@@ -55,7 +55,7 @@ export function EventDropConfirmationDialog({
         <AlertDialog open={open} onOpenChange={onOpenChange}>
             <AlertDialogContent>
                 <AlertDialogHeader>
-                    <AlertDialogTitle>Konfirmasi Pemindahan {settingCalender.name_event}</AlertDialogTitle>
+                    <AlertDialogTitle>Konfirmasi Pemindahan {capitalizeWords(settingCalender.name_event)}</AlertDialogTitle>
                     <AlertDialogDescription>
                         Apakah Anda yakin ingin memindahkan
                         <span className={cn(getColorClass(event.color), "mx-1 py-0.5 px-1 rounded-md")}>

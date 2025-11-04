@@ -17,6 +17,7 @@ import { Delete_Event_Dialog_IProps } from "@/components/calender_modules/dialog
 import { IEvent } from "@/components/calender_modules/interfaces";
 import { router } from "@inertiajs/react";
 import { progress as progressIndikator } from '@inertiajs/react'
+import { capitalizeWords } from "@/components/calender_modules/helpers";
 
 export default function DeleteEventDialog({ eventId }: Delete_Event_Dialog_IProps) {
 	const { removeEvent , settingCalender, getEvent, axiosClient} = useCalendar();
@@ -36,11 +37,11 @@ export default function DeleteEventDialog({ eventId }: Delete_Event_Dialog_IProp
             .then(function (response) {
                 removeEvent(eventId);
                 progressIndikator.finish()
-                toast.success(settingCalender.name_event+" telah dihapus dengan sukses.");
+                toast.success(capitalizeWords(settingCalender.name_event)+" telah dihapus dengan sukses.");
             })
             .catch(function (error) {
                 progressIndikator.finish()
-                toast.error("Kesalahan saat menghapus "+settingCalender.name_event+".");
+                toast.error("Kesalahan saat menghapus "+capitalizeWords(settingCalender.name_event)+".");
             });
 	};
 
@@ -57,7 +58,7 @@ export default function DeleteEventDialog({ eventId }: Delete_Event_Dialog_IProp
 					<AlertDialogTitle>Apakah Anda benar-benar yakin?</AlertDialogTitle>
 					<AlertDialogDescription>
 						Tindakan ini tidak dapat dibatalkan.
-                        Hal ini akan menghapus {settingCalender.name_event} {eventItem.title} secara permanen.
+                        Hal ini akan menghapus {capitalizeWords(settingCalender.name_event)} {eventItem.title} secara permanen.
 					</AlertDialogDescription>
 				</AlertDialogHeader>
 				<AlertDialogFooter>

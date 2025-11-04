@@ -11,6 +11,7 @@ import {
 import { useCalendar } from "@/components/calender_modules/contexts/calendar-context";
 
 import {
+    capitalizeWords,
 	getEventsCount,
 	navigateDate,
 	rangeText,
@@ -63,7 +64,7 @@ export function DateNavigator({ view, events }: IProps) {
 						exit={{ scale: 0.8, opacity: 0 }}
 						transition={transition}
 					>
-						{eventCount} {settingCalender.name_event}
+						{eventCount} {capitalizeWords(settingCalender.name_event)}
 					</MotionBadge>
 				</AnimatePresence>
 			</div>
