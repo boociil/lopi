@@ -110,7 +110,8 @@ export function PinjamMobilCalender({
         }
     }
     function canApprove(event: IEvent):  boolean{
-        if(havePinjamMobilPeran){
+        const event_ = event as PinjamMobilIEvent
+        if(havePinjamMobilPeran && event_.pinjam_mobil_ori.status == 'menunggu'){
             return true
         }else{
             return false

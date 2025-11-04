@@ -30,8 +30,10 @@ import { Event_Details_Dialog_IProps } from "@/components/calender_modules/dialo
 import { progress as progressIndikator } from '@inertiajs/react'
 import { CalenderUser, IEvent } from "@/components/calender_modules/interfaces";
 import { pairIEventDenganUser, pinjam_mobil, PinjamMobilIEvent, producePinjamMobilIEvent } from "../types";
+import { useState } from "react";
 
-export function EventDetailsDialog({ event, children }: Event_Details_Dialog_IProps) {
+export function EventDetailsDialog({ _event, children }: Event_Details_Dialog_IProps) {
+    const [event, setEvent] = useState(_event)
 	const startDate = parseISO(event.startDate);
 	const endDate = parseISO(event.endDate);
 	const { settingCalender, use24HourFormat, updateEvent, removeEvent, AddEditEventDialog, canChange, canApprove, axiosClient, users } = useCalendar();
@@ -50,6 +52,10 @@ export function EventDetailsDialog({ event, children }: Event_Details_Dialog_IPr
                 toast.error("Kesalahan saat menghapus "+capitalizeWords(settingCalender.name_event)+".");
             });
     };
+
+    const onUpdateOpenChange = (event: IEvent) => {
+
+    }
 
     const approvalEvent = (event_id: string, status: 'disetujui'|'ditolak') => {
         progressIndikator.start()
@@ -196,7 +202,7 @@ export function EventDetailsDialog({ event, children }: Event_Details_Dialog_IPr
                         </AlertDialog>
                     }
                     {canChange(event) &&
-                        <AddEditEventDialog event={event}>
+                        <AddEditEventDialog event={event} onUpdateOpenChange={(_event: IEvent) => setEvent(_event)}>
                             <Button variant="outline" className="text-accent-foreground">Ubah</Button>
                         </AddEditEventDialog>
                     }

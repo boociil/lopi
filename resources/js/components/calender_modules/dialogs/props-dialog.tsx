@@ -7,6 +7,7 @@ export interface Add_Edit_Event_IProps {
     startDate?: Date;
     startTime?: { hour: number; minute: number };
     event?: IEvent;
+    onUpdateOpenChange?: (event: IEvent) => void;
 }
 
 export interface Delete_Event_Dialog_IProps {
@@ -14,7 +15,7 @@ export interface Delete_Event_Dialog_IProps {
 }
 
 export interface Event_Details_Dialog_IProps {
-	event: IEvent;
+	_event: IEvent;
 	children: ReactNode;
 }
 

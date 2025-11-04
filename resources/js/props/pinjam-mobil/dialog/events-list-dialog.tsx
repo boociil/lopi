@@ -55,7 +55,7 @@ export function EventListDialog({
                 <div className="max-h-[60vh] overflow-y-auto space-y-2">
                     {cellEvents.length > 0 ? (
                         cellEvents.map((event) => (
-                            <EventDetailsDialog event={event} key={event.id}>
+                            <EventDetailsDialog _event={event} key={event.id}>
                                 <div
                                     className={cn(
                                         "flex items-center gap-2 p-2 border rounded-md hover:bg-muted cursor-pointer",

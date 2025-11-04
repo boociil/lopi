@@ -43,6 +43,7 @@ export function AddEditEventDialog({
     startDate,
     startTime,
     event,
+    onUpdateOpenChange,
 }: Add_Edit_Event_IProps) {
     const { isOpen, onClose, onToggle } = useDisclosure();
     const { users, addEvent, updateEvent, settingCalender, use24HourFormat, axiosClient } = useCalendar();
@@ -138,6 +139,9 @@ export function AddEditEventDialog({
                         toast.success('Berhasil mengubah data')
                         clearErrors()
                         onToggle()
+                        if(onUpdateOpenChange){
+                            onUpdateOpenChange(return_data[0])
+                        }
                     } catch (error) {
                         console.log(error)
                         progressIndikator.finish()
