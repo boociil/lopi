@@ -4,7 +4,9 @@ use App\Http\Controllers\Admin\Lopi_Controller;
 use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Lopi\Appreciate_Admin_Controller;
 use App\Http\Controllers\Umum\Beranda_Controller;
+use App\Http\Controllers\Lopi\Appreciate_Controller;
 use App\Http\Controllers\Lopi\Jadwal_Controller;
 use App\Http\Controllers\Lopi\Pinjam_Mobil_Controller;
 use App\Http\Controllers\Lopi\Pinjam_Ruang_Controller;
@@ -80,6 +82,38 @@ Route::group(
     Route::get('/{jadwal_id}/hapus', [Jadwal_Controller::class, 'index'])->name('jadwal-hapus');
 });
 
+Route::group(
+[
+    'prefix' => 'appreciate',
+    'middleware' => ['auth', 'check_maintenance', 'statistik'],
+], function () {
+    Route::get('/', [Appreciate_Controller::class, 'index'])->name('appreciation-index');
+    Route::post('/tambah', [Appreciate_Controller::class, 'tambah'])->name('appreciation-tambah');
+    Route::post('/{appreciation}/ubah', [Appreciate_Controller::class, 'ubah'])->name('appreciation-ubah');
+    Route::post('/{appreciation}/hapus', [Appreciate_Controller::class, 'hapus'])->name('appreciation-hapus');
+
+    Route::post('/buka', [Appreciate_Controller::class, 'buka'])->name('appreciation-buka');
+
+    Route::group(
+    [
+        'prefix' => 'master',
+    ], function () {
+        Route::get('/', [Appreciate_Admin_Controller::class, 'index'])->name('appreciation-master-index');
+        Route::post('/tambah', [Appreciate_Admin_Controller::class, 'tambah'])->name('appreciation-master-tambah');
+        Route::post('/{master}/ubah', [Appreciate_Admin_Controller::class, 'ubah'])->name('appreciation-master-ubah');
+        Route::post('/{master}/hapus', [Appreciate_Admin_Controller::class, 'hapus'])->name('appreciation-master-hapus');
+    });
+
+    Route::group(
+    [
+        'prefix' => 'aproval',
+    ], function () {
+        Route::get('/', [Appreciate_Admin_Controller::class, 'aproval_index'])->name('appreciation-aproval-index');
+        Route::post('/{appreciation}/approval', [Appreciate_Admin_Controller::class, 'aproval_data'])->name('appreciation-aproval-ubah');
+    });
+
+});
+
 
 
 Route::group(
@@ -120,15 +154,6 @@ Route::group(
         Route::post('/{ruang_id}/approval', [Pinjam_Ruang_Controller::class, 'approval'])->name('pinjam-ruang-approval');
     });
 
-    Route::group(
-    [
-        'prefix' => 'peran',
-        'middleware' => ['auth', 'check_maintenance', 'statistik'],
-    ], function () {
-        Route::get('/', [Lopi_Controller::class, 'index'])->name('peran-index');
-        Route::post('/tambah', [Lopi_Controller::class, 'tambah'])->name('peran-tambah');
-        Route::post('/{peran_id}/hapus', [Lopi_Controller::class, 'hapus'])->name('peran-hapus');
-    });
 });
 
 
