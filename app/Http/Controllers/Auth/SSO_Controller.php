@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Providers\RouteServiceProvider;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -22,7 +21,6 @@ class SSO_Controller extends Controller
 
     public function __construct()
     {
-        $this->middleware('guest')->except('logout');
         $this->provider = new Keycloak([
             'authServerUrl'         => env('SSO_Url'),
             'realm'                 => env('SSO_Realm'),
@@ -118,7 +116,7 @@ class SSO_Controller extends Controller
                     return redirect('/login')->withErrors(['username' => 'User tidak ditemukan']);
                 }
                 if(Auth::loginUsingId($user->id, true)){
-                    return redirect()->intended(RouteServiceProvider::HOME);
+                    return redirect()->intended("/");
                 }
             }else{
                 Log::info("tiga");

@@ -20,9 +20,7 @@ export interface appreciate_master_dialog_event {
     data: appreciate_master | null;
 }
 
-
 export type AppreciateDataProps = {
-    peranLopi: appreciate_master[];
     user: User[];
     userDict: Map<string, string>,
 };
@@ -30,13 +28,13 @@ export type AppreciateDataProps = {
 export type AppreciateDataContextType = AppreciateDataProps & {
     eventDialog: appreciate_data_dialog_event;
     setEventDialog: (eventDialog: appreciate_data_dialog_event) => void;
-    addAppreciateData: (appreciate_data_: appreciate_data) => void;
+    ubahData: (target: TargetData) => void;
     axiosClient: AxiosInstance;
 };
 
 export interface appreciate_data_dialog_event {
     status: null | "tambah" | "hapus";
-    data: appreciate_data | null;
+    data: TargetData | null;
 }
 
 
@@ -49,18 +47,26 @@ export interface appreciate_master {
 }
 
 export interface appreciate_target {
-    id: string;
-    master_id: string;
+    id: number;
+    master_id: number;
     username: string;
 }
 
 export interface appreciate_data {
-    id: string;
-    master_id: string;
+    id: number;
+    master_id: number;
     dari: string;
     tujuan: string;
     status: string;
+    status_anonim:string;
     pesan: string;
 }
+
+export type TargetData = {
+    target: appreciate_target;
+    data: appreciate_data | null;
+    number1: number;
+    number2: number;
+};
 
 

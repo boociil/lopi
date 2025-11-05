@@ -1,11 +1,9 @@
 import AppLayout from "@/layouts/app-layout";
 import {
-    type Auth,
     type User,
     type BreadcrumbItem,
-    type SharedData,
 } from "@/types";
-import { Head, router, usePage } from "@inertiajs/react";
+import { Head } from "@inertiajs/react";
 
 import * as React from "react";
 import { Plus } from "lucide-react";
@@ -31,12 +29,6 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import Heading from "@/components/heading";
-import PeranProvider from "@/props/peran/provider";
-import {
-    type peran_lopi,
-    type peran_dialog_event,
-    type satuan_kerja_tahun,
-} from "@/props/peran/types";
 import { useApi } from "@/lib/API/useApi";
 import { progress as progressIndikator } from '@inertiajs/react'
 import { toast } from "sonner";
@@ -104,7 +96,7 @@ export default function Index({
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Master" />
+            <Head title="Apresiasi Master" />
             <AppreciateMaterProvider
                 appreciateMaster={allMaster}
                 user={user}

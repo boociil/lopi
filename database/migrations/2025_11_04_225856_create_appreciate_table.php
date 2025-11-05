@@ -32,6 +32,7 @@ return new class extends Migration
             $table->foreignId('master_id');
             $table->string('dari', 100)->nullable();
             $table->string('tujuan', 100)->nullable();
+            $table->enum('status_anonim', ['0', '1'])->default('0');
             $table->enum('status', ['0', '1', '2'])->default('0');
             $table->text('pesan');
 

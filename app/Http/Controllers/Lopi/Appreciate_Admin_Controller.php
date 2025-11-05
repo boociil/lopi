@@ -180,7 +180,7 @@ class Appreciate_Admin_Controller extends Controller
             abort(401);
         }
 
-        return Inertia::render('appreciate/master', [
+        return Inertia::render('appreciate/aproval', [
             "user" => User::all(),
             'have_appreciate_peran' => $have_appreciate_peran,
             "data" =>  Appreciate_Data::where('status', '0')->get(),
@@ -203,7 +203,7 @@ class Appreciate_Admin_Controller extends Controller
 
         $appreciation->status = $request->status;
         $appreciation->save();
-        return 1;
+        return $appreciation;
     }
 
 

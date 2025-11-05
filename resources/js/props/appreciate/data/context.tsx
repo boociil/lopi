@@ -1,14 +1,14 @@
 import { createContext, useContext } from 'react'
-import type { PeranContextType } from './types'
+import type { AppreciateDataContextType } from '../types'
 
-export const PeranContext = createContext<PeranContextType | undefined>(
+export const AppreciateDataContext = createContext<AppreciateDataContextType | undefined>(
   undefined
 )
 
-export function usePeranContext() {
-  const context = useContext(PeranContext)
+export function useAppreciateDataContext() {
+  const context = useContext(AppreciateDataContext)
   if (!context) {
-    throw new Error('useCalendarContext must be used within a CalendarProvider')
+    throw new Error('useAppreciateDataContext must be used within a CalendarProvider')
   }
   return context
 }

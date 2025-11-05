@@ -1,14 +1,11 @@
 import AppLayout from "@/layouts/app-layout";
 import {
-    type Auth,
     type User,
     type BreadcrumbItem,
-    type SharedData,
 } from "@/types";
-import { Head, router, usePage } from "@inertiajs/react";
+import { Head} from "@inertiajs/react";
 
 import * as React from "react";
-import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
     Table,
@@ -19,54 +16,35 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
+
 import Heading from "@/components/heading";
-import PeranProvider from "@/props/peran/provider";
-import {
-    type peran_lopi,
-    type peran_dialog_event,
-    type satuan_kerja_tahun,
-} from "@/props/peran/types";
 import { useApi } from "@/lib/API/useApi";
-import { progress as progressIndikator } from '@inertiajs/react'
 import { toast } from "sonner";
+import { appreciate_data } from "@/props/appreciate/types";
+
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: "Peran",
-        href: "/peran",
+        title: "Toples Apresiasi",
+        href: '/lopi/appreciate',
+    },
+     {
+        title: "Appropval",
+        href: '/lopi/appreciate/appropve',
     },
 ];
 
+
 export default function Index({
-    peranLopi,
+    data,
     user,
-    satuanKerjaTahun,
 }: React.PropsWithChildren<{
-    peranLopi: peran_lopi[];
+    data: appreciate_data[];
     user: User[];
-    satuanKerjaTahun: satuan_kerja_tahun[];
 }>) {
 
-    const [allPeran, setAllPeran] = React.useState<peran_lopi[]>(peranLopi);
-    const [eventDialog, setEventDialog] = React.useState<peran_dialog_event>({
-        status: null,
-        data: null,
-    });
-
-    const axiosClient = useApi();
+    const [allData, setAllData] = React.useState<appreciate_data[]>(data);
     const [userDict, setUserDict] = React.useState<Map<string, string>>(new Map<string, string>);
-    const [satuanKerjaTahunDict, setSatuanKerjaTahunDict] = React.useState<Map<string, string>>(new Map<string, string>);
 
     React.useEffect(() => {
         let userDict_ = new Map<string, string>()
@@ -74,151 +52,100 @@ export default function Index({
             userDict_.set(element.username, element.nama)
         });
         setUserDict(userDict_)
+    }, [user]);
 
-        let satuanKerjaTahunDict_ =  new Map<string, string>()
-        satuanKerjaTahun.forEach(element => {
-            satuanKerjaTahunDict_.set(element.id, element.nama)
-        });
-        setSatuanKerjaTahunDict(satuanKerjaTahunDict_)
-    }, [user, satuanKerjaTahun]);
+    const axiosClient = useApi();
 
-    function hapusPeran(peran_lopi_: peran_lopi){
-        progressIndikator.start()
-        axiosClient.post(route('peran-hapus', {'peran_id': peran_lopi_.id}))
+    function ubahData(target: appreciate_data, status : string){
+        axiosClient.post(route('appreciation-aproval-ubah', {appreciation: target.id}), {status : status})
             .then(function (response) {
-                setAllPeran((prev) => prev.filter((item) => item.id !== peran_lopi_.id));
-                progressIndikator.finish()
-                toast.success("Berhasil meghapus peran.");
+                const data: appreciate_data = response.data as appreciate_data
+                setAllData(allData.filter(item => item.id != target.id));
+                toast.success("Berhasil menambah data.");
             })
             .catch(function (error) {
-                progressIndikator.finish()
-                toast.success("Gagal meghapus peran.");
+                toast.success("Gagal menambah data.");
             });
     };
 
-    function addPeran(peran_lopi_: peran_lopi){
-        setAllPeran([...allPeran, peran_lopi_]);
-    };
-
-
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Peran" />
-            <PeranProvider
-                peranLopi={allPeran}
-                user={user}
-                satuanKerjaTahun={satuanKerjaTahun}
-                eventDialog={eventDialog}
-                setEventDialog={setEventDialog}
-                userDict={userDict}
-                satuanKerjaTahunDict={satuanKerjaTahunDict}
-                addPeran={addPeran}
-            >
+            <Head title="Apresiasi" />
                 <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4 overflow-x-auto">
                     <div className="w-full">
                         <Heading
-                            title="Pengaturan Peran"
-                            description="Admin atur role user zoom dan ruang."
+                            title="Approve Apresiasi"
+                            description="Approve apresiasi rekan-rekan di kantor."
                         />
-                        <div className="flex justify-end mt-2 mb-6 gap-x-1.5">
-                            <Button
-                                className="flex items-center gap-1 bg-primary text-primary-foreground"
-                                onClick={() =>
-                                    setEventDialog({
-                                        status: "tambah",
-                                        data: null,
-                                    })
-                                }
-                            >
-                                <Plus />
-                                Tambah Peran
-                            </Button>
-                        </div>
-                        <div className="overflow-hidden rounded-md border">
-                            <Table>
-                                <TableHeader className="bg-accent">
-                                    <TableRow>
-                                        <TableHead className="text-center">
-                                            No
-                                        </TableHead>
-                                        <TableHead>Nama</TableHead>
-                                        <TableHead className="text-center">
-                                            Peran
-                                        </TableHead>
-                                        <TableHead>
-                                            Satuan Kerja
-                                        </TableHead>
-                                        <TableHead className="text-center">
-                                            Aksi
-                                        </TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody className="text-accent-foreground">
-                                    {allPeran.length > 0 ? (
-                                        allPeran.map((item, index) => {
-                                            return (
-                                                <TableRow key={"-" + item.id}>
-                                                    <TableCell className="text-center">
-                                                        {index+1}
-                                                    </TableCell>
-                                                    <TableCellWrap>
-                                                        {userDict.has(item.pemilik_username) ?
-                                                            (<>{userDict.get(item.pemilik_username)}</>) :
-                                                            (<>{item.pemilik_username}</>)
-                                                        }
-                                                    </TableCellWrap>
-                                                    <TableCell className="text-center">
-                                                        {(item.peran == "zoom") && (<>Zoom</>)}
-                                                        {(item.peran == "ruang") && (<>Ruang</>)}
-                                                        {(item.peran == "mobil") && (<>Mobil</>)}
-                                                    </TableCell>
-                                                    <TableCellWrap>
-                                                        {satuanKerjaTahunDict.has(item.parent_id) ?
-                                                            (<>{satuanKerjaTahunDict.get(item.parent_id)}</>) :
-                                                            (<>- Tidak Ditemukan-</>)
-                                                        }
-                                                    </TableCellWrap>
-                                                    <TableCell className="text-center">
-                                                        <AlertDialog>
-                                                            <AlertDialogTrigger asChild>
-                                                                <Button variant="outline">Hapus</Button>
-                                                            </AlertDialogTrigger>
-                                                            <AlertDialogContent>
-                                                                <AlertDialogHeader>
-                                                                <AlertDialogTitle className="text-secondary">Apakah kamu yakin?</AlertDialogTitle>
-                                                                    <AlertDialogDescription>
-                                                                        Apakah anda yakin untuk menghapus peran {item.peran} <br/>
-                                                                        pada pengguna {userDict.has(item.pemilik_username) ? userDict.get(item.pemilik_username) : item.pemilik_username} ?
-                                                                    </AlertDialogDescription>
-                                                                </AlertDialogHeader>
-                                                                <AlertDialogFooter>
-                                                                    <AlertDialogCancel className="text-secondary">Cancel</AlertDialogCancel>
-                                                                    <AlertDialogAction
-                                                                        onClick={e =>{
-                                                                            hapusPeran(item)}}>Hapus</AlertDialogAction>
-                                                                </AlertDialogFooter>
-                                                            </AlertDialogContent>
-                                                        </AlertDialog>
-                                                    </TableCell>
-                                                </TableRow>
-                                            );
-                                        })
-                                    ) : (
+                        <div className="overflow-hidden rounded-md flex gap-4">
+                            <div className="overflow-hidden rounded-md border w-full">
+                                <Table className="w-full">
+                                    <TableHeader className="bg-accent">
                                         <TableRow>
-                                            <TableCell
-                                                colSpan={5}
-                                                className="h-12 text-center"
-                                            >
-                                                Tidak ada Peran.
-                                            </TableCell>
+                                            <TableHead className="text-center">
+                                                No
+                                            </TableHead>
+                                            <TableHead className="text-left">
+                                                Pesan
+                                            </TableHead>
+                                            <TableHead className="text-left">
+                                                Status
+                                            </TableHead>
+                                            <TableHead>
+                                                Aksi
+                                            </TableHead>
                                         </TableRow>
-                                    )}
-                                </TableBody>
-                            </Table>
+                                    </TableHeader>
+                                    <TableBody className="text-accent-foreground">
+                                        {allData.length > 0 ? (
+                                            allData.map((item, index) => {
+                                                return (
+                                                    <TableRow key={"-" + item.id}>
+                                                        <TableCell className="text-center">
+                                                            {index+1}
+                                                        </TableCell>
+                                                        <TableCellWrap>
+                                                            <div dangerouslySetInnerHTML={{ __html: item.pesan }} />
+                                                        </TableCellWrap>
+                                                            <TableCellWrap>
+                                                            {(item.status == "0") && (<>Belum</>)}
+                                                            {(item.status == "1") && (<>Ditolak</>)}
+                                                            {(item.status == "2") && (<>Disetujui</>)}
+
+                                                        </TableCellWrap>
+                                                        <TableCell className="text-center gap-1">
+                                                            <Button variant="outline"
+                                                                onClick={e =>{
+                                                                    ubahData(item, "1")
+                                                                }}
+                                                                >Tolak</Button>
+                                                            <Button variant="outline"
+                                                                onClick={e =>{
+                                                                    ubahData(item, "2")
+                                                                }}
+                                                                >Setujui</Button>
+                                                        </TableCell>
+                                                    </TableRow>
+                                                );
+                                            })
+                                        ) : (
+                                            <TableRow>
+                                                <TableCell
+                                                    colSpan={5}
+                                                    className="h-12 text-center"
+                                                >
+                                                    Tidak ada Sesi.
+                                                </TableCell>
+                                            </TableRow>
+                                        )}
+                                    </TableBody>
+                                </Table>
+                            </div>
+
                         </div>
+
                     </div>
                 </div>
-            </PeranProvider>
         </AppLayout>
     );
 }

@@ -92,7 +92,7 @@ Route::group(
     Route::post('/{appreciation}/ubah', [Appreciate_Controller::class, 'ubah'])->name('appreciation-ubah');
     Route::post('/{appreciation}/hapus', [Appreciate_Controller::class, 'hapus'])->name('appreciation-hapus');
 
-    Route::post('/buka', [Appreciate_Controller::class, 'buka'])->name('appreciation-buka');
+    Route::get('/buka', [Appreciate_Controller::class, 'buka'])->name('appreciation-buka');
 
     Route::group(
     [
@@ -100,8 +100,6 @@ Route::group(
     ], function () {
         Route::get('/', [Appreciate_Admin_Controller::class, 'index'])->name('appreciation-master-index');
         Route::post('/tambah', [Appreciate_Admin_Controller::class, 'tambah'])->name('appreciation-master-tambah');
-        Route::post('/{master}/ubah', [Appreciate_Admin_Controller::class, 'ubah'])->name('appreciation-master-ubah');
-        Route::post('/{master}/hapus', [Appreciate_Admin_Controller::class, 'hapus'])->name('appreciation-master-hapus');
     });
 
     Route::group(

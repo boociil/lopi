@@ -10,7 +10,7 @@ class Appreciate_Data extends Model
     protected $table = 'siakip2_appreciate_data';
 
     protected $fillable = [
-        'master_id', 'dari', 'tujuan', 'status', 'pesan'
+        'master_id', 'dari', 'tujuan', 'status_anonim', 'status', 'pesan'
     ];
 
     public function dariUser()

@@ -24,4 +24,9 @@ class Appreciate_Master extends Model
     {
         return $this->hasMany(Appreciate_Target::class, 'master_id', 'id');
     }
+
+    public function data()
+    {
+        return $this->hasMany(Appreciate_Data::class, 'master_id', 'id');
+    }
 }

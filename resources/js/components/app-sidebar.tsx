@@ -19,18 +19,18 @@ export function AppSidebar() {
             href: '/lopi/beranda',
             icon: LayoutGrid,
         },
-        {
-            type: 'item',
-            title: 'Jadwal',
-            href: '/lopi/pinjam/jadwal',
-            icon: CalendarDays,
-        },
-        {
-            type: 'item',
-            title: 'Pinjam Zoom',
-            href: '/lopi/pinjam/zoom',
-            icon: Video,
-        },
+        // {
+        //     type: 'item',
+        //     title: 'Jadwal',
+        //     href: '/lopi/pinjam/jadwal',
+        //     icon: CalendarDays,
+        // },
+        // {
+        //     type: 'item',
+        //     title: 'Pinjam Zoom',
+        //     href: '/lopi/pinjam/zoom',
+        //     icon: Video,
+        // },
         {
             type: 'item',
             title: 'Pinjam Mobil',
@@ -57,11 +57,11 @@ export function AppSidebar() {
                     href: '/lopi/appreciate/master',
                 },
                 {
-                    title: 'Tambah',
+                    title: 'Kirim',
                     href: '/lopi/appreciate',
                 },
                 {
-                    title: 'Buka',
+                    title: 'Untukmu',
                     href: '/lopi/appreciate/buka',
                 },
                 {
@@ -78,11 +78,11 @@ export function AppSidebar() {
             icon: SmilePlus,
             subItems: [
                 {
-                    title: 'Tambah',
+                    title: 'Kirim',
                     href: '/lopi/appreciate',
                 },
                 {
-                    title: 'Buka',
+                    title: 'Untukmu',
                     href: '/lopi/appreciate/buka',
                 },
             ]
@@ -105,33 +105,35 @@ export function AppSidebar() {
     }
 
     const tahun_active = usePage<SharedData>().props.tahun_active;
-    const footerNavItems: NavGeneral[] = [
-        {
+    // const footerNavItems: NavGeneral[] = [
+    //     {
 
-            type: 'group',
-            title: 'Tahun Aktif : '+tahun_active,
-            href: '/lopi/tahun',
-            icon: LinkIcon,
-            subItems: [
-                {
-                    title: 'Tahun 2022',
-                    href: '/lopi/tahun/2022/ubah',
-                },
-                {
-                    title: 'Tahun 2023',
-                    href: '/lopi/tahun/2023/ubah',
-                },
-                {
-                    title: 'Tahun 2024',
-                    href: '/lopi/tahun/2024/ubah',
-                },
-                {
-                    title: 'Tahun 2025',
-                    href: '/lopi/tahun/2025/ubah',
-                },
-            ]
-        }
-    ];
+    //         type: 'group',
+    //         title: 'Tahun Aktif : '+tahun_active,
+    //         href: '/lopi/tahun',
+    //         icon: LinkIcon,
+    //         subItems: [
+    //             {
+    //                 title: 'Tahun 2022',
+    //                 href: '/lopi/tahun/2022/ubah',
+    //             },
+    //             {
+    //                 title: 'Tahun 2023',
+    //                 href: '/lopi/tahun/2023/ubah',
+    //             },
+    //             {
+    //                 title: 'Tahun 2024',
+    //                 href: '/lopi/tahun/2024/ubah',
+    //             },
+    //             {
+    //                 title: 'Tahun 2025',
+    //                 href: '/lopi/tahun/2025/ubah',
+    //             },
+    //         ]
+    //     }
+    // ];
+
+    const footerNavItems: NavGeneral[] = []
 
     return (
         <Sidebar collapsible="icon" variant="inset">
