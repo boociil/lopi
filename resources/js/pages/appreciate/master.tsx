@@ -40,33 +40,37 @@ import {
 import { useApi } from "@/lib/API/useApi";
 import { progress as progressIndikator } from '@inertiajs/react'
 import { toast } from "sonner";
+import { appreciate_master, appreciate_master_dialog_event } from "@/props/appreciate/types";
+import AppreciateMaterProvider from "@/props/appreciate/master/provider";
+import { format } from "date-fns";
+import { id } from "date-fns/locale";
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: "Peran",
-        href: "/peran",
+        title: "Toples Apresiasi",
+        href: '/lopi/appreciate',
+    },
+     {
+        title: "Master",
+        href: '/lopi/appreciate/master',
     },
 ];
 
 export default function Index({
-    peranLopi,
+    data,
     user,
-    satuanKerjaTahun,
 }: React.PropsWithChildren<{
-    peranLopi: peran_lopi[];
+    data: appreciate_master[];
     user: User[];
-    satuanKerjaTahun: satuan_kerja_tahun[];
 }>) {
-
-    const [allPeran, setAllPeran] = React.useState<peran_lopi[]>(peranLopi);
-    const [eventDialog, setEventDialog] = React.useState<peran_dialog_event>({
+    const [allMaster, setAllMaster] = React.useState<appreciate_master[]>(data);
+    const [eventDialog, setEventDialog] = React.useState<appreciate_master_dialog_event>({
         status: null,
         data: null,
     });
 
     const axiosClient = useApi();
     const [userDict, setUserDict] = React.useState<Map<string, string>>(new Map<string, string>);
-    const [satuanKerjaTahunDict, setSatuanKerjaTahunDict] = React.useState<Map<string, string>>(new Map<string, string>);
 
     React.useEffect(() => {
         let userDict_ = new Map<string, string>()
@@ -74,51 +78,47 @@ export default function Index({
             userDict_.set(element.username, element.nama)
         });
         setUserDict(userDict_)
+    }, [user]);
 
-        let satuanKerjaTahunDict_ =  new Map<string, string>()
-        satuanKerjaTahun.forEach(element => {
-            satuanKerjaTahunDict_.set(element.id, element.nama)
-        });
-        setSatuanKerjaTahunDict(satuanKerjaTahunDict_)
-    }, [user, satuanKerjaTahun]);
-
-    function hapusPeran(peran_lopi_: peran_lopi){
+    function hapusPeran(appreciate_master_: appreciate_master){
         progressIndikator.start()
-        axiosClient.post(route('peran-hapus', {'peran_id': peran_lopi_.id}))
+        axiosClient.post(route('appreciation-master-hapus', {'master': appreciate_master_.id}))
             .then(function (response) {
-                setAllPeran((prev) => prev.filter((item) => item.id !== peran_lopi_.id));
+                setAllMaster((prev) => prev.filter((item) => item.id !== appreciate_master_.id));
                 progressIndikator.finish()
-                toast.success("Berhasil meghapus peran.");
+                toast.success("Berhasil meghapus master.");
             })
             .catch(function (error) {
                 progressIndikator.finish()
-                toast.success("Gagal meghapus peran.");
+                toast.success("Gagal meghapus master.");
             });
     };
 
-    function addPeran(peran_lopi_: peran_lopi){
-        setAllPeran([...allPeran, peran_lopi_]);
+    function addAppreciateMaster(appreciate_master_: appreciate_master){
+        setAllMaster([...allMaster, appreciate_master_]);
     };
 
+    function updateAppreciateMaster(appreciate_master_: appreciate_master){
+        setAllMaster((prev) => prev.map((e) => (e.id === appreciate_master_.id ? appreciate_master_ : e)));
+    };
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Peran" />
-            <PeranProvider
-                peranLopi={allPeran}
+            <Head title="Master" />
+            <AppreciateMaterProvider
+                appreciateMaster={allMaster}
                 user={user}
-                satuanKerjaTahun={satuanKerjaTahun}
+                userDict={userDict}
                 eventDialog={eventDialog}
                 setEventDialog={setEventDialog}
-                userDict={userDict}
-                satuanKerjaTahunDict={satuanKerjaTahunDict}
-                addPeran={addPeran}
+                addAppreciateMaster={addAppreciateMaster}
+                updateAppreciateMaster={updateAppreciateMaster}
             >
                 <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4 overflow-x-auto">
                     <div className="w-full">
                         <Heading
-                            title="Pengaturan Peran"
-                            description="Admin atur role user zoom dan ruang."
+                            title="Pengaturan Master"
+                            description="Admin atur yang diapresiasi menurut tanggal."
                         />
                         <div className="flex justify-end mt-2 mb-6 gap-x-1.5">
                             <Button
@@ -131,7 +131,7 @@ export default function Index({
                                 }
                             >
                                 <Plus />
-                                Tambah Peran
+                                Tambah Master
                             </Button>
                         </div>
                         <div className="overflow-hidden rounded-md border">
@@ -142,11 +142,14 @@ export default function Index({
                                             No
                                         </TableHead>
                                         <TableHead>Nama</TableHead>
-                                        <TableHead className="text-center">
-                                            Peran
+                                        <TableHead className="text-left">
+                                            Awal
+                                        </TableHead>
+                                        <TableHead className="text-left">
+                                            Akhir
                                         </TableHead>
                                         <TableHead>
-                                            Satuan Kerja
+                                            Target
                                         </TableHead>
                                         <TableHead className="text-center">
                                             Aksi
@@ -154,31 +157,46 @@ export default function Index({
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody className="text-accent-foreground">
-                                    {allPeran.length > 0 ? (
-                                        allPeran.map((item, index) => {
+                                    {allMaster.length > 0 ? (
+                                        allMaster.map((item, index) => {
                                             return (
                                                 <TableRow key={"-" + item.id}>
                                                     <TableCell className="text-center">
                                                         {index+1}
                                                     </TableCell>
                                                     <TableCellWrap>
-                                                        {userDict.has(item.pemilik_username) ?
-                                                            (<>{userDict.get(item.pemilik_username)}</>) :
-                                                            (<>{item.pemilik_username}</>)
-                                                        }
+                                                        {item.nama}
                                                     </TableCellWrap>
-                                                    <TableCell className="text-center">
-                                                        {(item.peran == "zoom") && (<>Zoom</>)}
-                                                        {(item.peran == "ruang") && (<>Ruang</>)}
-                                                        {(item.peran == "mobil") && (<>Mobil</>)}
-                                                    </TableCell>
                                                     <TableCellWrap>
-                                                        {satuanKerjaTahunDict.has(item.parent_id) ?
-                                                            (<>{satuanKerjaTahunDict.get(item.parent_id)}</>) :
-                                                            (<>- Tidak Ditemukan-</>)
-                                                        }
+                                                        {format(new Date(item.isi_awal), "EEEE, MMMM d, yyyy", {locale: id})}
+                                                    </TableCellWrap>
+                                                     <TableCellWrap>
+                                                        {format(new Date(item.isi_akhir), "EEEE, MMMM d, yyyy", {locale: id})}
+                                                    </TableCellWrap>
+                                                    <TableCellWrap className="text-left">
+                                                        {item.target.length > 0 ? (
+                                                            item.target.map((item, index) => {
+                                                                if(userDict.has(item.username)){
+                                                                    return (
+                                                                        <>- {userDict.get(item.username)}<br/></>
+                                                                    )
+                                                                }else{
+                                                                    return item.username+", "
+                                                                }
+                                                            })
+
+                                                        ): (<>- Tidak ada -</>)}
+
                                                     </TableCellWrap>
                                                     <TableCell className="text-center">
+                                                        <Button variant="outline"
+                                                            onClick={e =>{
+                                                                setEventDialog({
+                                                                    status: "ubah",
+                                                                    data: item,
+                                                                })
+                                                            }}
+                                                            >Ubah</Button>
                                                         <AlertDialog>
                                                             <AlertDialogTrigger asChild>
                                                                 <Button variant="outline">Hapus</Button>
@@ -187,8 +205,7 @@ export default function Index({
                                                                 <AlertDialogHeader>
                                                                 <AlertDialogTitle className="text-secondary">Apakah kamu yakin?</AlertDialogTitle>
                                                                     <AlertDialogDescription>
-                                                                        Apakah anda yakin untuk menghapus peran {item.peran} <br/>
-                                                                        pada pengguna {userDict.has(item.pemilik_username) ? userDict.get(item.pemilik_username) : item.pemilik_username} ?
+                                                                        Apakah anda yakin untuk menghapus master {item.nama} ?
                                                                     </AlertDialogDescription>
                                                                 </AlertDialogHeader>
                                                                 <AlertDialogFooter>
@@ -209,7 +226,7 @@ export default function Index({
                                                 colSpan={5}
                                                 className="h-12 text-center"
                                             >
-                                                Tidak ada Peran.
+                                                Tidak ada Sesi.
                                             </TableCell>
                                         </TableRow>
                                     )}
@@ -218,7 +235,7 @@ export default function Index({
                         </div>
                     </div>
                 </div>
-            </PeranProvider>
+            </AppreciateMaterProvider>
         </AppLayout>
     );
 }

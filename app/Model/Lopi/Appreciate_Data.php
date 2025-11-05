@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Appreciate_Data extends Model
 {
-    protected $table = 'appreciate_data';
+    protected $table = 'siakip2_appreciate_data';
 
     protected $fillable = [
         'master_id', 'dari', 'tujuan', 'status', 'pesan'

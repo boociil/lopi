@@ -4,7 +4,7 @@ import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type Peran, type NavGeneral, type NavItem, type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { LayoutGrid, CalendarDays, Video, LinkIcon, LockKeyholeOpen, Car } from 'lucide-react';
+import { LayoutGrid, CalendarDays, Video, LinkIcon, LockKeyholeOpen, Car, SmilePlus } from 'lucide-react';
 import AppLogo from './app-logo';
 
 export function AppSidebar() {
@@ -38,6 +38,57 @@ export function AppSidebar() {
             icon: Car,
         }
     ];
+
+    let find_appreciate = peran.find(item => {
+        if(item.peran == 'appreciate'){
+            return true
+        }
+    })
+
+    if(find_appreciate){
+        mainNavItems.push({
+            type: 'group',
+            title: 'Toples Apresiasi',
+            href: '/lopi/appreciate',
+            icon: SmilePlus,
+            subItems: [
+                {
+                    title: 'Master',
+                    href: '/lopi/appreciate/master',
+                },
+                {
+                    title: 'Tambah',
+                    href: '/lopi/appreciate',
+                },
+                {
+                    title: 'Buka',
+                    href: '/lopi/appreciate/buka',
+                },
+                {
+                    title: 'Approval',
+                    href: '/lopi/appreciate/aproval',
+                },
+            ]
+        })
+    }else{
+         mainNavItems.push({
+            type: 'group',
+            title: 'Toples Apresiasi',
+            href: '/lopi/appreciate',
+            icon: SmilePlus,
+            subItems: [
+                {
+                    title: 'Tambah',
+                    href: '/lopi/appreciate',
+                },
+                {
+                    title: 'Buka',
+                    href: '/lopi/appreciate/buka',
+                },
+            ]
+        })
+    }
+
 
     let find_super_admin = peran.find(item => {
         if(item.peran == 'admin' && item.tipe_peran == 'global' && item.tahun == null){

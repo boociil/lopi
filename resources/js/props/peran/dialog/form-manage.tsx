@@ -151,9 +151,10 @@ export default function DialogFormManage() {
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectGroup>
-                                            <SelectItem value="zoom">Zoom</SelectItem>
-                                            <SelectItem value="ruang">Ruang</SelectItem>
-                                            <SelectItem value="mobil">Mobil</SelectItem>
+                                            <SelectItem value="zoom">Pinjam Zoom</SelectItem>
+                                            <SelectItem value="ruang">Pinjam Ruang</SelectItem>
+                                            <SelectItem value="mobil">Pinjam Mobil</SelectItem>
+                                            <SelectItem value="appreciate">Toples Apresiasi</SelectItem>
                                         </SelectGroup>
                                     </SelectContent>
                                 </Select>

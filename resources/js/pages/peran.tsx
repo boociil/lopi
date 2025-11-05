@@ -168,9 +168,10 @@ export default function Index({
                                                         }
                                                     </TableCellWrap>
                                                     <TableCell className="text-center">
-                                                        {(item.peran == "zoom") && (<>Zoom</>)}
-                                                        {(item.peran == "ruang") && (<>Ruang</>)}
-                                                        {(item.peran == "mobil") && (<>Mobil</>)}
+                                                        {(item.peran == "zoom") && (<>Pinjam Zoom</>)}
+                                                        {(item.peran == "ruang") && (<>Pinjam Ruang</>)}
+                                                        {(item.peran == "mobil") && (<>Pinjam Mobil</>)}
+                                                        {(item.peran == "appreciate") && (<>Toples Apresiasi</>)}
                                                     </TableCell>
                                                     <TableCellWrap>
                                                         {satuanKerjaTahunDict.has(item.parent_id) ?

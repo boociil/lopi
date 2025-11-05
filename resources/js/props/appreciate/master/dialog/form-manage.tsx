@@ -27,233 +27,313 @@ import {
 import { Label } from "@/components/ui/label";
 
 import { Button } from "@/components/ui/button";
-import { usePeranContext } from "../context";
-import React from "react";
+import { useAppreciateMaterContext } from "../context";
+import React, { useEffect } from "react";
 import InputError from "@/components/input-error";
 
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { type peran_lopi } from "../types";
 import { Check, ChevronsUpDown, LoaderCircle } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { toast } from "sonner";
 import { progress as progressIndikator } from '@inertiajs/react'
+import { appreciate_master } from "../../types";
+import { Input } from "@/components/ui/input";
+import { DatePicker22 } from "@/components/ui/date-picker";
+import { formatDate } from "@/components/calender_modules/helpers";
+import { Table, TableBody, TableCell, TableCellWrap, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 type PeranForm = {
-    peran: string;
-    username: string;
-    satuan_kerja_tahun: string;
+    nama: string;
+    isi_awal: string;
+    isi_akhir: string;
+    target: string[];
     status: string;
 };
 
 export default function DialogFormManage() {
-    const { eventDialog, setEventDialog, satuanKerjaTahun, userDict, axiosClient, addPeran } = usePeranContext();
-    const [penggunaArr, setPenggunaArr] = React.useState<peran_lopi[]>([])
+    const { eventDialog, setEventDialog, userDict, axiosClient, addAppreciateMaster, updateAppreciateMaster, user } = useAppreciateMaterContext();
     const [openPengguna, setOpenPengguna] = React.useState(false)
     const [processing, setProcessing] = React.useState(false)
 
     const { data, setData, errors, setError, clearErrors } = useForm<
         Required<PeranForm>
     >({
-        peran: "zoom",
-        username: "",
-        satuan_kerja_tahun: "",
+        nama: "",
+        isi_awal: "",
+        isi_akhir: "",
+        target: [],
         status: "",
     });
 
+    useEffect(() => {
+        if(eventDialog.data){
+            setData("nama", eventDialog.data.nama);
+            setData("isi_awal", eventDialog.data.isi_awal);
+            setData("isi_akhir", eventDialog.data.isi_akhir);
+
+            const target_: string[] = []
+            eventDialog.data.target.forEach(element => {
+                target_.push(element.username)
+            });
+            setData("target", target_);
+            setData("status", "");
+        }
+    }, [eventDialog]);
+
     const submit: React.FormEventHandler = (e) => {
         e.preventDefault();
-        clearErrors("peran", "username","satuan_kerja_tahun","status")
-        if(data.username == ""){
-            setError("username", "Pengguna harus terisi")
-            return
-        }
+        clearErrors("nama", "isi_awal","isi_akhir")
         setProcessing(true)
-        axiosClient.post(route("peran-tambah"), data)
-            .then(function (response: any) {
-                try {
-                    const return_data: peran_lopi = response.data as peran_lopi;
-                    addPeran(return_data)
-                    progressIndikator.finish()
-                    toast.success('Berhasil menambahkan data baru')
-                    clearErrors()
-                    close_dialog()
-                } catch (error) {
+         if(eventDialog.status == 'tambah'){
+            axiosClient.post(route("appreciation-master-tambah"), data)
+                .then(function (response: any) {
+                    try {
+                        const return_data: appreciate_master = response.data.data as appreciate_master;
+                        addAppreciateMaster(return_data)
+                        progressIndikator.finish()
+                        toast.success('Berhasil menambahkan data baru')
+                        clearErrors()
+                        close_dialog()
+                    } catch (error) {
+                        console.log(error)
+                        progressIndikator.finish()
+                        toast.error('Gagal menambahkan data baru')
+                    }
+                    setProcessing(false)
+                })
+                .catch(function (error: any) {
                     console.log(error)
                     progressIndikator.finish()
-                    toast.error('Gagal menambahkan data baru')
-                }
-                setProcessing(false)
-            })
-            .catch(function (error: any) {
-                console.log(error)
-                progressIndikator.finish()
-                toast.error('Gagal menambahkan peran baru')
+                    toast.error('Gagal menambahkan peran baru')
 
-                clearErrors();
-                if (error.response?.status === 422) {
-                    Object.keys(error.response.data.errors).forEach((key) => {
-                        setError(key, error.response.data.errors[key][0]);
-                    });
-                }
-                setProcessing(false)
-            });
+                    clearErrors();
+                    if (error.response?.status === 422) {
+                        Object.keys(error.response.data.errors).forEach((key) => {
+                            setError(key, error.response.data.errors[key][0]);
+                        });
+                    }
+                    setProcessing(false)
+                });
+         }else if(eventDialog.status == 'ubah' && eventDialog.data != null){
+            axiosClient.post(route("appreciation-master-ubah", {'master': eventDialog.data?.id}), data)
+                .then(function (response: any) {
+                    try {
+                        const return_data: appreciate_master = response.data.data as appreciate_master;
+                        updateAppreciateMaster(return_data)
+                        progressIndikator.finish()
+                        toast.success('Berhasil mengubah data baru')
+                        clearErrors()
+                        close_dialog()
+                    } catch (error) {
+                        console.log(error)
+                        progressIndikator.finish()
+                        toast.error('Gagal mengubah data baru')
+                    }
+                    setProcessing(false)
+                })
+                .catch(function (error: any) {
+                    console.log(error)
+                    progressIndikator.finish()
+                    toast.error('Gagal mengubah peran baru')
+
+                    clearErrors();
+                    if (error.response?.status === 422) {
+                        Object.keys(error.response.data.errors).forEach((key) => {
+                            setError(key, error.response.data.errors[key][0]);
+                        });
+                    }
+                    setProcessing(false)
+                });
+         }
+
     };
 
-    function setPenggunaArrMeta(value: String){
-        let find = satuanKerjaTahun.find(item => item.id == value)
-        if(find){
-            let username_unique: String [] = []
-            let peran_ :  peran_lopi [] = []
-            find.peran_daftar.forEach(element => {
-                if(!username_unique.includes(element.pemilik_username)){
-                    username_unique.push(element.pemilik_username)
-                    peran_.push(element)
-                }
-            });
-            setPenggunaArr(peran_)
-        }
+    function deleteUser(username: string){
+        setData('target', data.target.filter(item => item != username))
+    }
+
+    function addUser(username: string){
+        const newTaeget: string[] = data.target
+        newTaeget.push(username)
+        setData('target', newTaeget)
     }
 
     function close_dialog(){
-        clearErrors("peran", "username","satuan_kerja_tahun","status")
-        setData("peran", "zoom");
-        setData("username", "");
-        setData("satuan_kerja_tahun", "");
-        setData("status", "");
+        clearErrors("nama", "isi_awal","isi_akhir")
+        setData("nama", "");
+        setData("isi_awal", "");
+        setData("isi_akhir", "");
+        setData("target", []);
         setEventDialog({ status: null, data: null })
-        setPenggunaArr([])
         return true
     };
 
-    if(eventDialog.status == 'tambah'){
-         return (
-            <Dialog open={true} onOpenChange={close_dialog}>
-                <DialogContent className="sm:max-w-[425px]">
-                    <form className="flex flex-col gap-6" onSubmit={submit}>
-                        <DialogHeader className="text-accent-foreground">
-                            <DialogTitle>Tambah Peran</DialogTitle>
-                            <DialogDescription>
-                                Isi isian diatas. Klik Simpan Jika Selesai.
-                            </DialogDescription>
-                        </DialogHeader>
-                        <div className="grid gap-4">
-                            <div className="grid gap-3">
-                                <Label className="text-secondary" htmlFor="peran-1">Peran</Label>
-                                <Select required
-                                    defaultValue={data.peran}
-                                    onValueChange={(value) => setData(
-                                                "peran",
-                                               value)}>
-                                    <SelectTrigger
-                                        name="peran"
-                                        className="text-secondary">
-                                        <SelectValue placeholder="Pilih Peran" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectGroup>
-                                            <SelectItem value="zoom">Zoom</SelectItem>
-                                            <SelectItem value="ruang">Ruang</SelectItem>
-                                            <SelectItem value="mobil">Mobil</SelectItem>
-                                        </SelectGroup>
-                                    </SelectContent>
-                                </Select>
-
-                                <InputError message={errors.peran} />
-                            </div>
-                            <div className="grid gap-3">
-                                <Label className="text-secondary" htmlFor="satuan-kerja-tahun-1">Satuan Kerja</Label>
-                                <Select required
-                                    defaultValue={data.satuan_kerja_tahun}
-                                    onValueChange={(value) => {
-                                        setData("satuan_kerja_tahun",value)
-                                        setData("username", "")
-                                        setPenggunaArrMeta(value)
-                                    }}>
-                                    <SelectTrigger
-                                        name="satuan_kerja"
-                                        className="text-secondary">
-                                        <SelectValue placeholder="Pilih Satuan Kerja" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectGroup>
-                                            <SelectGroup>
-                                                {satuanKerjaTahun.map((item, index) =>
-                                                    ( <SelectItem key={item.id} value={item.id}>{item.nama}</SelectItem>)
-                                                )}
-                                            </SelectGroup>
-                                        </SelectGroup>
-                                    </SelectContent>
-                                </Select>
-                                <InputError message={errors.satuan_kerja_tahun} />
-                            </div>
-                            {data.satuan_kerja_tahun ?
-                            <>
-                                <div className="grid gap-3">
-                                    <Label className="text-secondary" htmlFor="user-1">Pengguna</Label>
-                                    <Popover open={openPengguna} onOpenChange={setOpenPengguna} modal={true}>
-                                        <PopoverTrigger asChild>
-                                            <Button
-                                                variant="outline"
-                                                role="combobox"
-                                                className="justify-between text-secondary"
-                                            >
-                                                { (data.username != "")
-                                                    ? userDict.has(data.username) ? userDict.get(data.username) : data.username
-                                                    : "Pilih Pengguna..."}
-                                                <ChevronsUpDown className="opacity-50" />
-                                            </Button>
-                                        </PopoverTrigger>
-                                        <PopoverContent className="p-0 w-full">
-                                            <Command>
-                                                <CommandInput placeholder="Cari Pengguna..." className="h-9" />
-                                                <CommandList>
-                                                    <CommandEmpty>Tidak ditemukan.</CommandEmpty>
-                                                    <CommandGroup>
-                                                    {penggunaArr.map((item) => (
-                                                        <CommandItem
-                                                            key={item.pemilik_username}
-                                                            value={item.pemilik_username}
-                                                            onSelect={(currentValue) => {
-                                                                setData("username", currentValue === data.username ? "" : currentValue)
-                                                                setOpenPengguna(false)
-                                                            }}
-                                                        >
-                                                        {userDict.has(item.pemilik_username) ? userDict.get(item.pemilik_username) : item.pemilik_username}
-                                                        <Check
-                                                            className={cn(
-                                                            "ml-auto",
-                                                                data.username === item.pemilik_username ? "opacity-100" : "opacity-0"
-                                                            )}
-                                                        />
-                                                        </CommandItem>
-                                                    ))}
-                                                    </CommandGroup>
-                                                </CommandList>
-                                            </Command>
-                                        </PopoverContent>
-                                    </Popover>
-                                    <InputError message={errors.username} />
-                                </div>
-                            </>
-                            : <></>}
-                        <InputError message={errors.status} />
-                        </div>
-                        <DialogFooter>
-                            <DialogClose asChild>
-                                <Button  className="text-accent-foreground" variant="outline">Batal</Button>
-                            </DialogClose>
-                            <Button type="submit" disabled={processing}>
-                                {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}
-                                Simpan
-                            </Button>
-                        </DialogFooter>
-                    </form>
-                </DialogContent>
-            </Dialog>
-        );
-    }else {
+     if (eventDialog.status == null) {
         return <></>;
     }
 
+     return (
+        <Dialog open={true} onOpenChange={close_dialog}>
+            <DialogContent className="sm:max-w-[425px]">
+                <form className="flex flex-col gap-6" onSubmit={submit}>
+                    <DialogHeader className="text-accent-foreground">
+                        <DialogTitle>Tambah/Ubah Master</DialogTitle>
+                        <DialogDescription>
+                            Isi isian diatas. Klik Simpan Jika Selesai.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="grid gap-4">
+                        <div className="grid gap-3">
+                            <Label className="text-secondary" htmlFor="title-1">
+                                Nama
+                            </Label>
+                            <Input
+                                id="title-1"
+                                name="title"
+                                required
+                                value={data.nama}
+                                onChange={(e) =>
+                                    setData("nama", e.target.value)
+                                }
+                                className="text-secondary"
+                            />
+                            <InputError message={errors.nama} />
+                        </div>
+                        <div className="grid gap-3">
+                            <Label
+                                className="text-secondary"
+                                htmlFor="starttime-1"
+                            >
+                                Pengisian Awal
+                            </Label>
+                            <DatePicker22
+                                value={new Date(data.isi_awal)}
+                                setValue={(value) => {
+                                    setData("isi_awal", formatDate(value.toISOString()));
+                                }}
+                                modal={true}
+                            />
+                            <InputError message={errors.isi_awal} />
+                        </div>
+                        <div className="grid gap-3">
+                            <Label
+                                className="text-secondary"
+                                htmlFor="starttime-1"
+                            >
+                                Pengisian Akhir
+                            </Label>
+                            <DatePicker22
+                                value={new Date(data.isi_akhir)}
+                                setValue={(value) => {
+                                    setData("isi_akhir", formatDate(value.toISOString()));
+                                }}
+                                modal={true}
+                            />
+                            <InputError message={errors.isi_akhir} />
+                        </div>
 
+
+                        <div className="grid gap-3">
+                            <Label className="text-secondary" htmlFor="user-1">Pengguna</Label>
+                            <Popover open={openPengguna} onOpenChange={setOpenPengguna} modal={true}>
+                                <PopoverTrigger asChild>
+                                    <Button
+                                        variant="outline"
+                                        role="combobox"
+                                        className="justify-between text-secondary"
+                                    >
+                                        Pilih Target...
+                                        <ChevronsUpDown className="opacity-50" />
+                                    </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="p-0 w-full">
+                                    <Command>
+                                        <CommandInput placeholder="Cari Pengguna..." className="h-9" />
+                                        <CommandList>
+                                            <CommandEmpty>Tidak ditemukan.</CommandEmpty>
+                                            <CommandGroup>
+                                            {user.map((item) => (
+                                                <CommandItem
+                                                    key={item.username}
+                                                    value={item.username}
+                                                    onSelect={(currentValue) => {
+                                                        addUser(currentValue)
+                                                        // setData("username", currentValue === data.username ? "" : currentValue)
+                                                        setOpenPengguna(false)
+                                                    }}
+                                                >
+                                                    {item.nama}
+                                                {/* {userDict.has(item.pemilik_username) ? userDict.get(item.pemilik_username) : item.pemilik_username} */}
+                                                {/* <Check
+                                                    className={cn(
+                                                    "ml-auto",
+                                                        data.username === item.pemilik_username ? "opacity-100" : "opacity-0"
+                                                    )}
+                                                /> */}
+                                                </CommandItem>
+                                            ))}
+                                            </CommandGroup>
+                                        </CommandList>
+                                    </Command>
+                                </PopoverContent>
+                            </Popover>
+                        </div>
+
+                    <InputError message={errors.status} />
+                    <div className="grid gap-3">
+                        <Label className="text-secondary" htmlFor="user-1">Daftar Target</Label>
+                        <Table>
+                            <TableHeader className="bg-accent">
+                                <TableRow>
+                                    <TableHead>Nama</TableHead>
+                                    <TableHead className="text-center">
+                                        Aksi
+                                    </TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody className="text-accent-foreground">
+                                {data.target.length > 0 ? (
+                                    data.target.map((item, index) => {
+                                        return (
+                                            <TableRow key={"-" + index}>
+                                                <TableCellWrap className="text-left">
+                                                    {userDict.has(item) ?
+                                                        (userDict.get(item))
+                                                    : (item)}
+
+                                                </TableCellWrap>
+                                                <TableCell className="text-center">
+                                                    <Button variant="outline" onClick={() => {deleteUser(item)}}>Hapus</Button>
+                                                </TableCell>
+                                            </TableRow>
+                                        );
+                                    })
+                                ) : (
+                                    <TableRow>
+                                        <TableCell
+                                            colSpan={5}
+                                            className="h-12 text-center"
+                                        >
+                                            Tidak ada Peran.
+                                        </TableCell>
+                                    </TableRow>
+                                )}
+                            </TableBody>
+                        </Table>
+
+                    </div>
+                    </div>
+                    <DialogFooter>
+                        <DialogClose asChild>
+                            <Button  className="text-accent-foreground" variant="outline">Batal</Button>
+                        </DialogClose>
+                        <Button type="submit" disabled={processing}>
+                            {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}
+                            Simpan
+                        </Button>
+                    </DialogFooter>
+                </form>
+            </DialogContent>
+        </Dialog>
+    );
 }

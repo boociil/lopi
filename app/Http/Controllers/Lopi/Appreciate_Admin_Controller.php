@@ -31,7 +31,7 @@ class Appreciate_Admin_Controller extends Controller
             ->where('peran', 'appreciate')
             ->first();
 
-        if($have_appreciate_peran){
+        if(!$have_appreciate_peran){
             abort(401);
         }
 
@@ -48,7 +48,7 @@ class Appreciate_Admin_Controller extends Controller
             ->where('peran', 'appreciate')
             ->first();
 
-        if($have_appreciate_peran){
+        if(!$have_appreciate_peran){
             abort(401);
         }
 
@@ -67,14 +67,17 @@ class Appreciate_Admin_Controller extends Controller
             $master->isi_akhir = $request->input('isi_akhir');
             $master->save();
 
-            foreach($request->data as $username){
+            foreach($request->target as $username){
                 $target = new Appreciate_Target();
                 $target->master_id = $master->id;
                 $target->username = $username;
                 $target->save();
             }
 
+            DB::commit();
+
             return [
+                "data" => Appreciate_Master::with('target')->where('id', $master->id)->first(),
                 '_status' => 'Berhasil menambah master',
             ];
         }catch(Exception $ex){
@@ -93,7 +96,7 @@ class Appreciate_Admin_Controller extends Controller
             ->where('peran', 'appreciate')
             ->first();
 
-        if($have_appreciate_peran){
+        if(!$have_appreciate_peran){
             abort(401);
         }
 
@@ -106,21 +109,24 @@ class Appreciate_Admin_Controller extends Controller
         DB::beginTransaction();
         try
         {
-            Appreciate_Target::where('id', $master->id)->delete();
+            Appreciate_Target::where('master_id', $master->id)->delete();
 
             $master->nama = $request->input('nama');
             $master->isi_awal = $request->input('isi_awal');
             $master->isi_akhir = $request->input('isi_akhir');
             $master->save();
 
-            foreach($request->data as $username){
+            foreach($request->target as $username){
                 $target = new Appreciate_Target();
                 $target->master_id = $master->id;
                 $target->username = $username;
                 $target->save();
             }
 
+            DB::commit();
+
             return [
+                "data" => Appreciate_Master::with('target')->where('id', $master->id)->first(),
                 '_status' => 'Berhasil menambah master',
             ];
         }catch(Exception $ex){
@@ -139,7 +145,7 @@ class Appreciate_Admin_Controller extends Controller
             ->where('peran', 'appreciate')
             ->first();
 
-        if($have_appreciate_peran){
+        if(!$have_appreciate_peran){
             abort(401);
         }
 
@@ -148,6 +154,8 @@ class Appreciate_Admin_Controller extends Controller
         {
             Appreciate_Target::where('id', $master->id)->delete();
             $master->delete();
+
+            DB::commit();
 
             return [
                 '_status' => 'Berhasil menambah master',
@@ -168,7 +176,7 @@ class Appreciate_Admin_Controller extends Controller
             ->where('peran', 'appreciate')
             ->first();
 
-        if($have_appreciate_peran){
+        if(!$have_appreciate_peran){
             abort(401);
         }
 
@@ -181,6 +189,14 @@ class Appreciate_Admin_Controller extends Controller
 
     public function aproval_data(Request $request, Appreciate_Data $appreciation)
     {
+        $have_appreciate_peran =  Peran::where('pemilik_username', Auth::user()->username)
+            ->where('peran', 'appreciate')
+            ->first();
+
+        if(!$have_appreciate_peran){
+            abort(401);
+        }
+
         $validated = $request->validate([
             'status' => Rule::in(['1', '2']),
         ]);

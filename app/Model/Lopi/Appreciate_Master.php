@@ -7,11 +7,13 @@ use Illuminate\Database\Eloquent\Model;
 
 class Appreciate_Master extends Model
 {
-    protected $table = 'appreciate_master';
+    protected $table = 'siakip2_appreciate_master';
 
     protected $fillable = [
         'nama', 'isi_awal', 'isi_akhir'
     ];
+
+    public $timestamps = false;
 
     public function user()
     {
@@ -20,6 +22,6 @@ class Appreciate_Master extends Model
 
     public function target()
     {
-        return $this->hasMany(Appreciate_Target::class, 'id', 'master_id');
+        return $this->hasMany(Appreciate_Target::class, 'master_id', 'id');
     }
 }

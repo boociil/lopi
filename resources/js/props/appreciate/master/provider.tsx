@@ -1,54 +1,49 @@
-import { PeranContext } from "./context";
+import { AppreciateMaterContext } from "./context";
 import {
-    type satuan_kerja_tahun,
-    type peran_dialog_event,
-    type peran_lopi,
-} from "./types";
+    type appreciate_master,
+    type appreciate_master_dialog_event,
+} from "../types";
 import DialogFormManage from "./dialog/form-manage";
 import {type User } from "@/types";
 import { useApi } from "@/lib/API/useApi";
 
-export default function PeranProvider({
-    peranLopi,
+export default function AppreciateMaterProvider({
+    appreciateMaster,
     user,
-    satuanKerjaTahun,
     userDict,
-    satuanKerjaTahunDict,
     eventDialog,
     setEventDialog,
     children,
-    addPeran,
-
+    addAppreciateMaster,
+    updateAppreciateMaster,
 }: {
-    peranLopi: peran_lopi[];
+    appreciateMaster: appreciate_master[];
     user: User[];
-    satuanKerjaTahun: satuan_kerja_tahun[];
     userDict: Map<string, string>,
-    satuanKerjaTahunDict: Map<string, string>,
-    eventDialog: peran_dialog_event;
-    setEventDialog: (eventDialog: peran_dialog_event) => void;
-    addPeran: (peran_lopi_: peran_lopi) => void;
+    eventDialog: appreciate_master_dialog_event;
+    setEventDialog: (eventDialog: appreciate_master_dialog_event) => void;
+    addAppreciateMaster: (appreciate_master_: appreciate_master) => void;
+    updateAppreciateMaster: (appreciate_master_: appreciate_master) => void;
     children: React.ReactNode;
 }) {
 
     const axiosClient = useApi();
 
     return (
-        <PeranContext.Provider
+        <AppreciateMaterContext.Provider
             value={{
-                peranLopi,
+                appreciateMaster,
                 user,
-                satuanKerjaTahun,
                 userDict,
-                satuanKerjaTahunDict,
                 eventDialog,
-                addPeran,
                 setEventDialog,
                 axiosClient,
+                addAppreciateMaster,
+                updateAppreciateMaster,
             }}
         >
             <DialogFormManage></DialogFormManage>
             {children}
-        </PeranContext.Provider>
+        </AppreciateMaterContext.Provider>
     );
 }
