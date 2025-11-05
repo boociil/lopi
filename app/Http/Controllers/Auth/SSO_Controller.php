@@ -45,8 +45,8 @@ class SSO_Controller extends Controller
             return redirect('/');
         }
         if (!$request->input('code')) {
-            if($request->tahun_active){
-                $request->session()->put('tahun_active', $request->tahun_active);
+            if($request->tahun){
+                $request->session()->put('tahun_active', $request->tahun);
             }else{
                 return redirect('/login')->withErrors(['tahun' => 'Tahun belum di set']);
             }
@@ -58,10 +58,10 @@ class SSO_Controller extends Controller
         }  else if (!$request->has('state') || ($request->get('state') !== $request->session()->get('oauth2state'))) {
 
             $request->session()->forget('oauth2state');
-            Log::info("satu");
             return redirect('/login')->withErrors(['user' => 'Terjadi kesalahan']);
 
         } else {
+            Log::info('123123');
             try {
                 $token = $this->provider->getAccessToken('authorization_code', [
                     'code' => $request->get('code')

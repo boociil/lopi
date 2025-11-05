@@ -32,16 +32,9 @@ interface LoginProps {
 }
 
 export default function Login({ tahun_array, tahun_default }: LoginProps) {
-    const { data, setData, post, processing, errors, reset } = useForm<Required<LoginForm>>({
+    const { data, setData, processing, errors, reset } = useForm<Required<LoginForm>>({
         tahun: tahun_default,
     });
-
-    const submit: FormEventHandler = (e) => {
-        e.preventDefault();
-        post(route('login'), {
-
-        });
-    };
 
     return (
          <div className="flex min-h-svh flex-col items-center justify-center gap-6 bg-background md:p-10">
@@ -51,15 +44,15 @@ export default function Login({ tahun_array, tahun_default }: LoginProps) {
                     <CardHeader>
                         <div className="flex flex-col items-center gap-4">
                             <div className="flex flex-col items-center gap-2 font-medium">
-                                <div className="mb-1 flex h-24 w-56 items-center justify-center rounded-md">
-                                    <img className="object-cover  h-24 w-56  rounded" src="public/img/depan_nobg.png"></img>
+                                <div className="mb-1 flex h-24 w-24 items-center justify-center rounded-md">
+                                    <img className="object-cover  h-24 w-24  rounded" src="public/img/logo.png"></img>
                                 </div>
-                                <span className="sr-only">SiAKIP</span>
+                                <span className="sr-only">Lopi</span>
                             </div>
                         </div>
                     </CardHeader>
                     <CardContent>
-                        <form className="flex flex-col gap-6" onSubmit={submit}>
+                        <form className="flex flex-col gap-6" action="/lopi/sso">
                             <div className="grid gap-6">
                                 <div className="grid gap-2">
                                     <Label htmlFor="tahun">Tahun</Label>

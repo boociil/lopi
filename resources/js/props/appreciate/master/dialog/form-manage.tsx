@@ -84,7 +84,9 @@ export default function DialogFormManage() {
         e.preventDefault();
         clearErrors("nama", "isi_awal","isi_akhir")
         setProcessing(true)
+        console.log(eventDialog)
          if(eventDialog.status == 'tambah'){
+
             axiosClient.post(route("appreciation-master-tambah"), data)
                 .then(function (response: any) {
                     try {
@@ -153,9 +155,11 @@ export default function DialogFormManage() {
     }
 
     function addUser(username: string){
-        const newTaeget: string[] = data.target
-        newTaeget.push(username)
-        setData('target', newTaeget)
+        if(!data.target.includes(username)){
+            const newTaeget: string[] = data.target
+            newTaeget.push(username)
+            setData('target', newTaeget)
+        }
     }
 
     function close_dialog(){
@@ -303,7 +307,7 @@ export default function DialogFormManage() {
 
                                                 </TableCellWrap>
                                                 <TableCell className="text-center">
-                                                    <Button variant="outline" onClick={() => {deleteUser(item)}}>Hapus</Button>
+                                                    <Button type="button" variant="outline" onClick={() => {deleteUser(item)}}>Hapus</Button>
                                                 </TableCell>
                                             </TableRow>
                                         );

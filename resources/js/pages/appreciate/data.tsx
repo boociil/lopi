@@ -76,10 +76,10 @@ export default function Index({
                 <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4 overflow-x-auto">
                     <div className="w-full">
                         <Heading
-                            title="Tambahkan Apresiasi"
-                            description="Tambah apresiasi kepada rekan-rekan di kantor."
+                            title="Kirim Apresiasi"
+                            description="Kirim apresiasi kepada rekan-rekan di kantor."
                         />
-                        <div className="overflow-hidden rounded-md flex gap-4">
+                        <div className="overflow-hidden rounded-md flex flex-wrap gap-4">
                             <AppreciateDataProvider
                                             user={user}
                                             userDict={userDict}

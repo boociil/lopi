@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\Lopi_Controller;
 use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Auth\SSO_Controller;
 use App\Http\Controllers\Lopi\Appreciate_Admin_Controller;
 use App\Http\Controllers\Umum\Beranda_Controller;
 use App\Http\Controllers\Lopi\Appreciate_Controller;
@@ -25,13 +26,13 @@ use Inertia\Inertia;
 */
 
 
-Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
-Route::post('/login', [LoginController::class, 'login'])->middleware('guest');
-Route::get('/logout', [LoginController::class, 'logout'])->middleware('guest')->name('logout');
+// Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
+// Route::post('/login', [LoginController::class, 'login'])->middleware('guest');
+// Route::get('/logout', [LoginController::class, 'logout'])->middleware('guest')->name('logout');
 
-// Route::get('/login_sso', [SSO_Controller::class, 'showLoginForm'])->name('login');
-// Route::get('/sso', [SSO_Controller::class, 'sso'])->name('sso');
-// Route::get('/logout', [SSO_Controller::class, 'logout'])->name('logout');
+Route::get('/login', [SSO_Controller::class, 'showLoginForm'])->name('login');
+Route::get('/sso', [SSO_Controller::class, 'sso'])->name('sso');
+Route::get('/logout', [SSO_Controller::class, 'logout'])->name('logout');
 
 Route::get('/maintenance', function(){
     return view("maintenance");
@@ -89,8 +90,8 @@ Route::group(
 ], function () {
     Route::get('/', [Appreciate_Controller::class, 'index'])->name('appreciation-index');
     Route::post('/tambah', [Appreciate_Controller::class, 'tambah'])->name('appreciation-tambah');
-    Route::post('/{appreciation}/ubah', [Appreciate_Controller::class, 'ubah'])->name('appreciation-ubah');
-    Route::post('/{appreciation}/hapus', [Appreciate_Controller::class, 'hapus'])->name('appreciation-hapus');
+    // Route::post('/{appreciation}/ubah', [Appreciate_Controller::class, 'ubah'])->name('appreciation-ubah');
+    // Route::post('/{appreciation}/hapus', [Appreciate_Controller::class, 'hapus'])->name('appreciation-hapus');
 
     Route::get('/buka', [Appreciate_Controller::class, 'buka'])->name('appreciation-buka');
 
@@ -100,6 +101,8 @@ Route::group(
     ], function () {
         Route::get('/', [Appreciate_Admin_Controller::class, 'index'])->name('appreciation-master-index');
         Route::post('/tambah', [Appreciate_Admin_Controller::class, 'tambah'])->name('appreciation-master-tambah');
+        Route::post('/{master}/ubah', [Appreciate_Admin_Controller::class, 'ubah'])->name('appreciation-master-ubah');
+        Route::post('/{master}/hapus', [Appreciate_Admin_Controller::class, 'hapus'])->name('appreciation-master-hapus');
     });
 
     Route::group(

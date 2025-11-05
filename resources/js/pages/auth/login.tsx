@@ -62,7 +62,7 @@ export default function Login({ tahun_array, tahun_default, status }: LoginProps
                                 <div className="mb-1 flex h-24 w-24 items-center justify-center rounded-md">
                                     <img className="object-cover  h-24 w-24  rounded" src="public/img/logo.png"></img>
                                 </div>
-                                <span className="sr-only">SiAKIP</span>
+                                <span className="sr-only">Lopi</span>
                             </div>
                         </div>
                     </CardHeader>

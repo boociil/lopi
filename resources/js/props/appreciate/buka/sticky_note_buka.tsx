@@ -22,9 +22,9 @@ export default function StickyNoteBuka({
         4: "bg-sky-200",
     };
     const rotate = {
-        0: "rotate-2",
+        0: "rotate-1",
         1: "",
-        2: "-rotate-2",
+        2: "-rotate-1",
     };
 
     console.log(data)

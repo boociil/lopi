@@ -24,9 +24,9 @@ export default function StickyNote({
         4: "bg-sky-200",
     };
     const rotate = {
-        0: "rotate-2",
+        0: "rotate-1",
         1: "",
-        2: "-rotate-2",
+        2: "-rotate-1",
     };
 
     return (
@@ -34,12 +34,12 @@ export default function StickyNote({
             className={cn(
                 colors[number1],
                 rotate[number2],
-                "rounded-xl p-4 w-50 h-50 shadow-lg select-none m-2",
+                "rounded-xl p-4 w-60 h-60 shadow-lg select-none m-2",
             )}
             onClick={() => {openDialog(data)}}
         >
             <div className="font-bold text-sm">Kepada : {userDict.has(data.target.username) ? userDict.get(data.target.username) : data.target.username}</div>
-            <div className="mt-2 text-xs">
+            <div className="mt-2 text-sm">
                 {data.data &&  <div dangerouslySetInnerHTML={{ __html: data.data.pesan }} /> }
             </div>
         </div>
