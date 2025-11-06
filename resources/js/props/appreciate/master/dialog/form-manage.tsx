@@ -41,6 +41,7 @@ import { Input } from "@/components/ui/input";
 import { DatePicker22 } from "@/components/ui/date-picker";
 import { formatDate } from "@/components/calender_modules/helpers";
 import { Table, TableBody, TableCell, TableCellWrap, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 type PeranForm = {
     nama: string;
@@ -186,147 +187,150 @@ export default function DialogFormManage() {
                             Isi isian diatas. Klik Simpan Jika Selesai.
                         </DialogDescription>
                     </DialogHeader>
-                    <div className="grid gap-4">
-                        <div className="grid gap-3">
-                            <Label className="text-secondary" htmlFor="title-1">
-                                Nama
-                            </Label>
-                            <Input
-                                id="title-1"
-                                name="title"
-                                required
-                                value={data.nama}
-                                onChange={(e) =>
-                                    setData("nama", e.target.value)
-                                }
-                                className="text-secondary"
-                            />
-                            <InputError message={errors.nama} />
-                        </div>
-                        <div className="grid gap-3">
-                            <Label
-                                className="text-secondary"
-                                htmlFor="starttime-1"
-                            >
-                                Pengisian Awal
-                            </Label>
-                            <DatePicker22
-                                value={new Date(data.isi_awal)}
-                                setValue={(value) => {
-                                    setData("isi_awal", formatDate(value.toISOString()));
-                                }}
-                                modal={true}
-                            />
-                            <InputError message={errors.isi_awal} />
-                        </div>
-                        <div className="grid gap-3">
-                            <Label
-                                className="text-secondary"
-                                htmlFor="starttime-1"
-                            >
-                                Pengisian Akhir
-                            </Label>
-                            <DatePicker22
-                                value={new Date(data.isi_akhir)}
-                                setValue={(value) => {
-                                    setData("isi_akhir", formatDate(value.toISOString()));
-                                }}
-                                modal={true}
-                            />
-                            <InputError message={errors.isi_akhir} />
-                        </div>
+                    <ScrollArea className="h-96">
+                        <div className="grid gap-4">
+                            <div className="grid gap-3">
+                                <Label className="text-secondary" htmlFor="title-1">
+                                    Nama
+                                </Label>
+                                <Input
+                                    id="title-1"
+                                    name="title"
+                                    required
+                                    value={data.nama}
+                                    onChange={(e) =>
+                                        setData("nama", e.target.value)
+                                    }
+                                    className="text-secondary"
+                                />
+                                <InputError message={errors.nama} />
+                            </div>
+                            <div className="grid gap-3">
+                                <Label
+                                    className="text-secondary"
+                                    htmlFor="starttime-1"
+                                >
+                                    Pengisian Awal
+                                </Label>
+                                <DatePicker22
+                                    value={new Date(data.isi_awal)}
+                                    setValue={(value) => {
+                                        setData("isi_awal", formatDate(value.toISOString()));
+                                    }}
+                                    modal={true}
+                                />
+                                <InputError message={errors.isi_awal} />
+                            </div>
+                            <div className="grid gap-3">
+                                <Label
+                                    className="text-secondary"
+                                    htmlFor="starttime-1"
+                                >
+                                    Pengisian Akhir
+                                </Label>
+                                <DatePicker22
+                                    value={new Date(data.isi_akhir)}
+                                    setValue={(value) => {
+                                        setData("isi_akhir", formatDate(value.toISOString()));
+                                    }}
+                                    modal={true}
+                                />
+                                <InputError message={errors.isi_akhir} />
+                            </div>
 
 
-                        <div className="grid gap-3">
-                            <Label className="text-secondary" htmlFor="user-1">Pengguna</Label>
-                            <Popover open={openPengguna} onOpenChange={setOpenPengguna} modal={true}>
-                                <PopoverTrigger asChild>
-                                    <Button
-                                        variant="outline"
-                                        role="combobox"
-                                        className="justify-between text-secondary"
-                                    >
-                                        Pilih Target...
-                                        <ChevronsUpDown className="opacity-50" />
-                                    </Button>
-                                </PopoverTrigger>
-                                <PopoverContent className="p-0 w-full">
-                                    <Command>
-                                        <CommandInput placeholder="Cari Pengguna..." className="h-9" />
-                                        <CommandList>
-                                            <CommandEmpty>Tidak ditemukan.</CommandEmpty>
-                                            <CommandGroup>
-                                            {user.map((item) => (
-                                                <CommandItem
-                                                    key={item.username}
-                                                    value={item.username}
-                                                    onSelect={(currentValue) => {
-                                                        addUser(currentValue)
-                                                        // setData("username", currentValue === data.username ? "" : currentValue)
-                                                        setOpenPengguna(false)
-                                                    }}
-                                                >
-                                                    {item.nama}
-                                                {/* {userDict.has(item.pemilik_username) ? userDict.get(item.pemilik_username) : item.pemilik_username} */}
-                                                {/* <Check
-                                                    className={cn(
-                                                    "ml-auto",
-                                                        data.username === item.pemilik_username ? "opacity-100" : "opacity-0"
-                                                    )}
-                                                /> */}
-                                                </CommandItem>
-                                            ))}
-                                            </CommandGroup>
-                                        </CommandList>
-                                    </Command>
-                                </PopoverContent>
-                            </Popover>
-                        </div>
-
-                    <InputError message={errors.status} />
-                    <div className="grid gap-3">
-                        <Label className="text-secondary" htmlFor="user-1">Daftar Target</Label>
-                        <Table>
-                            <TableHeader className="bg-accent">
-                                <TableRow>
-                                    <TableHead>Nama</TableHead>
-                                    <TableHead className="text-center">
-                                        Aksi
-                                    </TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody className="text-accent-foreground">
-                                {data.target.length > 0 ? (
-                                    data.target.map((item, index) => {
-                                        return (
-                                            <TableRow key={"-" + index}>
-                                                <TableCellWrap className="text-left">
-                                                    {userDict.has(item) ?
-                                                        (userDict.get(item))
-                                                    : (item)}
-
-                                                </TableCellWrap>
-                                                <TableCell className="text-center">
-                                                    <Button type="button" variant="outline" onClick={() => {deleteUser(item)}}>Hapus</Button>
-                                                </TableCell>
-                                            </TableRow>
-                                        );
-                                    })
-                                ) : (
-                                    <TableRow>
-                                        <TableCell
-                                            colSpan={5}
-                                            className="h-12 text-center"
+                            <div className="grid gap-3">
+                                <Label className="text-secondary" htmlFor="user-1">Pengguna</Label>
+                                <Popover open={openPengguna} onOpenChange={setOpenPengguna} modal={true}>
+                                    <PopoverTrigger asChild>
+                                        <Button
+                                            variant="outline"
+                                            role="combobox"
+                                            className="justify-between text-secondary"
                                         >
-                                            Tidak ada Peran.
-                                        </TableCell>
-                                    </TableRow>
-                                )}
-                            </TableBody>
-                        </Table>
+                                            Pilih Target...
+                                            <ChevronsUpDown className="opacity-50" />
+                                        </Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="p-0 w-full">
+                                        <Command>
+                                            <CommandInput placeholder="Cari Pengguna..." className="h-9" />
+                                            <CommandList>
+                                                <CommandEmpty>Tidak ditemukan.</CommandEmpty>
+                                                <CommandGroup>
+                                                {user.map((item) => (
+                                                    <CommandItem
+                                                        key={item.username}
+                                                        value={item.username}
+                                                        onSelect={(currentValue) => {
+                                                            addUser(currentValue)
+                                                            // setData("username", currentValue === data.username ? "" : currentValue)
+                                                            setOpenPengguna(false)
+                                                        }}
+                                                    >
+                                                        {item.nama}
+                                                    {/* {userDict.has(item.pemilik_username) ? userDict.get(item.pemilik_username) : item.pemilik_username} */}
+                                                    {/* <Check
+                                                        className={cn(
+                                                        "ml-auto",
+                                                            data.username === item.pemilik_username ? "opacity-100" : "opacity-0"
+                                                        )}
+                                                    /> */}
+                                                    </CommandItem>
+                                                ))}
+                                                </CommandGroup>
+                                            </CommandList>
+                                        </Command>
+                                    </PopoverContent>
+                                </Popover>
+                            </div>
 
+                        <InputError message={errors.status} />
+                        <div className="grid gap-3">
+                            <Label className="text-secondary" htmlFor="user-1">Daftar Target</Label>
+                            <Table>
+                                <TableHeader className="bg-accent">
+                                    <TableRow>
+                                        <TableHead>Nama</TableHead>
+                                        <TableHead className="text-center">
+                                            Aksi
+                                        </TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody className="text-accent-foreground">
+                                    {data.target.length > 0 ? (
+                                        data.target.map((item, index) => {
+                                            return (
+                                                <TableRow key={"-" + index}>
+                                                    <TableCellWrap className="text-left">
+                                                        {userDict.has(item) ?
+                                                            (userDict.get(item))
+                                                        : (item)}
+
+                                                    </TableCellWrap>
+                                                    <TableCell className="text-center">
+                                                        <Button type="button" variant="outline" onClick={() => {deleteUser(item)}}>Hapus</Button>
+                                                    </TableCell>
+                                                </TableRow>
+                                            );
+                                        })
+                                    ) : (
+                                        <TableRow>
+                                            <TableCell
+                                                colSpan={5}
+                                                className="h-12 text-center"
+                                            >
+                                                Tidak ada Peran.
+                                            </TableCell>
+                                        </TableRow>
+                                    )}
+                                </TableBody>
+                            </Table>
+
+                        </div>
                     </div>
-                    </div>
+                    </ScrollArea>
+
                     <DialogFooter>
                         <DialogClose asChild>
                             <Button  className="text-accent-foreground" variant="outline">Batal</Button>
