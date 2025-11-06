@@ -50,7 +50,7 @@ export default function Index({
                             title="Kumpulan Apresiasi untuk Kamu"
                             description="Semua pesan kebaikan yang sudah diterima dan tersimpan di sini."
                         />
-                        <div className="overflow-hidden rounded-md flex gap-4">
+                        <div className="overflow-hidden rounded-md flex flex-wrap gap-4">
                                 {data.map((item, index)  => {
                                     return (
                                         <StickyNoteBuka data={item} userDict={userDict}>

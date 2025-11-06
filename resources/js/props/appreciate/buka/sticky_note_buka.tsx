@@ -27,14 +27,12 @@ export default function StickyNoteBuka({
         2: "-rotate-1",
     };
 
-    console.log(data)
-
     return (
         <div
             className={cn(
                 colors[number1],
                 rotate[number2],
-                "rounded-xl p-4 w-50 h-50 shadow-lg select-none m-2",
+                "rounded-xl p-4 w-60 h-60 shadow-lg select-none m-2",
             )}
         >
 

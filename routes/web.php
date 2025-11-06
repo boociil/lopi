@@ -94,6 +94,7 @@ Route::group(
     // Route::post('/{appreciation}/hapus', [Appreciate_Controller::class, 'hapus'])->name('appreciation-hapus');
 
     Route::get('/buka', [Appreciate_Controller::class, 'buka'])->name('appreciation-buka');
+    Route::get('/baca', [Appreciate_Controller::class, 'baca'])->name('appreciation-buka');
 
     Route::group(
     [

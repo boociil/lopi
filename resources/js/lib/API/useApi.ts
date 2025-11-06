@@ -12,7 +12,7 @@ const axiosClient = axios.create({
     withCredentials: true,
     withXSRFToken: true,
     headers: {
-        'X-XSRF-TOKEN': csrf,
+        'X-CSRF-TOKEN': csrf,
     },
 });
 

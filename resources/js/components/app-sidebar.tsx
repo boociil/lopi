@@ -31,12 +31,12 @@ export function AppSidebar() {
         //     href: '/lopi/pinjam/zoom',
         //     icon: Video,
         // },
-        {
-            type: 'item',
-            title: 'Pinjam Mobil',
-            href: '/lopi/pinjam/mobil',
-            icon: Car,
-        }
+        // {
+        //     type: 'item',
+        //     title: 'Pinjam Mobil',
+        //     href: '/lopi/pinjam/mobil',
+        //     icon: Car,
+        // }
     ];
 
     let find_appreciate = peran.find(item => {
@@ -67,6 +67,10 @@ export function AppSidebar() {
                 {
                     title: 'Approval',
                     href: '/lopi/appreciate/aproval',
+                },
+                {
+                    title: 'baca',
+                    href: '/lopi/appreciate/baca',
                 },
             ]
         })
