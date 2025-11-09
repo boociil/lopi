@@ -17,7 +17,7 @@ use GuzzleHttp\Client;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 
-class Pinjam_Zoom_Controller extends Controller
+class Old_Pinjam_Zoom_Controller extends Controller
 {
 
     private $zoom_config ;
