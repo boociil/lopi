@@ -29,7 +29,7 @@ class Appreciate_Controller extends Controller
         foreach($master as $item){
             array_push($master_id, $item->id);
         }
-        return Inertia::render('appreciate/data', [
+        return Inertia::render('appreciate/tambah', [
             "user" => User::all(),
             "master" => $master,
             "data" => Appreciate_Data::whereIn('master_id', $master_id)->where('dari', Auth::user()->username)->get(),
@@ -90,40 +90,5 @@ class Appreciate_Controller extends Controller
             "data" => Appreciate_Data::where('tujuan', Auth::user()->username)->where('status', "2")->orderBy('id', 'desc')->get(),
         ]);
     }
-
-    public function baca(Request $request)
-    {
-        $data =  Appreciate_Data::where('status', "2")->orderBy('id', 'desc')->get();
-        $data_hasil = [];
-
-        foreach($data as $item){
-            if(array_key_exists($item->tujuan, $data_hasil)){
-                array_push($data_hasil[$item->tujuan], $item);
-            }else{
-                $data_hasil[$item->tujuan] = [$item];
-            }
-        }
-
-        $return_data = [];
-        foreach($data_hasil as $key => $item){
-            if(count($item)>5){
-                $data_item = [];
-                $key_get = array_rand($item, 5);
-                foreach ($key_get as $key_) {
-                    array_push($data_item, $item[$key_]);
-                }
-
-                array_push($return_data, ['tujuan' => $key, 'data' => $data_item]);
-            }else{
-                array_push($return_data, ['tujuan' => $key, 'data' => $item]);
-            }
-        }
-
-        return Inertia::render('appreciate/baca', [
-            "user" => User::all(),
-            "data" => $return_data,
-        ]);
-    }
-
 
 }

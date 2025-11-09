@@ -19,24 +19,24 @@ export function AppSidebar() {
             href: '/lopi/beranda',
             icon: LayoutGrid,
         },
-        // {
-        //     type: 'item',
-        //     title: 'Jadwal',
-        //     href: '/lopi/pinjam/jadwal',
-        //     icon: CalendarDays,
-        // },
-        // {
-        //     type: 'item',
-        //     title: 'Pinjam Zoom',
-        //     href: '/lopi/pinjam/zoom',
-        //     icon: Video,
-        // },
-        // {
-        //     type: 'item',
-        //     title: 'Pinjam Mobil',
-        //     href: '/lopi/pinjam/mobil',
-        //     icon: Car,
-        // }
+        {
+            type: 'item',
+            title: 'Jadwal',
+            href: '/lopi/pinjam/jadwal',
+            icon: CalendarDays,
+        },
+        {
+            type: 'item',
+            title: 'Pinjam Zoom',
+            href: '/lopi/pinjam/zoom',
+            icon: Video,
+        },
+        {
+            type: 'item',
+            title: 'Pinjam Mobil',
+            href: '/lopi/pinjam/mobil',
+            icon: Car,
+        }
     ];
 
     let find_appreciate = peran.find(item => {

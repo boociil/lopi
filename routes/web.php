@@ -74,17 +74,6 @@ Route::group(
 
 Route::group(
 [
-    'prefix' => 'jadwal',
-    'middleware' => ['auth', 'check_maintenance', 'statistik'],
-], function () {
-    Route::get('/', [Jadwal_Controller::class, 'index'])->name('jadwal-index');
-    Route::get('/tambah', [Jadwal_Controller::class, 'index'])->name('jadwal-tambah');
-    Route::get('/{jadwal_id}/ubah', [Jadwal_Controller::class, 'index'])->name('jadwal-ubah');
-    Route::get('/{jadwal_id}/hapus', [Jadwal_Controller::class, 'index'])->name('jadwal-hapus');
-});
-
-Route::group(
-[
     'prefix' => 'appreciate',
     'middleware' => ['auth', 'check_maintenance', 'statistik'],
 ], function () {
@@ -94,7 +83,7 @@ Route::group(
     // Route::post('/{appreciation}/hapus', [Appreciate_Controller::class, 'hapus'])->name('appreciation-hapus');
 
     Route::get('/buka', [Appreciate_Controller::class, 'buka'])->name('appreciation-buka');
-    Route::get('/baca', [Appreciate_Controller::class, 'baca'])->name('appreciation-buka');
+    Route::get('/baca', [Appreciate_Admin_Controller::class, 'baca'])->name('appreciation-buka');
 
     Route::group(
     [
@@ -116,7 +105,16 @@ Route::group(
 
 });
 
-
+Route::group(
+[
+    'prefix' => 'jadwal',
+    'middleware' => ['auth', 'check_maintenance', 'statistik'],
+], function () {
+    Route::get('/', [Jadwal_Controller::class, 'index'])->name('jadwal-index');
+    Route::get('/tambah', [Jadwal_Controller::class, 'index'])->name('jadwal-tambah');
+    Route::get('/{jadwal_id}/ubah', [Jadwal_Controller::class, 'index'])->name('jadwal-ubah');
+    Route::get('/{jadwal_id}/hapus', [Jadwal_Controller::class, 'index'])->name('jadwal-hapus');
+});
 
 Route::group(
 [
@@ -147,14 +145,14 @@ Route::group(
         Route::post('/{zoom_id}/approval', [Pinjam_Zoom_Controller::class, 'approval'])->name('pinjam-zoom-approval');
     });
 
-    Route::group(
-    [
-        'prefix' => 'ruang',
-    ], function () {
-        Route::get('/', [Pinjam_Ruang_Controller::class, 'index'])->name('pinjam-ruang-index');
-        Route::post('/', [Pinjam_Ruang_Controller::class, 'index'])->name('pinjam-ruang-index');
-        Route::post('/{ruang_id}/approval', [Pinjam_Ruang_Controller::class, 'approval'])->name('pinjam-ruang-approval');
-    });
+    // Route::group(
+    // [
+    //     'prefix' => 'ruang',
+    // ], function () {
+    //     Route::get('/', [Pinjam_Ruang_Controller::class, 'index'])->name('pinjam-ruang-index');
+    //     Route::post('/', [Pinjam_Ruang_Controller::class, 'index'])->name('pinjam-ruang-index');
+    //     Route::post('/{ruang_id}/approval', [Pinjam_Ruang_Controller::class, 'approval'])->name('pinjam-ruang-approval');
+    // });
 
 });
 

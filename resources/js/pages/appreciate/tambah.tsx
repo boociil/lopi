@@ -96,11 +96,9 @@ export default function Index({
                                         number2={item.number2}>
                                         </StickyNote>
                                     )
-                                })};
-                                        </AppreciateDataProvider>
-
+                                })}
+                            </AppreciateDataProvider>
                         </div>
-
                     </div>
                 </div>
         </AppLayout>

@@ -206,5 +206,55 @@ class Appreciate_Admin_Controller extends Controller
         return $appreciation;
     }
 
+    public function baca(Request $request)
+    {
+        $have_appreciate_peran =  Peran::where('pemilik_username', Auth::user()->username)
+            ->where('peran', 'appreciate')
+            ->first();
+
+        if(!$have_appreciate_peran){
+            abort(401);
+        }
+
+        $master_id = [];
+        $master = Appreciate_Master::where('isi_awal', "<=", Carbon::today()->format('Y-m-d'))
+                ->orderBy('isi_awal', 'desc')
+                ->limit(1)
+                ->get();
+        foreach($master as $item){
+            array_push($master_id, $item->id);
+        }
+
+        $data =  Appreciate_Data::whereIn('master_id', $master_id)->where('status', "2")->orderBy('id', 'desc')->get();
+        $data_hasil = [];
+        foreach($data as $item){
+            if(array_key_exists($item->tujuan, $data_hasil)){
+                array_push($data_hasil[$item->tujuan], $item);
+            }else{
+                $data_hasil[$item->tujuan] = [$item];
+            }
+        }
+
+        $return_data = [];
+        foreach($data_hasil as $key => $item){
+            if(count($item)>5){
+                $data_item = [];
+                $key_get = array_rand($item, 5);
+                foreach ($key_get as $key_) {
+                    array_push($data_item, $item[$key_]);
+                }
+
+                array_push($return_data, ['tujuan' => $key, 'data' => $data_item]);
+            }else{
+                array_push($return_data, ['tujuan' => $key, 'data' => $item]);
+            }
+        }
+
+        return Inertia::render('appreciate/baca', [
+            "user" => User::all(),
+            "data" => $return_data,
+        ]);
+    }
+
 
 }

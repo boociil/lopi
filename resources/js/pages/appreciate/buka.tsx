@@ -56,7 +56,7 @@ export default function Index({
                                         <StickyNoteBuka data={item} userDict={userDict}>
                                         </StickyNoteBuka>
                                     )
-                                })};
+                                })}
                         </div>
                     </div>
                 </div>
