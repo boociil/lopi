@@ -15,8 +15,8 @@ import { PinjamMobilCalender } from "@/props/pinjam-mobil/calender";
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: "Peminjaman Mobil",
-        href: "/pinjam/mobil",
+        title: "Peminjaman Zoom",
+        href: "/pinjam/zoom",
     },
 ];
 
@@ -36,8 +36,8 @@ export default function Index({
                 <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4 overflow-x-auto">
                     <div className="w-full">
                         <Heading
-                            title="Peminjaman Mobil"
-                            description="Jadwal Peminjaman Mobil BPS Sulawesi Barat."
+                            title="Peminjaman Zoom"
+                            description="Jadwal Peminjaman Zoom BPS Sulawesi Barat."
                         />
                         <PinjamMobilCalender
                             pinjam_mobil_data={data}

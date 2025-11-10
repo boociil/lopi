@@ -2,7 +2,10 @@
 
 namespace App\Http\Traits;
 
+use App\Model\Lopi\Pinjam_Zoom;
+use Carbon\Carbon;
 use GuzzleHttp\Client;
+use Illuminate\Validation\ValidationException;
 
 trait Zoom_Traits
 {
@@ -151,5 +154,119 @@ trait Zoom_Traits
             ];
         }
 
+    }
+
+    public function zoom_meta_createMeeting($path, $instance)
+    {
+        if($instance instanceof Pinjam_Zoom){
+            if($instance->tipe == 'sekali'){
+                $zoom_mmet = $this->zoom_createMeeting($path, [
+                    "agenda" => $instance->topic,
+                    "topic" => $instance->topic,
+                    "default_password" => false,
+                    "password" => $instance->password,
+                    "start_time" => $instance->tanggal. " " .$instance->waktu_awal,
+                    "timezone" => "Asia/Singapore",
+                    "duration" => Carbon::parse($instance->tanggal. " " .$instance->waktu_awal)->diffInMinutes($instance->tanggal. " " .$instance->waktu_akhir),
+                    "type" => 2
+                ]);
+
+                if($zoom_mmet['status']){
+                    $instance->zoom_akun = $path;
+                    $instance->zoom_meeting_id = $zoom_mmet['data']['id'];
+                    $instance->zoom_start_url = $zoom_mmet['data']['start_url'];
+                    $instance->zoom_join_url =$zoom_mmet['data']['join_url'];
+                }else{
+                    throw ValidationException::withMessages([
+                        'status' => 'Zoom tidak dapat dibuat',
+                    ]);
+                }
+            }else if($instance->tipe == 'berulang'){
+                 $zoom_mmet = $this->zoom_createMeeting($path, [
+                    "agenda" => $instance->topic,
+                    "topic" => $instance->topic,
+                    "default_password" => false,
+                    "password" => $instance->password,
+                    "start_time" => $instance->berulang_tanggal_awal. " " .$instance->waktu_awal,
+                    "timezone" => "Asia/Singapore",
+                    "duration" => Carbon::parse($instance->berulang_tanggal_awal. " " .$instance->waktu_awal)->diffInMinutes($instance->berulang_tanggal_awal. " " .$instance->waktu_akhir),
+                    "type" => 8,
+                    "recurrence" => [
+                        "type" => 1,
+                        "repeat_interval" => 1,
+                        "end_date_time" => $instance->berulang_tanggal_akhir. " " .$instance->waktu_akhir
+                    ]
+                ]);
+
+                if($zoom_mmet['status']){
+                    $instance->zoom_akun = $path;
+                    $instance->zoom_meeting_id = $zoom_mmet['data']['id'];
+                    $instance->zoom_start_url = $zoom_mmet['data']['start_url'];
+                    $instance->zoom_join_url =$zoom_mmet['data']['join_url'];
+                }else{
+                    throw ValidationException::withMessages([
+                        'status' => 'Zoom tidak dapat dibuat',
+                    ]);
+                }
+            }
+
+        }
+    }
+
+    public function zoom_meta_updateMeeting($path, $instance)
+    {
+        if($instance instanceof Pinjam_Zoom){
+            if($instance->tipe == 'sekali'){
+                $zoom_mmet = $this->zoom_updateMeeting($path, "".$instance->zoom_meeting_id ,[
+                    "agenda" => $instance->topic,
+                    "topic" => $instance->topic,
+                    "default_password" => false,
+                    "password" => $instance->password,
+                    "start_time" => $instance->tanggal. " " .$instance->waktu_awal,
+                    "timezone" => "Asia/Singapore",
+                    "duration" => Carbon::parse($instance->tanggal. " " .$instance->waktu_awal)->diffInMinutes($instance->tanggal. " " .$instance->waktu_akhir),
+                    "type" => 2
+                ]);
+
+                if($zoom_mmet['status']){
+                    $instance->zoom_akun = $path;
+                    $instance->zoom_meeting_id = $zoom_mmet['data']['id'];
+                    $instance->zoom_start_url = $zoom_mmet['data']['start_url'];
+                    $instance->zoom_join_url =$zoom_mmet['data']['join_url'];
+                }else{
+                    throw ValidationException::withMessages([
+                        'status' => 'Zoom tidak dapat dibuat',
+                    ]);
+                }
+            }else if($instance->tipe == 'berulang'){
+                $zoom_mmet = $this->zoom_updateMeeting($path, "".$instance->zoom_meeting_id ,[
+                    "agenda" => $instance->topic,
+                    "topic" => $instance->topic,
+                    "default_password" => false,
+                    "password" => $instance->password,
+                    "start_time" => $instance->berulang_tanggal_awal. " " .$instance->waktu_awal,
+                    "timezone" => "Asia/Singapore",
+                    "duration" => Carbon::parse($instance->berulang_tanggal_awal. " " .$instance->waktu_awal)->diffInMinutes($instance->berulang_tanggal_awal. " " .$instance->waktu_akhir),
+                    "type" => 8,
+                    "recurrence" => [
+                        "type" => 1,
+                        "repeat_interval" => 1,
+                        "end_date_time" => $instance->berulang_tanggal_akhir. " " .$instance->waktu_akhir
+                    ]
+                ]);
+
+                if($zoom_mmet['status']){
+                    $instance->zoom_akun = $path;
+                    $instance->zoom_meeting_id = $zoom_mmet['data']['id'];
+                    $instance->zoom_start_url = $zoom_mmet['data']['start_url'];
+                    $instance->zoom_join_url =$zoom_mmet['data']['join_url'];
+                }else{
+                    throw ValidationException::withMessages([
+                        'status' => 'Zoom tidak dapat dibuat',
+                    ]);
+                }
+            }
+
+        }
     }
 }
