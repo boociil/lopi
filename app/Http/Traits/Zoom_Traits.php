@@ -5,6 +5,8 @@ namespace App\Http\Traits;
 use App\Model\Lopi\Pinjam_Zoom;
 use Carbon\Carbon;
 use GuzzleHttp\Client;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
 trait Zoom_Traits
@@ -66,26 +68,80 @@ trait Zoom_Traits
 
     public function zoom_getAllMeeting($path, $from, $to)
     {
+        $data1 = [];
+        $data2 = [];
+
+        $status = true;
+        if(Carbon::today() < Carbon::parse($from)  && Carbon::today() < Carbon::parse($to)){
+            $get1 = $this->zoom_getAllMeeting_helper($path, $from, $to, 'previous_meetings');
+            $data1 = $get1['data'];
+            $status = $status && $get1['status'];
+        }else if(Carbon::parse($from) < Carbon::today() && Carbon::parse($to) < Carbon::today() ){
+            $get2 = $this->zoom_getAllMeeting_helper($path, $from, $to, 'upcoming_meetings');
+            $data2 = $get2['data'];
+            $status = $status && $get2['status'];
+        }else {
+            $get1 = $this->zoom_getAllMeeting_helper($path, $from, $to, 'previous_meetings');
+            $data1 = $get1['data'];
+            $status = $status && $get1['status'];
+
+            $get2 = $this->zoom_getAllMeeting_helper($path, $from, $to, 'upcoming_meetings');
+            $data2 = $get2['data'];
+            $status = $status && $get2['status'];
+        }
+
+        $return_data = [];
+        foreach($data1 as $item){
+            array_push($return_data, $item);
+        }
+        foreach($data2 as $item){
+            array_push($return_data, $item);
+        }
+
+        return [
+            'status' => $status,
+            'data' => $return_data,
+        ];
+    }
+
+     public function zoom_getAllMeeting_helper($path, $from, $to, $type)
+    {
         try {
             $client = $this->zoom_getClient($path);
             $response = $client->request('GET', 'users/me/meetings',
                 ['query' => [
+                    'type' => $type,
                     'page_size' => 300,
                     'from' => $from,
                     'to' => $to,
-                    'timezone', 'Asia/Singapore',
+                    'timezone' => 'Asia/Singapore',
                 ]
             ]);
             $data = json_decode($response->getBody(), true);
-            return [
+
+            for($i=0; $i < count($data['meetings']); $i++){
+                $data['meetings'][$i]['start_time'] = Carbon::parse($data['meetings'][$i]['start_time'])->timezone($data['meetings'][$i]['timezone'])->format('Y-m-d H:i:s');
+            }
+
+            $return_data = [
                 'status' => true,
-                'data' => $data,
+                'data' => $data['meetings'],
             ];
+
+            Cache::put($path.'--'.$from.'--'.$to.'--'.$type, $return_data, now()->addHour());
+            return $return_data;
         } catch (\Throwable $th) {
-            return [
-                'status' => false,
-                'message' => $th->getMessage(),
-            ];
+            Log::alert($th);
+
+            if (Cache::has($path.'--'.$from.'--'.$to.'--'.$type)) {
+                return  Cache::get($path.'--'.$from.'--'.$to.'--'.$type);
+            }else{
+                return [
+                    'status' => false,
+                    'data' => [],
+                    'message' => $th->getMessage(),
+                ];
+            }
         }
     }
 

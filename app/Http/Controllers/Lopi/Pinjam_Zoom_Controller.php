@@ -10,15 +10,16 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
-use Inertia\Inertia;
+
+use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 use App\Model\Umum\Peran;
 use App\Model\Lopi\Pinjam_Zoom;
 use App\Model\Umum\User;
 use Exception;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Validation\Rule;
-use Illuminate\Validation\ValidationException;
+use Inertia\Inertia;
 
 use function PHPUnit\Framework\isNull;
 
@@ -95,8 +96,8 @@ class Pinjam_Zoom_Controller extends Controller
                 ->get();
 
 
-        $pinjam_zoom_statsulbar = $this->zoom_getAllMeeting('statsulbar', $tanggal_akhir->format('Y-m-d'), $tanggal_awal->format('Y-m-d'));
-        $pinjam_zoom_sp2020 = $this->zoom_getAllMeeting('sp2020', $tanggal_akhir->format('Y-m-d'), $tanggal_awal->format('Y-m-d'));
+        $pinjam_zoom_statsulbar = $this->zoom_getAllMeeting('statsulbar', $tanggal_awal->format('Y-m-d'), $tanggal_akhir->format('Y-m-d'));
+        $pinjam_zoom_sp2020 = $this->zoom_getAllMeeting('sp2020', $tanggal_awal->format('Y-m-d'), $tanggal_akhir->format('Y-m-d'));
 
         // $pinjam_zoom_statsulbar = ['status' => false, 'data' => []];
         // $pinjam_zoom_sp2020 = ['status' => false, 'data' => []];
@@ -114,44 +115,18 @@ class Pinjam_Zoom_Controller extends Controller
             }
         }
 
-        for($i=0; $i<count($pinjam_zoom_statsulbar['data']); $i++){
-            if($pinjam_zoom_statsulbar['data'][$i]->tanggal){
-                 if (!Carbon::parse($pinjam_zoom_statsulbar['data'][$i]->tanggal)->eq($tanggal_carbon)) {
-                    $pinjam_zoom_statsulbar['data'][$i]->zoom_start_url = null;
-                }
-            }
-             if($pinjam_zoom_statsulbar['data'][$i]->berulang_tanggal_awal){
-                 if (!$tanggal_carbon->between(Carbon::parse($pinjam_zoom_statsulbar['data'][$i]->berulang_tanggal_awal), Carbon::parse($pinjam_zoom_statsulbar['data'][$i]->berulang_tanggal_akhir))) {
-                    $pinjam_zoom_statsulbar['data'][$i]->zoom_start_url = null;
-                }
-            }
-        }
-
-        for($i=0; $i<count($pinjam_zoom_sp2020['data']); $i++){
-            if($pinjam_zoom_sp2020['data'][$i]->tanggal){
-                 if (!Carbon::parse($pinjam_zoom_sp2020['data'][$i]->tanggal)->eq($tanggal_carbon)) {
-                    $pinjam_zoom_sp2020['data'][$i]->zoom_start_url = null;
-                }
-            }
-             if($pinjam_zoom_sp2020['data'][$i]->berulang_tanggal_awal){
-                 if (!$tanggal_carbon->between(Carbon::parse($pinjam_zoom_sp2020['data'][$i]->berulang_tanggal_awal), Carbon::parse($pinjam_zoom_sp2020['data'][$i]->berulang_tanggal_akhir))) {
-                    $pinjam_zoom_sp2020['data'][$i]->zoom_start_url = null;
-                }
-            }
-        }
-
         if($request->isMethod('get')){
             return Inertia::render('pinjam_zoom', [
                 "user" => User::all(),
                 "have_zoom_peran" => $have_zoom_peran,
-                "zoom_bulan_daftar" => $pinjam_zoom_bulan_daftar,
+                "pinjam_zoom_data" => $pinjam_zoom_bulan_daftar,
                 "zoom_statsulbar" => $pinjam_zoom_statsulbar,
                 "zoom_sp2020" => $pinjam_zoom_sp2020,
             ]);
         }else if($request->isMethod('post')){
             return [
                 "have_zoom_peran" => $have_zoom_peran,
-                "zoom_bulan_daftar" => $pinjam_zoom_bulan_daftar,
+                "pinjam_zoom_data" => $pinjam_zoom_bulan_daftar,
                 "zoom_statsulbar" => $pinjam_zoom_statsulbar,
                 "zoom_sp2020" => $pinjam_zoom_sp2020,
             ];
@@ -219,14 +194,14 @@ class Pinjam_Zoom_Controller extends Controller
 
             DB::commit();
             return [
-                "_status" => 'Berhasil membuat peminjaman mobil!',
+                "_status" => 'Berhasil membuat peminjaman zoom!',
                 "data" => $pinjam_zoom
             ];
         }catch(Exception $ex){
             DB::rollBack();
             Log::error($ex);
             throw ValidationException::withMessages([
-                '_status' => 'Gagal membuat peminjaman mobil!',
+                '_status' => 'Gagal membuat peminjaman zoom!',
             ]);
         }
     }
@@ -255,7 +230,7 @@ class Pinjam_Zoom_Controller extends Controller
 
         if(! ($have_zoom_peran || $pinjamZoom->pembuat_username == Auth::user()->username) ){
             throw ValidationException::withMessages([
-                '_status' => 'Gagal mengubah peminjaman mobil!',
+                '_status' => 'Gagal mengubah peminjaman zoom!',
             ]);
         }
 
@@ -306,14 +281,14 @@ class Pinjam_Zoom_Controller extends Controller
             $pinjamZoom->save();
             DB::commit();
             return [
-                "_status" => 'Berhasil mengubah peminjaman mobil!',
+                "_status" => 'Berhasil mengubah peminjaman zoom!',
                 "data" => $pinjamZoom
             ];
         }catch(Exception $ex){
             DB::rollBack();
             Log::error($ex);
             throw ValidationException::withMessages([
-                '_status' => 'Gagal mengubah peminjaman mobil!',
+                '_status' => 'Gagal mengubah peminjaman zoom!',
             ]);
         }
     }
@@ -329,7 +304,7 @@ class Pinjam_Zoom_Controller extends Controller
 
         if(! ($have_zoom_peran || $pinjamZoom->pembuat_username == Auth::user()->username) ){
             throw ValidationException::withMessages([
-                '_status' => 'Gagal menghapus peminjaman mobil!',
+                '_status' => 'Gagal menghapus peminjaman zoom!',
             ]);
         }
 
@@ -348,19 +323,19 @@ class Pinjam_Zoom_Controller extends Controller
             $pinjamZoom->delete();
             DB::commit();
             return [
-                "_status" => 'Berhasil menghapus peminjaman mobil!'
+                "_status" => 'Berhasil menghapus peminjaman zoom!'
             ];
         }catch(Exception $ex){
             DB::rollBack();
             Log::error($ex);
             throw ValidationException::withMessages([
-                '_status' => 'Gagal menghapus peminjaman mobil!',
+                '_status' => 'Gagal menghapus peminjaman zoom!',
             ]);
         }
     }
 
     /**
-     * Approve a pinjam mobil request
+     * Approve a pinjam zoom request
      */
     public function approval(Request $request, Pinjam_Zoom $pinjamZoom)
     {
@@ -374,7 +349,7 @@ class Pinjam_Zoom_Controller extends Controller
 
         if(! ($have_zoom_peran) ){
             throw ValidationException::withMessages([
-                '_status' => 'Gagal approval peminjaman mobil!',
+                '_status' => 'Gagal approval peminjaman zoom!',
             ]);
         }
 
@@ -413,14 +388,14 @@ class Pinjam_Zoom_Controller extends Controller
             $pinjamZoom->save();
             DB::commit();
             return [
-                "_status" => 'Berhasil approval peminjaman mobil!',
+                "_status" => 'Berhasil approval peminjaman zoom!',
                 "data" => $pinjamZoom
             ];
         }catch(Exception $ex){
             DB::rollBack();
             Log::error($ex);
             throw ValidationException::withMessages([
-                '_status' => 'Gagal approval peminjaman mobil!',
+                '_status' => 'Gagal approval peminjaman zoom!',
             ]);
         }
     }

@@ -33,7 +33,7 @@ export default function DeleteEventDialog({ eventId }: Delete_Event_Dialog_IProp
 
 	const deleteEvent = () => {
         progressIndikator.start()
-        axiosClient.post(route("pinjam-mobil-hapus", {pinjamMobil: eventId}))
+        axiosClient.post(route("pinjam-zoom-hapus", {pinjamZoom: eventId}))
             .then(function (response) {
                 removeEvent(eventId);
                 progressIndikator.finish()

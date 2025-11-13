@@ -29,11 +29,11 @@ import { capitalizeWords, formatTime } from "@/components/calender_modules/helpe
 import { Event_Details_Dialog_IProps } from "@/components/calender_modules/dialogs/props-dialog";
 import { progress as progressIndikator } from '@inertiajs/react'
 import { CalenderUser, IEvent } from "@/components/calender_modules/interfaces";
-import { pairIEventDenganUser, pinjam_mobil, PinjamMobilIEvent, producePinjamMobilIEvent } from "../types";
+import { pairIEventDenganUser, pinjam_zoom, PinjamZoomIEvent, producePinjamZoomIEvent } from "../types";
 import { useState } from "react";
 
 export function EventDetailsDialog({ _event, children }: Event_Details_Dialog_IProps) {
-    const [event, setEvent] = useState(_event)
+    const [event, setEvent] = useState<PinjamZoomIEvent>(_event as PinjamZoomIEvent)
 	const startDate = parseISO(event.startDate);
 	const endDate = parseISO(event.endDate);
 	const { settingCalender, use24HourFormat, updateEvent, removeEvent, AddEditEventDialog, canChange, canApprove, axiosClient, users } = useCalendar();
@@ -41,7 +41,7 @@ export function EventDetailsDialog({ _event, children }: Event_Details_Dialog_IP
 
     const deleteEvent = (event_id: string) => {
         progressIndikator.start()
-        axiosClient.post(route("pinjam-mobil-hapus", {pinjamMobil: event_id}))
+        axiosClient.post(route("pinjam-zoom-hapus", {pinjamZoom: event_id}))
             .then(function (response) {
                 removeEvent(event_id);
                 progressIndikator.finish()
@@ -59,11 +59,11 @@ export function EventDetailsDialog({ _event, children }: Event_Details_Dialog_IP
 
     const approvalEvent = (event_id: string, status: 'disetujui'|'ditolak') => {
         progressIndikator.start()
-        axiosClient.post(route("pinjam-mobil-approval", {pinjamMobil: event_id}), {status: status})
+        axiosClient.post(route("pinjam-zoom-approval", {pinjamZoom: event_id}), {status: status})
             .then(function (response) {
                  try {
-                    const return_data: IEvent[] = producePinjamMobilIEvent([response.data.data] as pinjam_mobil[]);
-                    pairIEventDenganUser(return_data as PinjamMobilIEvent[], users  as CalenderUser[])
+                    const return_data: IEvent[] = producePinjamZoomIEvent([response.data.data] as pinjam_zoom[]);
+                    pairIEventDenganUser(return_data as PinjamZoomIEvent[], users  as CalenderUser[])
                     updateEvent(return_data[0])
 
                     progressIndikator.finish()
@@ -90,15 +90,18 @@ export function EventDetailsDialog({ _event, children }: Event_Details_Dialog_IP
 
 				<ScrollArea className="max-h-[80vh]">
 					<div className="space-y-4 p-4">
-						<div className="flex items-start gap-2">
-							<User className="mt-1 size-4 shrink-0 text-muted-foreground" />
-							<div>
-								<p className="text-sm font-medium text-secondary">Yang bertanggung jawab</p>
-								<p className="text-sm text-muted-foreground">
-									{event.user?.name}
-								</p>
-							</div>
-						</div>
+                        {event.pinjam_zoom_ori &&
+                            <div className="flex items-start gap-2">
+                                <User className="mt-1 size-4 shrink-0 text-muted-foreground" />
+                                <div>
+                                    <p className="text-sm font-medium text-secondary">Yang bertanggung jawab</p>
+                                    <p className="text-sm text-muted-foreground">
+                                        {event.user?.name}
+                                    </p>
+                                </div>
+                            </div>
+                        }
+
 
                         <div className="flex items-start gap-2">
 							<Type className="mt-1 size-4 shrink-0 text-muted-foreground" />
@@ -202,7 +205,7 @@ export function EventDetailsDialog({ _event, children }: Event_Details_Dialog_IP
                         </AlertDialog>
                     }
                     {canChange(event) &&
-                        <AddEditEventDialog event={event} onUpdateOpenChange={(_event: IEvent) => setEvent(_event)}>
+                        <AddEditEventDialog event={event} onUpdateOpenChange={(_event: IEvent) => setEvent(_event as PinjamZoomIEvent)}>
                             <Button variant="outline" className="text-accent-foreground">Ubah</Button>
                         </AddEditEventDialog>
                     }

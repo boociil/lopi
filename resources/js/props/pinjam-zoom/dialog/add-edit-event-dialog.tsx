@@ -33,7 +33,7 @@ import {
     formatTime
 } from "@/components/calender_modules/helpers";
 import { Time24Picker } from "@/components/ui/time24-picker";
-import { pairIEventDenganUser, pinjam_mobil_req, PinjamMobilIEvent, producePinjamMobilIEvent, type pinjam_mobil } from "../types";
+import { pairIEventDenganUser, pinjam_zoom_req, PinjamZoomIEvent, producePinjamZoomIEvent, type pinjam_zoom } from "../types";
 import { CalenderUser, IEvent } from "@/components/calender_modules/interfaces";
 import { Add_Edit_Event_IProps } from "@/components/calender_modules/dialogs/props-dialog";
 import { progress as progressIndikator } from '@inertiajs/react'
@@ -76,10 +76,10 @@ export function AddEditEventDialog({
     }, [startDate, startTime, event, isEditing]);
 
     const { data, setData, progress, errors, reset, clearErrors, setError } = useForm<
-        Required<pinjam_mobil_req>
+        Required<pinjam_zoom_req>
     >({
         id: "12345",
-        kegiatan:  "Peminjaman Mobil",
+        kegiatan:  "Peminjaman Zoom",
         tipe: 'string',
         tanggal: formatDate(new Date().toISOString()),
         tanggal_awal: formatDate(new Date().toISOString()),
@@ -96,11 +96,11 @@ export function AddEditEventDialog({
         if (!isEditing) {
             toast.info('Mencoba menambahkan data baru')
             progressIndikator.start()
-            axiosClient.post(route('pinjam-mobil-tambah'), data)
+            axiosClient.post(route('pinjam-zoom-tambah'), data)
                 .then(function (response: any) {
                     try {
-                        const return_data: IEvent[] = producePinjamMobilIEvent([response.data.data] as pinjam_mobil[]);
-                        pairIEventDenganUser(return_data  as PinjamMobilIEvent[], users as CalenderUser[])
+                        const return_data: IEvent[] = producePinjamZoomIEvent([response.data.data] as pinjam_zoom[]);
+                        pairIEventDenganUser(return_data  as PinjamZoomIEvent[], users as CalenderUser[])
                         addEvent(return_data[0])
                         progressIndikator.finish()
                         toast.success('Berhasil menambahkan data baru')
@@ -128,11 +128,11 @@ export function AddEditEventDialog({
         } else {
             toast.info('Mencoba mengubah data')
             progressIndikator.start()
-            axiosClient.post(route("pinjam-mobil-ubah", { pinjamMobil: event.id }), data)
+            axiosClient.post(route("pinjam-zoom-ubah", { pinjamZoom: event.id }), data)
                 .then(function (response: any) {
                     try {
-                        const return_data: IEvent[] = producePinjamMobilIEvent([response.data.data] as pinjam_mobil[]);
-                        pairIEventDenganUser(return_data  as PinjamMobilIEvent[], users as CalenderUser[])
+                        const return_data: IEvent[] = producePinjamZoomIEvent([response.data.data] as pinjam_zoom[]);
+                        pairIEventDenganUser(return_data  as PinjamZoomIEvent[], users as CalenderUser[])
                         updateEvent(return_data[0])
 
                         progressIndikator.finish()
@@ -165,7 +165,7 @@ export function AddEditEventDialog({
 
     useEffect(() => {
 		if(event){
-            const event_: PinjamMobilIEvent = event as PinjamMobilIEvent
+            const event_: PinjamZoomIEvent = event as PinjamZoomIEvent
             setData("id", event.id);
             setData("kegiatan", event.title);
             setData('tipe', 'sekali')
@@ -177,9 +177,15 @@ export function AddEditEventDialog({
             setData("tanggal", event.date);
             setData("waktu_awal", formatTime(event.startDate, use24HourFormat));
             setData("waktu_akhir", formatTime(event.endDate, use24HourFormat));
-            setData("status", event_.pinjam_mobil_ori.status);
-            setData('pembuat_username', event_.pinjam_mobil_ori.pembuat_username)
-            setData('confirm_username', event_.pinjam_mobil_ori.confirm_username)
+            if(event_.pinjam_zoom_ori){
+                setData("status", event_.pinjam_zoom_ori?.status);
+                setData('pembuat_username', event_.pinjam_zoom_ori?.pembuat_username)
+                setData('confirm_username', event_.pinjam_zoom_ori?.confirm_username)
+            }else{
+                setData("status", "diapp");
+                setData('pembuat_username', '')
+                setData('confirm_username', '')
+            }
         }else{
             setData("id", 'xxxx-xxxx-xxxx');
             setData("kegiatan", "Peminjaman Mobil");

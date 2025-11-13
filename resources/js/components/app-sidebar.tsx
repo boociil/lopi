@@ -27,13 +27,13 @@ export function AppSidebar() {
         },
         {
             type: 'item',
-            title: 'Pinjam Zoom',
+            title: 'Pemakaian Zoom',
             href: '/lopi/pinjam/zoom',
             icon: Video,
         },
         {
             type: 'item',
-            title: 'Pinjam Mobil',
+            title: 'Pemakaian Mobil',
             href: '/lopi/pinjam/mobil',
             icon: Car,
         }
