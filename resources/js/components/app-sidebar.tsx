@@ -4,7 +4,7 @@ import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type Peran, type NavGeneral, type NavItem, type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { LayoutGrid, CalendarDays, Video, LinkIcon, LockKeyholeOpen, Car, SmilePlus } from 'lucide-react';
+import { LayoutGrid, CalendarDays, Video, LinkIcon, LockKeyholeOpen, Car, SmilePlus, Table } from 'lucide-react';
 import AppLogo from './app-logo';
 
 export function AppSidebar() {
@@ -24,6 +24,12 @@ export function AppSidebar() {
             title: 'Jadwal',
             href: '/lopi/pinjam/jadwal',
             icon: CalendarDays,
+        },
+        {
+            type: 'item',
+            title: 'Pemakaian Ruang',
+            href: '/lopi/pinjam/ruang',
+            icon: Table,
         },
         {
             type: 'item',
