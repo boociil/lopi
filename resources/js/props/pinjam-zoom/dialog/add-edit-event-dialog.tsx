@@ -1,5 +1,5 @@
-import { addMinutes, format, set } from "date-fns";
-import { useEffect, useMemo, useState } from "react";
+import { addMinutes, set } from "date-fns";
+import { useEffect, useMemo } from "react";
 import { useForm } from "@inertiajs/react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -46,7 +46,7 @@ export function AddEditEventDialog({
     onUpdateOpenChange,
 }: Add_Edit_Event_IProps) {
     const { isOpen, onClose, onToggle } = useDisclosure();
-    const { users, addEvent, updateEvent, settingCalender, use24HourFormat, axiosClient } = useCalendar();
+    const { users, addEvent, updateEvent, settingCalender, use24HourFormat, axiosClient, canApprove, havePeran } = useCalendar();
     const isEditing = !!event;
 
     // const [tipe, setTipe] = useState<string>("sekali");
@@ -79,8 +79,9 @@ export function AddEditEventDialog({
         Required<pinjam_zoom_req>
     >({
         id: "12345",
-        kegiatan:  "Peminjaman Zoom",
+        topic:  "Peminjaman Zoom",
         tipe: 'string',
+        password: 'zoom',
         tanggal: formatDate(new Date().toISOString()),
         tanggal_awal: formatDate(new Date().toISOString()),
         tanggal_akhir: formatDate(new Date().toISOString()),
@@ -88,7 +89,8 @@ export function AddEditEventDialog({
         waktu_akhir: "16:00:00",
         status: 'menunggu',
         pembuat_username: '',
-        confirm_username: null
+        confirm_username: null,
+        zoom_akun: null,
     });
 
     const submit: React.FormEventHandler = (e) => {
@@ -164,10 +166,10 @@ export function AddEditEventDialog({
     };
 
     useEffect(() => {
-		if(event){
+		if(event && (event as PinjamZoomIEvent).pinjam_zoom_ori != null){
             const event_: PinjamZoomIEvent = event as PinjamZoomIEvent
             setData("id", event.id);
-            setData("kegiatan", event.title);
+            setData("topic", event.title);
             setData('tipe', 'sekali')
             if(event._startDate != event._endDate){
                 setData('tipe', 'berulang')
@@ -177,24 +179,29 @@ export function AddEditEventDialog({
             setData("tanggal", event.date);
             setData("waktu_awal", formatTime(event.startDate, use24HourFormat));
             setData("waktu_akhir", formatTime(event.endDate, use24HourFormat));
+            setData("zoom_akun",(event as PinjamZoomIEvent).zoom_akun);
             if(event_.pinjam_zoom_ori){
+                setData("password", event_.pinjam_zoom_ori?.password);
                 setData("status", event_.pinjam_zoom_ori?.status);
                 setData('pembuat_username', event_.pinjam_zoom_ori?.pembuat_username)
                 setData('confirm_username', event_.pinjam_zoom_ori?.confirm_username)
             }else{
+                setData("password", '');
                 setData("status", "diapp");
                 setData('pembuat_username', '')
                 setData('confirm_username', '')
             }
         }else{
             setData("id", 'xxxx-xxxx-xxxx');
-            setData("kegiatan", "Peminjaman Mobil");
+            setData("topic", "Zoom");
             setData('tipe', 'sekali')
             setData("tanggal_awal",  formatDate(initialDates.startDate));
             setData("tanggal_akhir",  formatDate(initialDates.endDate));
             setData("tanggal", formatDate(initialDates.startDate));
             setData("waktu_awal",formatTime(initialDates.startDate, use24HourFormat));
             setData("waktu_akhir", formatTime(initialDates.endDate, use24HourFormat));
+            setData("zoom_akun", null);
+            setData("password", "zoom")
             setData("status", 'menunggu');
             setData('pembuat_username', '')
             setData('confirm_username', '')
@@ -236,13 +243,29 @@ export function AddEditEventDialog({
                                 id="title-1"
                                 name="title"
                                 required
-                                value={data.kegiatan}
+                                value={data.topic}
                                 onChange={(e) =>
-                                    setData("kegiatan", e.target.value)
+                                    setData("topic", e.target.value)
                                 }
                                 className="text-secondary"
                             />
-                            <InputError message={errors.kegiatan} />
+                            <InputError message={errors.topic} />
+                        </div>
+                        <div className="grid gap-3">
+                            <Label className="text-secondary" htmlFor="password-1">
+                                Password
+                            </Label>
+                            <Input
+                                id="password-1"
+                                name="password"
+                                required
+                                value={data.password}
+                                onChange={(e) =>
+                                    setData("password", e.target.value)
+                                }
+                                className="text-secondary"
+                            />
+                            <InputError message={errors.password} />
                         </div>
                         <div className="grid gap-3">
                             <Label
@@ -288,7 +311,12 @@ export function AddEditEventDialog({
                                 value={initialDates.startDate}
                                 setValue={(value) => {
                                     setData("tanggal", formatDate(value.toISOString()));
-                                    setData("tanggal_awal", formatDate(value.toISOString()));
+                                    if(data.tipe == 'sekali'){
+                                        setData("tanggal_awal", formatDate(value.toISOString()));
+                                        setData("tanggal_akhir", formatDate(value.toISOString()));
+                                    }else if(data.tipe == 'berulang'){
+                                         setData("tanggal_awal", formatDate(value.toISOString()));
+                                    }
                                 }}
                                 modal={true}
                             />
@@ -346,6 +374,41 @@ export function AddEditEventDialog({
                             />
                             <InputError message={errors.waktu_akhir} />
                         </div>
+                        {havePeran() &&
+                            <div className="grid gap-3">
+                                <Label
+                                    className="text-secondary"
+                                    htmlFor="tipe-1"
+                                >
+                                    Zoom Akun
+                                </Label>
+                                <Select
+                                    name="tipe"
+                                    required
+                                    value={data.zoom_akun as string}
+                                    onValueChange={(value) => {
+                                        setData("zoom_akun", value as 'statsulbar' | 'sp2020' | null)
+                                    }}
+                                >
+                                    <SelectTrigger
+                                        name="zoom_status"
+                                        className="text-secondary"
+                                    >
+                                        <SelectValue placeholder="Pilih Zoom Akun" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectGroup>
+                                            <SelectItem value="statsulbar">
+                                                statsulbar
+                                            </SelectItem>
+                                            <SelectItem value="sp2020">
+                                                sp2020
+                                            </SelectItem>
+                                        </SelectGroup>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        }
                     </div>
                     <ModalFooter className="flex justify-end gap-2">
                         <ModalClose asChild>

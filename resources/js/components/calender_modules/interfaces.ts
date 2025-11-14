@@ -32,6 +32,7 @@ export interface SettingCalender {
 	name_event: string;
 	calender_show: string[];
 	show_filter: boolean;
+    filter_name: [TEventColor, string][];
     show_filter_user: boolean;
 }
 

@@ -149,7 +149,7 @@ trait Zoom_Traits
     {
         try {
             $client = $this->zoom_getClient($path);
-            $response = $client->request('GET', 'users/me/meetings',
+            $response = $client->request('POST', 'users/me/meetings',
                 ['json' => $data]
             );
             $res = json_decode($response->getBody(), true);
@@ -221,9 +221,9 @@ trait Zoom_Traits
                     "topic" => $instance->topic,
                     "default_password" => false,
                     "password" => $instance->password,
-                    "start_time" => $instance->tanggal. " " .$instance->waktu_awal,
+                    "start_time" => $instance->tanggal. "T" .$instance->waktu_awal.":00",
                     "timezone" => "Asia/Singapore",
-                    "duration" => Carbon::parse($instance->tanggal. " " .$instance->waktu_awal)->diffInMinutes($instance->tanggal. " " .$instance->waktu_akhir),
+                    "duration" => (int) Carbon::parse($instance->tanggal. " " .$instance->waktu_awal)->diffInMinutes($instance->tanggal. " " .$instance->waktu_akhir),
                     "type" => 2
                 ]);
 
@@ -243,14 +243,15 @@ trait Zoom_Traits
                     "topic" => $instance->topic,
                     "default_password" => false,
                     "password" => $instance->password,
-                    "start_time" => $instance->berulang_tanggal_awal. " " .$instance->waktu_awal,
+                    "start_time" => $instance->berulang_tanggal_awal. "T" .$instance->waktu_awal.":00",
                     "timezone" => "Asia/Singapore",
-                    "duration" => Carbon::parse($instance->berulang_tanggal_awal. " " .$instance->waktu_awal)->diffInMinutes($instance->berulang_tanggal_awal. " " .$instance->waktu_akhir),
+                    "duration" => (int) Carbon::parse($instance->berulang_tanggal_awal. " " .$instance->waktu_awal)->diffInMinutes($instance->berulang_tanggal_awal. " " .$instance->waktu_akhir),
                     "type" => 8,
                     "recurrence" => [
                         "type" => 1,
                         "repeat_interval" => 1,
-                        "end_date_time" => $instance->berulang_tanggal_akhir. " " .$instance->waktu_akhir
+                        "end_times" => (int) Carbon::parse($instance->berulang_tanggal_awal)->diffInDays($instance->berulang_tanggal_akhir) + 1,
+                        // "end_date_time" => $instance->berulang_tanggal_akhir."T".$instance->waktu_akhir.":00"
                     ]
                 ]);
 
@@ -278,18 +279,13 @@ trait Zoom_Traits
                     "topic" => $instance->topic,
                     "default_password" => false,
                     "password" => $instance->password,
-                    "start_time" => $instance->tanggal. " " .$instance->waktu_awal,
+                    "start_time" => $instance->tanggal. "T" .$instance->waktu_awal.":00",
                     "timezone" => "Asia/Singapore",
-                    "duration" => Carbon::parse($instance->tanggal. " " .$instance->waktu_awal)->diffInMinutes($instance->tanggal. " " .$instance->waktu_akhir),
+                    "duration" => (int) Carbon::parse($instance->tanggal. " " .$instance->waktu_awal)->diffInMinutes($instance->tanggal. " " .$instance->waktu_akhir),
                     "type" => 2
                 ]);
 
-                if($zoom_mmet['status']){
-                    $instance->zoom_akun = $path;
-                    $instance->zoom_meeting_id = $zoom_mmet['data']['id'];
-                    $instance->zoom_start_url = $zoom_mmet['data']['start_url'];
-                    $instance->zoom_join_url =$zoom_mmet['data']['join_url'];
-                }else{
+                if(!$zoom_mmet['status']){
                     throw ValidationException::withMessages([
                         'status' => 'Zoom tidak dapat dibuat',
                     ]);
@@ -300,23 +296,19 @@ trait Zoom_Traits
                     "topic" => $instance->topic,
                     "default_password" => false,
                     "password" => $instance->password,
-                    "start_time" => $instance->berulang_tanggal_awal. " " .$instance->waktu_awal,
+                    "start_time" => $instance->berulang_tanggal_awal. "T" .$instance->waktu_awal.":00",
                     "timezone" => "Asia/Singapore",
-                    "duration" => Carbon::parse($instance->berulang_tanggal_awal. " " .$instance->waktu_awal)->diffInMinutes($instance->berulang_tanggal_awal. " " .$instance->waktu_akhir),
+                    "duration" => (int) Carbon::parse($instance->berulang_tanggal_awal. " " .$instance->waktu_awal)->diffInMinutes($instance->berulang_tanggal_awal. " " .$instance->waktu_akhir),
                     "type" => 8,
                     "recurrence" => [
                         "type" => 1,
                         "repeat_interval" => 1,
-                        "end_date_time" => $instance->berulang_tanggal_akhir. " " .$instance->waktu_akhir
+                        "end_times" => (int) Carbon::parse($instance->berulang_tanggal_awal)->diffInDays($instance->berulang_tanggal_akhir) + 1,
+                        // "end_date_time" => $instance->berulang_tanggal_akhir."T".$instance->waktu_akhir.":00"
                     ]
                 ]);
 
-                if($zoom_mmet['status']){
-                    $instance->zoom_akun = $path;
-                    $instance->zoom_meeting_id = $zoom_mmet['data']['id'];
-                    $instance->zoom_start_url = $zoom_mmet['data']['start_url'];
-                    $instance->zoom_join_url =$zoom_mmet['data']['join_url'];
-                }else{
+                if(!$zoom_mmet['status']){
                     throw ValidationException::withMessages([
                         'status' => 'Zoom tidak dapat dibuat',
                     ]);

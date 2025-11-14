@@ -144,6 +144,7 @@ class Pinjam_Zoom_Controller extends Controller
             'tanggal_akhir'     => 'date|after_or_equal:tanggal_awal',
             'waktu_awal'        => 'required|date_format:H:i',
             'waktu_akhir'       => 'required|date_format:H:i|after:waktu_awal',
+            'zoom_akun'         => 'in:statsulbar,sp2020'
         ]);
 
         if(!isNull($request->input('tanggal')) || (!isNull($request->input('tanggal_awal')) && !isNull($request->input('tanggal_akhir')))){
@@ -161,8 +162,9 @@ class Pinjam_Zoom_Controller extends Controller
         {
             $pinjam_zoom = new Pinjam_Zoom();
             $pinjam_zoom->id = Str::uuid();
-            $pinjam_zoom->kegiatan = $request->input('topic');
+            $pinjam_zoom->topic = $request->input('topic');
             $pinjam_zoom->tipe = $request->input('tipe');
+            $pinjam_zoom->password = $request->input('password');
 
             if($request->input('tipe') == 'sekali'){
                 $pinjam_zoom->tanggal = $request->input('tanggal');
@@ -178,7 +180,7 @@ class Pinjam_Zoom_Controller extends Controller
             $pinjam_zoom->status = 'menunggu';
             $pinjam_zoom->pembuat_username = Auth::user()->username;
 
-            if($have_zoom_peran){
+            if($have_zoom_peran && in_array($request->input('zoom_akun'), ['statsulbar', 'sp2020'])){
                 $pinjam_zoom->status = 'disetujui';
                 $pinjam_zoom->confirm_username = Auth::user()->username;
 
@@ -216,6 +218,7 @@ class Pinjam_Zoom_Controller extends Controller
             'tanggal_akhir'     => 'date|after_or_equal:tanggal_awal',
             'waktu_awal'        => 'required|date_format:H:i',
             'waktu_akhir'       => 'required|date_format:H:i|after:waktu_awal',
+            'zoom_akun'         => 'in:statsulbar,sp2020'
         ]);
 
         if(!isNull($request->input('tanggal')) || (!isNull($request->input('tanggal_awal')) && !isNull($request->input('tanggal_akhir')))){
@@ -237,8 +240,9 @@ class Pinjam_Zoom_Controller extends Controller
         DB::beginTransaction();
         try
         {
-            $pinjamZoom->kegiatan = $request->input('topic');
+            $pinjamZoom->topic = $request->input('topic');
             $pinjamZoom->tipe = $request->input('tipe');
+            $pinjamZoom->password = $request->input('password');
             if($request->input('tipe') == 'sekali'){
                 $pinjamZoom->tanggal = $request->input('tanggal');
                 $pinjamZoom->waktu_awal = $request->input('waktu_awal');
@@ -252,12 +256,13 @@ class Pinjam_Zoom_Controller extends Controller
             $pinjamZoom->status = 'menunggu';
             $pinjamZoom->pembuat_username = Auth::user()->username;
 
-            if($have_zoom_peran){
+            if($have_zoom_peran && in_array($request->input('zoom_akun'), ['statsulbar', 'sp2020'])){
                 $pinjamZoom->status = 'disetujui';
                 $pinjamZoom->confirm_username = Auth::user()->username;
-                if($pinjamZoom->zoom_meeting_id){
-                    $this->zoom_meta_updateMeeting($request->input('zoom_akun'), $pinjamZoom);
-                }else if(!$pinjamZoom->zoom_meeting_id){
+                // if($pinjamZoom->zoom_meeting_id){
+                //     $this->zoom_meta_updateMeeting($request->input('zoom_akun'), $pinjamZoom);
+                // }else
+                if(!$pinjamZoom->zoom_meeting_id){
                     $this->zoom_meta_createMeeting($request->input('zoom_akun'), $pinjamZoom);
                 }else if($pinjamZoom->zoom_meeting_id && $pinjamZoom->zoom_akun != $request->input('zoom_akun')){
                     $this->zoom_deleteMeeting($request->input('zoom_akun'), $pinjamZoom->zoom_meeting_id);
@@ -341,6 +346,7 @@ class Pinjam_Zoom_Controller extends Controller
     {
         $validated = $request->validate([
             'status'              => 'required|in:disetujui,ditolak',
+            'zoom_akun'         => 'in:statsulbar,sp2020'
         ]);
 
         $have_zoom_peran =  Peran::where('pemilik_username', Auth::user()->username)

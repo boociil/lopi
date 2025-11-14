@@ -11,7 +11,7 @@ import { useCalendar } from "@/components/calender_modules/contexts/calendar-con
 import type { TEventColor } from "@/components/calender_modules/types";
 
 export default function FilterEvents() {
-	const { selectedColors, filterEventsBySelectedColors, clearFilter } =
+	const { selectedColors, filterEventsBySelectedColors, clearFilter , settingCalender} =
 		useCalendar();
 
 	const colors: TEventColor[] = [
@@ -23,38 +23,45 @@ export default function FilterEvents() {
 		"orange",
 	];
 
+    const filter_color_name = new Map<TEventColor, string>(settingCalender.filter_name);
+
+    filter_color_name.has
 	return (
 		<DropdownMenu>
 			<DropdownMenuTrigger asChild>
 				<Toggle variant="outline" className="cursor-pointer w-fit">
-					<Filter className="h-4 w-4" />
+					<Filter className="h-4 w-4 text-accent-foreground" />
 				</Toggle>
 			</DropdownMenuTrigger>
 			<DropdownMenuContent align="end" className="w-[150px]">
-				{colors.map((color, index) => (
-					<DropdownMenuItem
-						key={index}
-						className="flex items-center gap-2 cursor-pointer"
-						onClick={(e) => {
-							e.preventDefault();
-							filterEventsBySelectedColors(color);
-						}}
-					>
-						<div
-							className={`size-3.5 rounded-full bg-${color}-600 dark:bg-${color}-700`}
-						/>
-						<span className="capitalize flex justify-center items-center gap-2">
-							{color}
-							<span>
-								{selectedColors.includes(color) && (
-									<span className="text-blue-500">
-										<CheckIcon className="size-4" />
-									</span>
-								)}
-							</span>
-						</span>
-					</DropdownMenuItem>
-				))}
+				{colors.map((color, index) => {
+                     if(filter_color_name.has(color)){
+                        return (
+                            <DropdownMenuItem
+                                key={index}
+                                className="flex items-center gap-2 cursor-pointer"
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    filterEventsBySelectedColors(color);
+                                }}
+                            >
+                                <div
+                                    className={`size-3.5 rounded-full bg-${color}-600 dark:bg-${color}-700`}
+                                />
+                                <span className="capitalize flex justify-center items-center gap-2">
+                                    {filter_color_name.get(color)}
+                                    <span>
+                                        {selectedColors.includes(color) && (
+                                            <span className="text-blue-500">
+                                                <CheckIcon className="size-4" />
+                                            </span>
+                                        )}
+                                    </span>
+                                </span>
+                            </DropdownMenuItem>
+                        )
+                     }
+                })}
 				<Separator className="my-2" />
 				<DropdownMenuItem
 					disabled={selectedColors.length === 0}

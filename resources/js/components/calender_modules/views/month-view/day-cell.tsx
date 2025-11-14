@@ -11,7 +11,7 @@ import {
   transition,
 } from "@/components/calender_modules/animations";
 import { DroppableArea } from "@/components/calender_modules/dnd/droppable-area";
-import { getMonthCellEvents } from "@/components/calender_modules/helpers";
+import { getMonthCellEvents, toCapitalize } from "@/components/calender_modules/helpers";
 import { useMediaQuery } from "@/components/calender_modules/hooks";
 import type {
   ICalendarCell,
@@ -112,7 +112,7 @@ export function DayCell({ cell, events, eventPositions }: IProps) {
 
   const showMobileMore = isMobile && currentMonth && showMoreCount > 0;
   const showDesktopMore = !isMobile && currentMonth && showMoreCount > 0;
-  const { AddEditEventDialog, EventListDialog, canAdd } = useCalendar();
+  const { AddEditEventDialog, EventListDialog, canAdd , settingCalender} = useCalendar();
 
   const cellContent = useMemo(
     () => (
@@ -152,7 +152,7 @@ export function DayCell({ cell, events, eventPositions }: IProps) {
                         className="border border-accent-foreground text-accent-foreground opacity-0 group-hover:opacity-100 transition-opacity duration-200"
                     >
                         <Plus className="h-4 w-4" />
-                        <span className="max-sm:hidden">Add Event</span>
+                        <span className="max-sm:hidden">{toCapitalize(settingCalender.name_event)}</span>
                     </Button>
                     </AddEditEventDialog>
                 }

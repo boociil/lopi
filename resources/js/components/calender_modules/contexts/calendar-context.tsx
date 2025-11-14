@@ -9,7 +9,6 @@ import type {
 	TEventColor,
 } from "@/components/calender_modules/types";
 import { Add_Edit_Event_IProps, Delete_Event_Dialog_IProps, Event_Details_Dialog_IProps, Event_Drop_Confirmation_Dialog_IProps, Event_List_Dialog_IProps } from "../dialogs/props-dialog";
-import { isSameDay, parseISO } from "date-fns";
 import { useApi } from '@/lib/API/useApi';
 import { AxiosInstance } from 'axios';
 
@@ -47,6 +46,7 @@ interface ICalendarContext {
     EventDropConfirmationDialog: React.ComponentType<Event_Drop_Confirmation_Dialog_IProps>;
     EventListDialog: React.ComponentType<Event_List_Dialog_IProps>;
 
+    havePeran: () => boolean;
     canAdd: () => boolean;
     canChange: (event: IEvent) => boolean;
     canApprove: (event: IEvent) => boolean;
@@ -68,6 +68,7 @@ export function CalendarProvider({
     EventListDialog,
     reload_data,
     updateDataRequest,
+    havePeran,
     canAdd,
     canChange,
     canApprove,
@@ -84,6 +85,8 @@ export function CalendarProvider({
     EventListDialog: React.ComponentType<Event_List_Dialog_IProps>;
     reload_data: (selectedDate: Date, currentView: TCalendarView, setAllEventsOri: (_allEvents: IEvent[]) => void) => void;
     updateDataRequest: (event: IEvent, use24HourFormat: boolean, updateEvent: (newEvent: IEvent) => void, cancel: () => void) => void;
+
+    havePeran: () => boolean;
     canAdd: () => boolean;
     canChange: (event: IEvent) => boolean;
     canApprove: (event: IEvent) => boolean;
@@ -284,6 +287,7 @@ export function CalendarProvider({
             EventDropConfirmationDialog,
             EventListDialog,
 
+            havePeran,
             canAdd,
             canChange,
             canApprove,
