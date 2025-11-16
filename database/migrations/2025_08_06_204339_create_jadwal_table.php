@@ -73,7 +73,7 @@ return new class extends Migration
         Schema::create('siakip2_pinjam_ruang', function (Blueprint $table) {
             $table->string('id', 36)->primary();
 
-            $table->string('topic');
+            $table->string('kegiatan');
             $table->string('ruang', 100);
 
             $table->enum('tipe', ['sekali', 'berulang'])->default('sekali');

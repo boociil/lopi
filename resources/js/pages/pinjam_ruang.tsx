@@ -9,41 +9,41 @@ import { Head } from "@inertiajs/react";
 import * as React from "react";
 import Heading from "@/components/heading";
 
-import { pinjam_mobil } from "@/props/pinjam-mobil/types";
-import { PinjamMobilCalender } from "@/props/pinjam-mobil/calender";
+import { pinjam_ruang } from "@/props/pinjam-ruang/types";
+import { PinjamRuangCalender } from "@/props/pinjam-ruang/calender";
 
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: "Pemakaian Mobil",
-        href: "/pinjam/mobil",
+        title: "Pemakaian Ruang",
+        href: "/pinjam/ruang",
     },
 ];
 
 export default function Index({
-    have_mobil_peran,
+    have_ruang_peran,
     user,
     data,
 }: React.PropsWithChildren<{
-    have_mobil_peran: boolean;
+    have_ruang_peran: boolean;
     user: User[],
-    data: pinjam_mobil[];
+    data: pinjam_ruang[];
 }>) {
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Pemakaian Mobil" />
+            <Head title="Pemakaian Ruang" />
                 <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4 overflow-x-auto">
                     <div className="w-full">
                         <Heading
-                            title="Pemakaian Mobil"
-                            description="Jadwal Pemakaian Mobil BPS Sulawesi Barat."
+                            title="Pemakaian Ruang"
+                            description="Jadwal Pemakaian Ruang BPS Sulawesi Barat."
                         />
-                        <PinjamMobilCalender
-                            pinjam_mobil_data={data}
+                        <PinjamRuangCalender
+                            pinjam_ruang_data={data}
                             user={user}
-                            havePinjamMobilPeran={have_mobil_peran}>
-                        </PinjamMobilCalender>
+                            havePinjamRuangPeran={have_ruang_peran}>
+                        </PinjamRuangCalender>
                     </div>
                 </div>
 

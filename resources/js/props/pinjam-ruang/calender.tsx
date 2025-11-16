@@ -2,7 +2,7 @@ import { CalendarBody } from "@/components/calender_modules/calendar-body";
 import { CalendarProvider } from "@/components/calender_modules/contexts/calendar-context";
 import { DndProvider } from "@/components/calender_modules/contexts/dnd-context";
 import { CalendarHeader } from "@/components/calender_modules/header/calendar-header";
-import { pairIEventDenganUser, pinjam_mobil, pinjam_mobil_req, PinjamMobilIEvent, producePinjamMobilIEvent } from "./types";
+import { pairIEventDenganUser, pinjam_ruang, pinjam_ruang_req, PinjamRuangIEvent, producePinjamRuangIEvent } from "./types";
 import { type SharedData, type User } from "@/types";
 import { CalenderUser, produceCalenderUser, SettingCalender, type IEvent, type IUser } from "@/components/calender_modules/interfaces";
 import { AddEditEventDialog } from "./dialog/add-edit-event-dialog";
@@ -18,33 +18,33 @@ import { formatDate, formatTime } from "@/components/calender_modules/helpers";
 import { useApi } from "@/lib/API/useApi";
 import { progress } from '@inertiajs/react'
 
-export function PinjamMobilCalender({
-        pinjam_mobil_data,
+export function PinjamRuangCalender({
+        pinjam_ruang_data,
         user,
-        havePinjamMobilPeran,
+        havePinjamRuangPeran,
     }: {
-        pinjam_mobil_data: pinjam_mobil[];
+        pinjam_ruang_data: pinjam_ruang[];
         user: User[];
-        havePinjamMobilPeran: boolean;
+        havePinjamRuangPeran: boolean;
 }) {
 
     const axiosClient = useApi();
     const auth = usePage<SharedData>().props.auth;
 
-    const settingCalender: SettingCalender = {name_event: 'kegiatan', calender_show: ["week", "month","agenda"], show_filter: false, filter_name: [], show_filter_user: false}
+    const settingCalender: SettingCalender = {name_event: 'kegiatan', calender_show: ["week", "month","agenda"], show_filter: true, filter_name: [['blue', "Pengajuan"], ['green', 'Aula'], ['yellow', 'Pokja']], show_filter_user: false}
     const _user: IUser[] = produceCalenderUser(user);
-    const _allEvents: IEvent[] = producePinjamMobilIEvent(pinjam_mobil_data);
-    pairIEventDenganUser(_allEvents as PinjamMobilIEvent[], _user as CalenderUser[])
+    const _allEvents: IEvent[] = producePinjamRuangIEvent(pinjam_ruang_data);
+    pairIEventDenganUser(_allEvents as PinjamRuangIEvent[], _user as CalenderUser[])
 
     /////////////////////
     function reload_data(selectedDate: Date, currentView: TCalendarView, setAllEventsOri: (_allEvents: IEvent[]) => void){
         toast.info('Meload data baru')
         progress.start()
-        axiosClient.post(route("pinjam-mobil-index"), {'selectedDate': selectedDate.toISOString(), view: currentView})
+        axiosClient.post(route("pinjam-ruang-index"), {'selectedDate': selectedDate.toISOString(), view: currentView})
             .then(function (response: any) {
                 try {
-                    const _allEvents_: IEvent[] = producePinjamMobilIEvent(response.data.data as pinjam_mobil[]);
-                    pairIEventDenganUser(_allEvents_ as PinjamMobilIEvent[], _user as CalenderUser[])
+                    const _allEvents_: IEvent[] = producePinjamRuangIEvent(response.data.data as pinjam_ruang[]);
+                    pairIEventDenganUser(_allEvents_ as PinjamRuangIEvent[], _user as CalenderUser[])
                     setAllEventsOri(_allEvents_)
                     progress.finish()
                     toast.success('Berhasil mendapatkan data baru')
@@ -76,11 +76,11 @@ export function PinjamMobilCalender({
 
         toast.info('Mencoba mengubah data')
         progress.start()
-        axiosClient.post(route("pinjam-mobil-ubah", { pinjamMobil: event.id }), data)
+        axiosClient.post(route("pinjam-ruang-ubah", { pinjamRuang: event.id }), data)
             .then(function (response: any) {
                 try {
-                    const return_data: IEvent[] = producePinjamMobilIEvent([response.data.data] as pinjam_mobil[]);
-                    pairIEventDenganUser(return_data  as PinjamMobilIEvent[], _user as CalenderUser[])
+                    const return_data: IEvent[] = producePinjamRuangIEvent([response.data.data] as pinjam_ruang[]);
+                    pairIEventDenganUser(return_data  as PinjamRuangIEvent[], _user as CalenderUser[])
                     updateEvent(return_data[0])
                     progress.finish()
                     toast.success('Berhasil mengubah data')
@@ -99,23 +99,23 @@ export function PinjamMobilCalender({
     }
 
     function havePeran():  boolean{
-        return havePinjamMobilPeran
+        return havePinjamRuangPeran
     }
 
     function canAdd():  boolean{
         return true
     }
     function canChange(event: IEvent):  boolean{
-        const event_ = event as PinjamMobilIEvent
-        if(havePinjamMobilPeran || event_.pinjam_mobil_ori.pembuat_username == auth.user.username){
+        const event_ = event as PinjamRuangIEvent
+        if(havePinjamRuangPeran || event_.pinjam_ruang_ori.pembuat_username == auth.user.username){
             return true
         }else{
             return false
         }
     }
     function canApprove(event: IEvent):  boolean{
-        const event_ = event as PinjamMobilIEvent
-        if(havePinjamMobilPeran && event_.pinjam_mobil_ori.status == 'menunggu'){
+        const event_ = event as PinjamRuangIEvent
+        if(havePinjamRuangPeran && event_.pinjam_ruang_ori.status == 'menunggu'){
             return true
         }else{
             return false

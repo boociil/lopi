@@ -11,20 +11,18 @@ class Pinjam_Ruang extends Model
     use SoftDeletes;
 
     protected $table = 'siakip2_pinjam_ruang';
-    public $incrementing = false;
+    protected $primaryKey = 'id';
+    public $incrementing = false; // karena pakai string UUID
     protected $keyType = 'string';
-    public $timestamps = true;
-
 
     protected $fillable = [
         'id',
-        'topic',
+        'kegiatan',
         'ruang',
         'tipe',
+        'tanggal',
         'berulang_tanggal_awal',
         'berulang_tanggal_akhir',
-        'tanggal_awal',
-        'tanggal_akhir',
         'waktu_awal',
         'waktu_akhir',
         'status',
@@ -32,11 +30,13 @@ class Pinjam_Ruang extends Model
         'confirm_username',
     ];
 
-    public function pembuat(){
-        return $this->hasOne(User::class, 'username', 'pembuat_username');
+    public function pembuat()
+    {
+        return $this->belongsTo(User::class, 'pembuat_username', 'username');
     }
 
-    public function confirm(){
-        return $this->hasOne(User::class, 'username', 'confirm_username');
+    public function confirm()
+    {
+        return $this->belongsTo(User::class, 'confirm_username', 'username');
     }
 }

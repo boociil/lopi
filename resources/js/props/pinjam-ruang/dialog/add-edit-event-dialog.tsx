@@ -33,7 +33,7 @@ import {
     formatTime
 } from "@/components/calender_modules/helpers";
 import { Time24Picker } from "@/components/ui/time24-picker";
-import { pairIEventDenganUser, pinjam_mobil_req, PinjamMobilIEvent, producePinjamMobilIEvent, type pinjam_mobil } from "../types";
+import { pairIEventDenganUser, pinjam_ruang_req, PinjamRuangIEvent, producePinjamRuangIEvent, type pinjam_ruang } from "../types";
 import { CalenderUser, IEvent } from "@/components/calender_modules/interfaces";
 import { Add_Edit_Event_IProps } from "@/components/calender_modules/dialogs/props-dialog";
 import { progress as progressIndikator } from '@inertiajs/react'
@@ -76,10 +76,11 @@ export function AddEditEventDialog({
     }, [startDate, startTime, event, isEditing]);
 
     const { data, setData, progress, errors, reset, clearErrors, setError } = useForm<
-        Required<pinjam_mobil_req>
+        Required<pinjam_ruang_req>
     >({
         id: "12345",
-        kegiatan:  "Peminjaman Mobil",
+        kegiatan:  "Peminjaman Ruang",
+        ruang: "aula",
         tipe: 'string',
         tanggal: formatDate(new Date().toISOString()),
         tanggal_awal: formatDate(new Date().toISOString()),
@@ -96,11 +97,11 @@ export function AddEditEventDialog({
         if (!isEditing) {
             toast.info('Mencoba menambahkan data baru')
             progressIndikator.start()
-            axiosClient.post(route('pinjam-mobil-tambah'), data)
+            axiosClient.post(route('pinjam-ruang-tambah'), data)
                 .then(function (response: any) {
                     try {
-                        const return_data: IEvent[] = producePinjamMobilIEvent([response.data.data] as pinjam_mobil[]);
-                        pairIEventDenganUser(return_data  as PinjamMobilIEvent[], users as CalenderUser[])
+                        const return_data: IEvent[] = producePinjamRuangIEvent([response.data.data] as pinjam_ruang[]);
+                        pairIEventDenganUser(return_data  as PinjamRuangIEvent[], users as CalenderUser[])
                         addEvent(return_data[0])
                         progressIndikator.finish()
                         toast.success('Berhasil menambahkan data baru')
@@ -128,11 +129,11 @@ export function AddEditEventDialog({
         } else {
             toast.info('Mencoba mengubah data')
             progressIndikator.start()
-            axiosClient.post(route("pinjam-mobil-ubah", { pinjamMobil: event.id }), data)
+            axiosClient.post(route("pinjam-ruang-ubah", { pinjamRuang: event.id }), data)
                 .then(function (response: any) {
                     try {
-                        const return_data: IEvent[] = producePinjamMobilIEvent([response.data.data] as pinjam_mobil[]);
-                        pairIEventDenganUser(return_data  as PinjamMobilIEvent[], users as CalenderUser[])
+                        const return_data: IEvent[] = producePinjamRuangIEvent([response.data.data] as pinjam_ruang[]);
+                        pairIEventDenganUser(return_data  as PinjamRuangIEvent[], users as CalenderUser[])
                         updateEvent(return_data[0])
 
                         progressIndikator.finish()
@@ -165,7 +166,7 @@ export function AddEditEventDialog({
 
     useEffect(() => {
 		if(event){
-            const event_: PinjamMobilIEvent = event as PinjamMobilIEvent
+            const event_: PinjamRuangIEvent = event as PinjamRuangIEvent
             setData("id", event.id);
             setData("kegiatan", event.title);
             setData('tipe', 'sekali')
@@ -177,12 +178,12 @@ export function AddEditEventDialog({
             setData("tanggal", event.date);
             setData("waktu_awal", formatTime(event.startDate, use24HourFormat));
             setData("waktu_akhir", formatTime(event.endDate, use24HourFormat));
-            setData("status", event_.pinjam_mobil_ori.status);
-            setData('pembuat_username', event_.pinjam_mobil_ori.pembuat_username)
-            setData('confirm_username', event_.pinjam_mobil_ori.confirm_username)
+            setData("status", event_.pinjam_ruang_ori.status);
+            setData('pembuat_username', event_.pinjam_ruang_ori.pembuat_username)
+            setData('confirm_username', event_.pinjam_ruang_ori.confirm_username)
         }else{
             setData("id", 'xxxx-xxxx-xxxx');
-            setData("kegiatan", "Peminjaman Mobil");
+            setData("kegiatan", "Peminjaman Ruang");
             setData('tipe', 'sekali')
             setData("tanggal_awal",  formatDate(initialDates.startDate));
             setData("tanggal_akhir",  formatDate(initialDates.endDate));
@@ -237,6 +238,39 @@ export function AddEditEventDialog({
                                 className="text-secondary"
                             />
                             <InputError message={errors.kegiatan} />
+                        </div>
+                         <div className="grid gap-3">
+                            <Label
+                                className="text-secondary"
+                                htmlFor="ruang-1"
+                            >
+                                Ruang
+                            </Label>
+                            <Select
+                                name="ruang"
+                                required
+                                value={data.ruang}
+                                onValueChange={(value) => {
+                                    setData("ruang", value)
+                                }}
+                            >
+                                <SelectTrigger
+                                    name="zoom_status"
+                                    className="text-secondary"
+                                >
+                                    <SelectValue placeholder="Pilih Ruang" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectGroup>
+                                        <SelectItem value="aula">
+                                            Aula
+                                        </SelectItem>
+                                        <SelectItem value="pokja">
+                                            Pokja
+                                        </SelectItem>
+                                    </SelectGroup>
+                                </SelectContent>
+                            </Select>
                         </div>
                         <div className="grid gap-3">
                             <Label

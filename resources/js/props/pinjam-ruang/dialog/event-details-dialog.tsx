@@ -1,7 +1,7 @@
 "use client";
 
 import { format, parseISO } from "date-fns";
-import { Calendar, Clock, Text, Type, User } from "lucide-react";
+import { Calendar, Clock, Table, Text, Type, User } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -29,7 +29,7 @@ import { capitalizeWords, formatTime } from "@/components/calender_modules/helpe
 import { Event_Details_Dialog_IProps } from "@/components/calender_modules/dialogs/props-dialog";
 import { progress as progressIndikator } from '@inertiajs/react'
 import { CalenderUser, IEvent } from "@/components/calender_modules/interfaces";
-import { pairIEventDenganUser, pinjam_mobil, PinjamMobilIEvent, producePinjamMobilIEvent } from "../types";
+import { pairIEventDenganUser, pinjam_ruang, PinjamRuangIEvent, producePinjamRuangIEvent } from "../types";
 import { useState } from "react";
 
 export function EventDetailsDialog({ _event, children }: Event_Details_Dialog_IProps) {
@@ -41,7 +41,7 @@ export function EventDetailsDialog({ _event, children }: Event_Details_Dialog_IP
 
     const deleteEvent = (event_id: string) => {
         progressIndikator.start()
-        axiosClient.post(route("pinjam-mobil-hapus", {pinjamMobil: event_id}))
+        axiosClient.post(route("pinjam-ruang-hapus", {pinjamRuang: event_id}))
             .then(function (response) {
                 removeEvent(event_id);
                 progressIndikator.finish()
@@ -59,11 +59,11 @@ export function EventDetailsDialog({ _event, children }: Event_Details_Dialog_IP
 
     const approvalEvent = (event_id: string, status: 'disetujui'|'ditolak') => {
         progressIndikator.start()
-        axiosClient.post(route("pinjam-mobil-approval", {pinjamMobil: event_id}), {status: status})
+        axiosClient.post(route("pinjam-ruang-approval", {pinjamRuang: event_id}), {status: status})
             .then(function (response) {
                  try {
-                    const return_data: IEvent[] = producePinjamMobilIEvent([response.data.data] as pinjam_mobil[]);
-                    pairIEventDenganUser(return_data as PinjamMobilIEvent[], users  as CalenderUser[])
+                    const return_data: IEvent[] = producePinjamRuangIEvent([response.data.data] as pinjam_ruang[]);
+                    pairIEventDenganUser(return_data as PinjamRuangIEvent[], users  as CalenderUser[])
                     updateEvent(return_data[0])
 
                     progressIndikator.finish()
@@ -99,7 +99,26 @@ export function EventDetailsDialog({ _event, children }: Event_Details_Dialog_IP
 								</p>
 							</div>
 						</div>
-
+                        <div className="flex items-start gap-2">
+							<Table className="mt-1 size-4 shrink-0 text-muted-foreground" />
+							<div>
+								<p className="text-sm font-medium text-secondary">Ruang</p>
+								<p className="text-sm text-muted-foreground">
+                                    {(event as PinjamRuangIEvent).ruang == 'aula' && (event as PinjamRuangIEvent).pinjam_ruang_ori.status == 'menunggu' &&
+                                           <>Pengajuan Aula</>
+                                    }
+                                    {(event as PinjamRuangIEvent).ruang == 'aula' && (event as PinjamRuangIEvent).pinjam_ruang_ori.status == 'disetujui' &&
+                                           <>Aula</>
+                                    }
+                                    {(event as PinjamRuangIEvent).ruang == 'pokja' && (event as PinjamRuangIEvent).pinjam_ruang_ori.status == 'menunggu' &&
+                                           <>Pengajuan Pokja</>
+                                    }
+                                    {(event as PinjamRuangIEvent).ruang == 'pokja' && (event as PinjamRuangIEvent).pinjam_ruang_ori.status == 'disetujui' &&
+                                           <>Pokja</>
+                                    }
+								</p>
+							</div>
+						</div>
                         <div className="flex items-start gap-2">
 							<Type className="mt-1 size-4 shrink-0 text-muted-foreground" />
 							<div>
