@@ -9,6 +9,7 @@ use App\Http\Controllers\Lopi\Appreciate_Admin_Controller;
 use App\Http\Controllers\Umum\Beranda_Controller;
 use App\Http\Controllers\Lopi\Appreciate_Controller;
 use App\Http\Controllers\Lopi\Jadwal_Controller;
+use App\Http\Controllers\Lopi\Kesehatan_Controller;
 use App\Http\Controllers\Lopi\Pinjam_Mobil_Controller;
 use App\Http\Controllers\Lopi\Pinjam_Ruang_Controller;
 use App\Http\Controllers\Lopi\Pinjam_Zoom_Controller;
@@ -107,13 +108,26 @@ Route::group(
 
 Route::group(
 [
-    'prefix' => 'jadwal',
+    'prefix' => 'ruang',
     'middleware' => ['auth', 'check_maintenance', 'statistik'],
 ], function () {
-    Route::get('/', [Jadwal_Controller::class, 'index'])->name('jadwal-index');
-    Route::get('/tambah', [Jadwal_Controller::class, 'index'])->name('jadwal-tambah');
-    Route::get('/{jadwal_id}/ubah', [Jadwal_Controller::class, 'index'])->name('jadwal-ubah');
-    Route::get('/{jadwal_id}/hapus', [Jadwal_Controller::class, 'index'])->name('jadwal-hapus');
+    Route::get('/', [Jadwal_Controller::class, 'index'])->name('pinjam-ruang-index');
+    Route::post('/', [Jadwal_Controller::class, 'index'])->name('pinjam-ruang-index');
+    Route::post('/tambah', [Jadwal_Controller::class, 'tambah'])->name('pinjam-ruang-tambah');
+    Route::post('/{ruang}/ubah', [Jadwal_Controller::class, 'ubah'])->name('pinjam-ruang-ubah');
+    Route::post('/{ruang}/hapus', [Jadwal_Controller::class, 'hapus'])->name('pinjam-ruang-hapus');
+    Route::post('/{ruang}/approval', [Jadwal_Controller::class, 'approval'])->name('pinjam-ruang-approval');
+});
+
+Route::group(
+[
+    'prefix' => 'kesehatan',
+    'middleware' => ['auth', 'check_maintenance', 'statistik'],
+], function () {
+    Route::get('/', [Kesehatan_Controller::class, 'index'])->name('pinjam-kesehatan-index');
+    Route::post('/', [Kesehatan_Controller::class, 'index'])->name('pinjam-kesehatan-index');
+    Route::post('/tambah', [Kesehatan_Controller::class, 'tambah'])->name('pinjam-kesehatan-tambah');
+    Route::post('/{kesehatan}/hapus', [Kesehatan_Controller::class, 'hapus'])->name('pinjam-kesehatan-hapus');
 });
 
 Route::group(

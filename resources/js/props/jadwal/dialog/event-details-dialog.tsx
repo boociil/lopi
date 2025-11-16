@@ -1,7 +1,7 @@
 "use client";
 
 import { format, parseISO } from "date-fns";
-import { Calendar, Clock, Text, Type, User } from "lucide-react";
+import { Calendar, Clock, Copy, Link, Text, Type, User, Video } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -30,7 +30,16 @@ import { Event_Details_Dialog_IProps } from "@/components/calender_modules/dialo
 import { progress as progressIndikator } from '@inertiajs/react'
 import { CalenderUser, IEvent } from "@/components/calender_modules/interfaces";
 import { pairIEventDenganUser, pinjam_zoom, PinjamZoomIEvent, producePinjamZoomIEvent } from "../types";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
+interface Approval_Event {
+    event: PinjamZoomIEvent;
+    zoom_akun: 'statsulbar' | 'sp2020' | null;
+    status: 'disetujui'|'ditolak' | null;
+}
+
 
 export function EventDetailsDialog({ _event, children }: Event_Details_Dialog_IProps) {
     const [event, setEvent] = useState<PinjamZoomIEvent>(_event as PinjamZoomIEvent)
@@ -38,6 +47,21 @@ export function EventDetailsDialog({ _event, children }: Event_Details_Dialog_IP
 	const endDate = parseISO(event.endDate);
 	const { settingCalender, use24HourFormat, updateEvent, removeEvent, AddEditEventDialog, canChange, canApprove, axiosClient, users } = useCalendar();
 
+    const [approval, setApproval] = useState<'statsulbar' | 'sp2020' | undefined>(undefined)
+
+    useEffect(() => {
+        if(event){
+           if(event.zoom_akun == 'statsulbar'){
+                setApproval('statsulbar')
+           }else if(event.zoom_akun == 'sp2020'){
+                setApproval('sp2020')
+           }else{
+                setApproval(undefined)
+           }
+        }else{
+            setApproval(undefined)
+        }
+    }, [event]);
 
     const deleteEvent = (event_id: string) => {
         progressIndikator.start()
@@ -58,8 +82,12 @@ export function EventDetailsDialog({ _event, children }: Event_Details_Dialog_IP
     }
 
     const approvalEvent = (event_id: string, status: 'disetujui'|'ditolak') => {
+        if(approval == undefined){
+            toast('Pilih akun zoom terlebih dahulu')
+            return
+        }
         progressIndikator.start()
-        axiosClient.post(route("pinjam-zoom-approval", {pinjamZoom: event_id}), {status: status})
+        axiosClient.post(route("pinjam-zoom-approval", {pinjamZoom: event_id}), {status: status, zoom_akun: approval})
             .then(function (response) {
                  try {
                     const return_data: IEvent[] = producePinjamZoomIEvent([response.data.data] as pinjam_zoom[]);
@@ -112,6 +140,54 @@ export function EventDetailsDialog({ _event, children }: Event_Details_Dialog_IP
 								</p>
 							</div>
 						</div>
+
+                        { (event as PinjamZoomIEvent).zoom_akun != null ? <>
+
+                            <div className="flex items-start gap-2">
+                                <Video className="mt-1 size-4 shrink-0 text-muted-foreground" />
+                                <div>
+                                    <p className="text-sm font-medium text-secondary">Zoom Akun</p>
+                                    <p className="text-sm text-muted-foreground">
+                                        {(event as PinjamZoomIEvent).zoom_akun}
+                                    </p>
+                                </div>
+                            </div>
+                        </> : <></>}
+
+                         { (event as PinjamZoomIEvent).join_url != null ? <>
+
+                            <div className="flex items-start gap-2">
+                                <Link className="mt-1 size-4 shrink-0 text-muted-foreground" />
+                                <div>
+                                    <p className="text-sm font-medium text-secondary">Join Zoom
+                                        <button onClick={() => {navigator.clipboard.writeText((event as PinjamZoomIEvent).join_url); toast('Copy Link')}} className="text-sm text-muted-foreground">
+                                           <Copy className="ml-3 size-4 shrink-0 text-muted-foreground" />
+                                        </button>
+                                    </p>
+                                    <a prefetch target="_blank" href={(event as PinjamZoomIEvent).join_url} className="text-sm text-muted-foreground">
+                                        <span>Buka Join Link</span>
+                                    </a>
+                                </div>
+                            </div>
+                        </> : <></>}
+
+                         { (event as PinjamZoomIEvent).start_url != null ? <>
+
+                            <div className="flex items-start gap-2">
+                                <Link className="mt-1 size-4 shrink-0 text-muted-foreground" />
+                                <div>
+                                    <p className="text-sm font-medium text-secondary">Start Zoom
+                                        <button onClick={() => {navigator.clipboard.writeText((event as PinjamZoomIEvent).start_url); toast('Copy Link')}} className="text-sm text-muted-foreground">
+                                           <Copy className="ml-3 size-4 shrink-0 text-muted-foreground" />
+                                        </button>
+                                    </p>
+                                    <a prefetch target="_blank" href={(event as PinjamZoomIEvent).start_url} className="text-sm text-muted-foreground">
+                                        <span>Buka Start Link</span>
+                                    </a>
+                                </div>
+                            </div>
+                        </> : <></>}
+
                         {event._startDate != event._endDate ?
                         <>
                             <div className="flex items-start gap-2">
@@ -196,6 +272,40 @@ export function EventDetailsDialog({ _event, children }: Event_Details_Dialog_IP
                                     Apakah Anda ingin menyetujui atau menolak permintaan ini?
                                 </AlertDialogDescription>
                                 </AlertDialogHeader>
+                                <div className="grid gap-3">
+                                    <Label
+                                        className="text-secondary"
+                                        htmlFor="tipe-1"
+                                    >
+                                        Zoom Akun
+                                    </Label>
+                                    <Select
+                                        name="tipe"
+                                        required
+                                        value={approval}
+                                        onValueChange={(value) => {
+                                            console.log(value)
+                                            setApproval(value as 'statsulbar' | 'sp2020' | undefined)
+                                        }}
+                                    >
+                                        <SelectTrigger
+                                            name="zoom_status"
+                                            className="text-secondary"
+                                        >
+                                            <SelectValue placeholder="Pilih Tipe" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectGroup>
+                                                <SelectItem value="statsulbar">
+                                                    statsulbar
+                                                </SelectItem>
+                                                <SelectItem value="sp2020">
+                                                    sp2020
+                                                </SelectItem>
+                                            </SelectGroup>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
                                 <AlertDialogFooter>
                                 <AlertDialogCancel className="text-secondary">Tutup</AlertDialogCancel>
                                 <AlertDialogAction onClick={() => approvalEvent(event.id, 'ditolak')}>Tolak</AlertDialogAction>

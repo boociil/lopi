@@ -10,20 +10,22 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
-use Inertia\Inertia;
 
-use App\Model\Umum\Peran;
-use App\Model\Lopi\Pinjam_Mobil;
-use App\Model\Umum\User;
-use Exception;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
+
+use App\Model\Umum\Peran;
+use App\Model\Lopi\Pinjam_Zoom;
+use App\Model\Umum\User;
+use Exception;
+use Inertia\Inertia;
 
 use function PHPUnit\Framework\isNull;
 
 class Jadwal_Controller extends Controller
 {
+
     use Zoom_Traits;
 
     public function __construct()
@@ -31,9 +33,9 @@ class Jadwal_Controller extends Controller
         $this->define_config();
     }
 
-    public function index(Request $request)
+     public function index(Request $request)
     {
-        $validated = $request->validate([
+         $validated = $request->validate([
             'selectedDate'  => 'date',
             'view'          => 'string',
             'view'          => Rule::in(['day', 'week', 'month', 'year', 'agenda'])
@@ -45,15 +47,15 @@ class Jadwal_Controller extends Controller
         if($request->has('selectedDate') && $request->has('view')){
             $selectedDate = $request->input('selectedDate');
             $view = $request->input('view');
-        }else if(session()->has('pinjam_mobil_index')){
+        }else if(session()->has('pinjam_zoom_index')){
             $selectedDate = Carbon::today()->format('Y-m-d');
-            $view = session('pinjam_mobil_index')['view'];
+            $view = session('pinjam_zoom_index')['view'];
         }else{
             $selectedDate = Carbon::today()->format('Y-m-d');
             $view = 'week';
         }
 
-        session()->put('pinjam_mobil_index', ['view' => $view]);
+        session()->put('pinjam_zoom_index', ['view' => $view]);
 
         $tanggal_awal = null;
         $tanggal_akhir = null;
@@ -76,37 +78,57 @@ class Jadwal_Controller extends Controller
             $tanggal_akhir = Carbon::parse($tanggal_awal)->addDays(6);
         }
 
-        $have_mobil_peran =  Peran::where('pemilik_username', Auth::user()->username)
-            ->where('peran', 'mobil')
+        $have_zoom_peran =  Peran::where('pemilik_username', Auth::user()->username)
+            ->where('peran', 'zoom')
             ->first();
 
+        $tanggal_carbon = Carbon::today();
+
+        $pinjam_zoom_bulan_daftar = Pinjam_Zoom::orWhere(function (Builder $query) use ($tanggal_awal, $tanggal_akhir){
+                    $query->where('tipe', 'sekali')
+                        ->whereBetween('tanggal', [$tanggal_awal->format('Y-m-d'), $tanggal_akhir->format('Y-m-d')]);
+                })
+                ->orWhere(function (Builder $query) use ($tanggal_awal, $tanggal_akhir) {
+                    $query->where('tipe', 'berulang')
+                        ->where('berulang_tanggal_awal', '<=', $tanggal_akhir)
+                        ->where('berulang_tanggal_akhir', '>=', $tanggal_awal);
+                })
+                ->get();
+
+
+        $pinjam_zoom_statsulbar = $this->zoom_getAllMeeting('statsulbar', $tanggal_awal->format('Y-m-d'), $tanggal_akhir->format('Y-m-d'));
+        $pinjam_zoom_sp2020 = $this->zoom_getAllMeeting('sp2020', $tanggal_awal->format('Y-m-d'), $tanggal_akhir->format('Y-m-d'));
+
+        // $pinjam_zoom_statsulbar = ['status' => false, 'data' => []];
+        // $pinjam_zoom_sp2020 = ['status' => false, 'data' => []];
+
+        for($i=0; $i<count($pinjam_zoom_bulan_daftar); $i++){
+            if($pinjam_zoom_bulan_daftar[$i]->tanggal){
+                 if (!Carbon::parse($pinjam_zoom_bulan_daftar[$i]->tanggal)->eq($tanggal_carbon)) {
+                    $pinjam_zoom_bulan_daftar[$i]->zoom_start_url = null;
+                }
+            }
+             if($pinjam_zoom_bulan_daftar[$i]->berulang_tanggal_awal){
+                 if (!$tanggal_carbon->between(Carbon::parse($pinjam_zoom_bulan_daftar[$i]->berulang_tanggal_awal), Carbon::parse($pinjam_zoom_bulan_daftar[$i]->berulang_tanggal_akhir))) {
+                    $pinjam_zoom_bulan_daftar[$i]->zoom_start_url = null;
+                }
+            }
+        }
+
         if($request->isMethod('get')){
-            return Inertia::render('pinjam_mobil', [
+            return Inertia::render('pinjam_zoom', [
                 "user" => User::all(),
-                'have_mobil_peran' => $have_mobil_peran,
-                "data" =>  Pinjam_Mobil::orWhere(function (Builder $query) use ($tanggal_awal, $tanggal_akhir){
-                            $query->where('tipe', 'sekali')
-                                ->whereBetween('tanggal', [$tanggal_awal->format('Y-m-d'), $tanggal_akhir->format('Y-m-d')]);
-                        })
-                        ->orWhere(function (Builder $query) use ($tanggal_awal, $tanggal_akhir) {
-                            $query->where('tipe', 'berulang')
-                                ->where('berulang_tanggal_awal', '<=', $tanggal_akhir)
-                                ->where('berulang_tanggal_akhir', '>=', $tanggal_awal);
-                        })
-                    ->get(),
+                "have_zoom_peran" => $have_zoom_peran,
+                "pinjam_zoom_data" => $pinjam_zoom_bulan_daftar,
+                "zoom_statsulbar" => $pinjam_zoom_statsulbar,
+                "zoom_sp2020" => $pinjam_zoom_sp2020,
             ]);
         }else if($request->isMethod('post')){
-             return [
-                "data" =>  Pinjam_Mobil::orWhere(function (Builder $query) use ($tanggal_awal, $tanggal_akhir){
-                            $query->where('tipe', 'sekali')
-                                ->whereBetween('tanggal', [$tanggal_awal->format('Y-m-d'), $tanggal_akhir->format('Y-m-d')]);
-                        })
-                        ->orWhere(function (Builder $query) use ($tanggal_awal, $tanggal_akhir) {
-                            $query->where('tipe', 'berulang')
-                                ->where('berulang_tanggal_awal', '<=', $tanggal_akhir)
-                                ->where('berulang_tanggal_akhir', '>=', $tanggal_awal);
-                        })
-                    ->get(),
+            return [
+                "have_zoom_peran" => $have_zoom_peran,
+                "pinjam_zoom_data" => $pinjam_zoom_bulan_daftar,
+                "zoom_statsulbar" => $pinjam_zoom_statsulbar,
+                "zoom_sp2020" => $pinjam_zoom_sp2020,
             ];
         }
     }
@@ -114,13 +136,15 @@ class Jadwal_Controller extends Controller
     public function tambah(Request $request)
     {
         $validated = $request->validate([
-            'kegiatan'          => 'required|string|max:255',
+            'topic'             => 'required|string|max:255',
+            'password'          => 'required|string',
             'tipe'              => 'required|in:sekali,berulang',
             'tanggal'           => 'date',
             'tanggal_awal'      => 'date',
             'tanggal_akhir'     => 'date|after_or_equal:tanggal_awal',
             'waktu_awal'        => 'required|date_format:H:i',
             'waktu_akhir'       => 'required|date_format:H:i|after:waktu_awal',
+            'zoom_akun'         => 'in:statsulbar,sp2020'
         ]);
 
         if(!isNull($request->input('tanggal')) || (!isNull($request->input('tanggal_awal')) && !isNull($request->input('tanggal_akhir')))){
@@ -129,80 +153,72 @@ class Jadwal_Controller extends Controller
             ]);
         }
 
-        $have_mobil_peran =  Peran::where('pemilik_username', Auth::user()->username)
-            ->where('peran', 'mobil')
+        $have_zoom_peran =  Peran::where('pemilik_username', Auth::user()->username)
+            ->where('peran', 'zoom')
             ->first();
 
         DB::beginTransaction();
         try
         {
-            $return_data = [];
+            $pinjam_zoom = new Pinjam_Zoom();
+            $pinjam_zoom->id = Str::uuid();
+            $pinjam_zoom->topic = $request->input('topic');
+            $pinjam_zoom->tipe = $request->input('tipe');
+            $pinjam_zoom->password = $request->input('password');
+
             if($request->input('tipe') == 'sekali'){
-                $pinjam_mobil = new Pinjam_Mobil();
-                $pinjam_mobil->id = Str::uuid();
-                $pinjam_mobil->kegiatan = $request->input('kegiatan');
-                $pinjam_mobil->tipe = $request->input('tipe');
-
-                $pinjam_mobil->tanggal = $request->input('tanggal');
-                $pinjam_mobil->waktu_awal = $request->input('waktu_awal');
-                $pinjam_mobil->waktu_akhir = $request->input('waktu_akhir');
-                $pinjam_mobil->status = 'menunggu';
-                $pinjam_mobil->pembuat_username = Auth::user()->username;
-
-                if($have_mobil_peran){
-                    $pinjam_mobil->status = 'disetujui';
-                    $pinjam_mobil->confirm_username = Auth::user()->username;
-                }
-                $pinjam_mobil->save();
-                array_push($return_data, $pinjam_mobil);
-
+                $pinjam_zoom->tanggal = $request->input('tanggal');
+                $pinjam_zoom->waktu_awal = $request->input('waktu_awal');
+                $pinjam_zoom->waktu_akhir = $request->input('waktu_akhir');
             }else if($request->input('tipe') == 'berulang'){
-                $pinjam_mobil = new Pinjam_Mobil();
-                $pinjam_mobil->id = Str::uuid();
-                $pinjam_mobil->kegiatan = $request->input('kegiatan');
-                $pinjam_mobil->tipe = $request->input('tipe');
+                $pinjam_zoom->berulang_tanggal_awal = $request->input('tanggal_awal');
+                $pinjam_zoom->berulang_tanggal_akhir = $request->input('tanggal_akhir');
+                $pinjam_zoom->waktu_awal = $request->input('waktu_awal');
+                $pinjam_zoom->waktu_akhir = $request->input('waktu_akhir');
+            }
 
-                $pinjam_mobil->berulang_tanggal_awal = $request->input('tanggal_awal');
-                $pinjam_mobil->berulang_tanggal_akhir = $request->input('tanggal_akhir');
-                $pinjam_mobil->waktu_awal = $request->input('waktu_awal');
-                $pinjam_mobil->waktu_akhir = $request->input('waktu_akhir');
-                $pinjam_mobil->status = 'menunggu';
-                $pinjam_mobil->pembuat_username = Auth::user()->username;
+            $pinjam_zoom->status = 'menunggu';
+            $pinjam_zoom->pembuat_username = Auth::user()->username;
 
-                if($have_mobil_peran){
-                    $pinjam_mobil->status = 'disetujui';
-                    $pinjam_mobil->confirm_username = Auth::user()->username;
+            if($have_zoom_peran && in_array($request->input('zoom_akun'), ['statsulbar', 'sp2020'])){
+                $pinjam_zoom->status = 'disetujui';
+                $pinjam_zoom->confirm_username = Auth::user()->username;
+
+                if(in_array($request->input('zoom_akun'), ['statsulbar', 'sp2020'])){
+                    $this->zoom_meta_createMeeting($request->input('zoom_akun'), $pinjam_zoom);
+                }else{
+                    throw ValidationException::withMessages([
+                        'status' => 'Zoom tidak dapat dibuat',
+                    ]);
                 }
-                $pinjam_mobil->save();
-                array_push($return_data, $pinjam_mobil);
             }
-            if(count($return_data) != 1){
-                throw new Exception('Return Kosong');
-            }
+            $pinjam_zoom->save();
+
             DB::commit();
             return [
-                "_status" => 'Berhasil membuat peminjaman mobil!',
-                "data" => $return_data[0]
+                "_status" => 'Berhasil membuat peminjaman zoom!',
+                "data" => $pinjam_zoom
             ];
         }catch(Exception $ex){
             DB::rollBack();
             Log::error($ex);
             throw ValidationException::withMessages([
-                '_status' => 'Gagal membuat peminjaman mobil!',
+                '_status' => 'Gagal membuat peminjaman zoom!',
             ]);
         }
     }
 
-    public function ubah(Request $request, Pinjam_Mobil $pinjamMobil)
+    public function ubah(Request $request, Pinjam_Zoom $pinjamZoom)
     {
         $validated = $request->validate([
-            'kegiatan'          => 'required|string|max:255',
+            'topic'          => 'required|string|max:255',
             'tipe'              => 'required|in:sekali,berulang',
             'tanggal'           => 'date',
             'tanggal_awal'      => 'date',
             'tanggal_akhir'     => 'date|after_or_equal:tanggal_awal',
             'waktu_awal'        => 'required|date_format:H:i',
             'waktu_akhir'       => 'required|date_format:H:i|after:waktu_awal',
+            'zoom_akun'         => 'in:statsulbar,sp2020'
         ]);
 
         if(!isNull($request->input('tanggal')) || (!isNull($request->input('tanggal_awal')) && !isNull($request->input('tanggal_akhir')))){
@@ -211,62 +227,73 @@ class Jadwal_Controller extends Controller
             ]);
         }
 
-        $have_mobil_peran =  Peran::where('pemilik_username', Auth::user()->username)
-            ->where('peran', 'mobil')
+        $have_zoom_peran =  Peran::where('pemilik_username', Auth::user()->username)
+            ->where('peran', 'zoom')
             ->first();
 
-        if(! ($have_mobil_peran || $pinjamMobil->pembuat_username == Auth::user()->username) ){
+        if(! ($have_zoom_peran || $pinjamZoom->pembuat_username == Auth::user()->username) ){
             throw ValidationException::withMessages([
-                '_status' => 'Gagal mengubah peminjaman mobil!',
+                '_status' => 'Gagal mengubah peminjaman zoom!',
             ]);
         }
 
         DB::beginTransaction();
         try
         {
+            $pinjamZoom->topic = $request->input('topic');
+            $pinjamZoom->tipe = $request->input('tipe');
+            $pinjamZoom->password = $request->input('password');
             if($request->input('tipe') == 'sekali'){
-                $pinjamMobil->kegiatan = $request->input('kegiatan');
-                $pinjamMobil->tipe = $request->input('tipe');
-
-                $pinjamMobil->tanggal = $request->input('tanggal');
-                $pinjamMobil->waktu_awal = $request->input('waktu_awal');
-                $pinjamMobil->waktu_akhir = $request->input('waktu_akhir');
-                $pinjamMobil->status = 'menunggu';
-                $pinjamMobil->pembuat_username = Auth::user()->username;
-
-                if($have_mobil_peran){
-                    $pinjamMobil->status = 'disetujui';
-                    $pinjamMobil->confirm_username = Auth::user()->username;
-                }
-                $pinjamMobil->save();
-
+                $pinjamZoom->tanggal = $request->input('tanggal');
+                $pinjamZoom->waktu_awal = $request->input('waktu_awal');
+                $pinjamZoom->waktu_akhir = $request->input('waktu_akhir');
             }else if($request->input('tipe') == 'berulang'){
-                $pinjamMobil->kegiatan = $request->input('kegiatan');
-                $pinjamMobil->tipe = $request->input('tipe');
-
-                $pinjamMobil->berulang_tanggal_awal = $request->input('tanggal_awal');
-                $pinjamMobil->berulang_tanggal_akhir = $request->input('tanggal_akhir');
-                $pinjamMobil->waktu_awal = $request->input('waktu_awal');
-                $pinjamMobil->waktu_akhir = $request->input('waktu_akhir');
-                $pinjamMobil->status = 'menunggu';
-                $pinjamMobil->pembuat_username = Auth::user()->username;
-
-                if($have_mobil_peran){
-                    $pinjamMobil->status = 'disetujui';
-                    $pinjamMobil->confirm_username = Auth::user()->username;
-                }
-                $pinjamMobil->save();
+                $pinjamZoom->berulang_tanggal_awal = $request->input('tanggal_awal');
+                $pinjamZoom->berulang_tanggal_akhir = $request->input('tanggal_akhir');
+                $pinjamZoom->waktu_awal = $request->input('waktu_awal');
+                $pinjamZoom->waktu_akhir = $request->input('waktu_akhir');
             }
+            $pinjamZoom->status = 'menunggu';
+            $pinjamZoom->pembuat_username = Auth::user()->username;
+
+            if($have_zoom_peran && in_array($request->input('zoom_akun'), ['statsulbar', 'sp2020'])){
+                $pinjamZoom->status = 'disetujui';
+                $pinjamZoom->confirm_username = Auth::user()->username;
+                // if($pinjamZoom->zoom_meeting_id){
+                //     $this->zoom_meta_updateMeeting($request->input('zoom_akun'), $pinjamZoom);
+                // }else
+                if(!$pinjamZoom->zoom_meeting_id){
+                    $this->zoom_meta_createMeeting($request->input('zoom_akun'), $pinjamZoom);
+                }else if($pinjamZoom->zoom_meeting_id && $pinjamZoom->zoom_akun != $request->input('zoom_akun')){
+                    $this->zoom_deleteMeeting($request->input('zoom_akun'), $pinjamZoom->zoom_meeting_id);
+                    $this->zoom_meta_createMeeting($request->input('zoom_akun'), $pinjamZoom);
+                }else if($pinjamZoom->zoom_meeting_id && $pinjamZoom->zoom_akun == $request->input('zoom_akun')){
+                    $this->zoom_meta_updateMeeting($request->input('zoom_akun'), $pinjamZoom);
+                }
+            }else{
+                if($pinjamZoom->zoom_meeting_id){
+                    $this->zoom_deleteMeeting($pinjamZoom->zoom_akun, "".$pinjamZoom->zoom_meeting_id);
+                    throw ValidationException::withMessages([
+                        'status' => 'Zoom gagal diubah',
+                    ]);
+
+                    $pinjamZoom->zoom_akun = null;
+                    $pinjamZoom->zoom_meeting_id = null;
+                    $pinjamZoom->zoom_start_url = null;
+                    $pinjamZoom->zoom_join_url = null;
+                }
+            }
+            $pinjamZoom->save();
             DB::commit();
             return [
-                "_status" => 'Berhasil mengubah peminjaman mobil!',
-                "data" => $pinjamMobil
+                "_status" => 'Berhasil mengubah peminjaman zoom!',
+                "data" => $pinjamZoom
             ];
         }catch(Exception $ex){
             DB::rollBack();
             Log::error($ex);
             throw ValidationException::withMessages([
-                '_status' => 'Gagal mengubah peminjaman mobil!',
+                '_status' => 'Gagal mengubah peminjaman zoom!',
             ]);
         }
     }
@@ -274,51 +301,61 @@ class Jadwal_Controller extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function hapus(Pinjam_Mobil $pinjamMobil)
+    public function hapus(Pinjam_Zoom $pinjamZoom)
     {
-        $have_mobil_peran =  Peran::where('pemilik_username', Auth::user()->username)
-            ->where('peran', 'mobil')
+        $have_zoom_peran =  Peran::where('pemilik_username', Auth::user()->username)
+            ->where('peran', 'zoom')
             ->first();
 
-        if(! ($have_mobil_peran || $pinjamMobil->pembuat_username == Auth::user()->username) ){
+        if(! ($have_zoom_peran || $pinjamZoom->pembuat_username == Auth::user()->username) ){
             throw ValidationException::withMessages([
-                '_status' => 'Gagal menghapus peminjaman mobil!',
+                '_status' => 'Gagal menghapus peminjaman zoom!',
             ]);
+        }
+
+        if($pinjamZoom->zoom_meeting_id){
+            $zoom_app = $this->zoom_deleteMeeting($pinjamZoom->zoom_akun, "".$pinjamZoom->zoom_meeting_id);
+            if(!$zoom_app['status']){
+                throw ValidationException::withMessages([
+                    'status' => 'Zoom gagal dihapus',
+                ]);
+            }
         }
 
         DB::beginTransaction();
         try
         {
-            $pinjamMobil->delete();
+            $pinjamZoom->delete();
             DB::commit();
             return [
-                "_status" => 'Berhasil menghapus peminjaman mobil!'
+                "_status" => 'Berhasil menghapus peminjaman zoom!'
             ];
         }catch(Exception $ex){
             DB::rollBack();
             Log::error($ex);
             throw ValidationException::withMessages([
-                '_status' => 'Gagal menghapus peminjaman mobil!',
+                '_status' => 'Gagal menghapus peminjaman zoom!',
             ]);
         }
     }
 
     /**
-     * Approve a pinjam mobil request
+     * Approve a pinjam zoom request
      */
-    public function approval(Request $request, Pinjam_Mobil $pinjamMobil)
+    public function approval(Request $request, Pinjam_Zoom $pinjamZoom)
     {
         $validated = $request->validate([
             'status'              => 'required|in:disetujui,ditolak',
+            'zoom_akun'         => 'in:statsulbar,sp2020'
         ]);
 
-        $have_mobil_peran =  Peran::where('pemilik_username', Auth::user()->username)
-            ->where('peran', 'mobil')
+        $have_zoom_peran =  Peran::where('pemilik_username', Auth::user()->username)
+            ->where('peran', 'zoom')
             ->first();
 
-        if(! ($have_mobil_peran) ){
+        if(! ($have_zoom_peran) ){
             throw ValidationException::withMessages([
-                '_status' => 'Gagal approval peminjaman mobil!',
+                '_status' => 'Gagal approval peminjaman zoom!',
             ]);
         }
 
@@ -326,19 +363,45 @@ class Jadwal_Controller extends Controller
         DB::beginTransaction();
         try
         {
-            $pinjamMobil->status = $request->input('status');
-            $pinjamMobil->confirm_username = Auth::user()->username;
-            $pinjamMobil->save();
+            if($request->input('status') == 'ditolak'){
+                if($pinjamZoom->zoom_meeting_id){
+                    $zoom_app = $this->zoom_deleteMeeting($pinjamZoom->zoom_akun, "".$pinjamZoom->zoom_meeting_id);
+                    if(!$zoom_app['status']){
+                        throw ValidationException::withMessages([
+                            'status' => 'Zoom gagal dibuat',
+                        ]);
+                    }
+
+                    $pinjamZoom->status = 1;
+                    $pinjamZoom->zoom_akun = null;
+                    $pinjamZoom->zoom_meeting_id = null;
+                    $pinjamZoom->zoom_start_url = null;
+                    $pinjamZoom->zoom_join_url = null;
+                }
+            }else if($request->input('status') == 'disetujui'){
+                if(!$pinjamZoom->zoom_meeting_id){
+                    $this->zoom_meta_createMeeting($request->input('zoom_akun'), $pinjamZoom);
+                }else {
+                    if($pinjamZoom->zoom_akun != $request->input('zoom_akun')){
+                        $this->zoom_deleteMeeting($request->input('zoom_akun'), $pinjamZoom->zoom_meeting_id);
+                        $this->zoom_meta_createMeeting($request->input('zoom_akun'), $pinjamZoom);
+                    }
+                }
+            }
+
+            $pinjamZoom->status = $request->input('status');
+            $pinjamZoom->confirm_username = Auth::user()->username;
+            $pinjamZoom->save();
             DB::commit();
             return [
-                "_status" => 'Berhasil approval peminjaman mobil!',
-                "data" => $pinjamMobil
+                "_status" => 'Berhasil approval peminjaman zoom!',
+                "data" => $pinjamZoom
             ];
         }catch(Exception $ex){
             DB::rollBack();
             Log::error($ex);
             throw ValidationException::withMessages([
-                '_status' => 'Gagal approval peminjaman mobil!',
+                '_status' => 'Gagal approval peminjaman zoom!',
             ]);
         }
     }

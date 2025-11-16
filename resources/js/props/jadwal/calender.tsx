@@ -35,7 +35,7 @@ export function PinjamZoomCalender({
     const axiosClient = useApi();
     const auth = usePage<SharedData>().props.auth;
 
-    const settingCalender: SettingCalender = {name_event: 'kegiatan', calender_show: ["week", "month","agenda"], show_filter: false, show_filter_user: false}
+    const settingCalender: SettingCalender = {name_event: 'kegiatan', calender_show: ["week", "month","agenda"], show_filter: true, filter_name: [['green', 'statsulbar'], ['yellow', 'sp2020']], show_filter_user: false}
     const _user: IUser[] = produceCalenderUser(user);
     const _allEvents: PinjamZoomIEvent[] = producePinjamZoomIEvent(pinjam_zoom_data);
 
@@ -112,6 +112,9 @@ export function PinjamZoomCalender({
             });
     }
 
+    function havePeran():  boolean{
+        return have_zoom_peran
+    }
     function canAdd():  boolean{
         return true
     }
@@ -151,6 +154,7 @@ export function PinjamZoomCalender({
                 EventListDialog={EventListDialog}
                 reload_data={reload_data}
                 updateDataRequest={updateDataRequest}
+                havePeran={havePeran}
                 canAdd={canAdd}
                 canChange={canChange}
                 canApprove={canApprove}

@@ -9,41 +9,47 @@ import { Head } from "@inertiajs/react";
 import * as React from "react";
 import Heading from "@/components/heading";
 
-import { pinjam_mobil } from "@/props/pinjam-mobil/types";
-import { PinjamMobilCalender } from "@/props/pinjam-mobil/calender";
+import { PinjamZoomCalender } from "@/props/pinjam-zoom/calender";
+import { pinjam_zoom, zoom_app, zoom_app_with_status } from "@/props/pinjam-zoom/types";
 
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: "Peminjaman Mobil",
-        href: "/pinjam/mobil",
+        title: "Pemakaian Zoom",
+        href: "/pinjam/zoom",
     },
 ];
 
 export default function Index({
-    have_mobil_peran,
+    have_zoom_peran,
     user,
-    data,
+    pinjam_zoom_data,
+    zoom_statsulbar,
+    zoom_sp2020
 }: React.PropsWithChildren<{
-    have_mobil_peran: boolean;
-    user: User[],
-    data: pinjam_mobil[];
+    have_zoom_peran: boolean;
+    user: User[];
+    pinjam_zoom_data: pinjam_zoom[];
+    zoom_statsulbar: zoom_app_with_status;
+    zoom_sp2020: zoom_app_with_status;
 }>) {
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Peminjaman Mobil" />
+            <Head title="Pemakaian Mobil" />
                 <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4 overflow-x-auto">
                     <div className="w-full">
                         <Heading
-                            title="Peminjaman Mobil"
-                            description="Jadwal Peminjaman Mobil BPS Sulawesi Barat."
+                            title="Pemakaian Zoom"
+                            description="Jadwal Pemakaian Zoom BPS Sulawesi Barat."
                         />
-                        <PinjamMobilCalender
-                            pinjam_mobil_data={data}
+                        <PinjamZoomCalender
+                            have_zoom_peran={have_zoom_peran}
                             user={user}
-                            havePinjamMobilPeran={have_mobil_peran}>
-                        </PinjamMobilCalender>
+                            pinjam_zoom_data={pinjam_zoom_data}
+                            zoom_statsulbar={zoom_statsulbar.data}
+                            zoom_sp2020={zoom_sp2020.data}>
+                        </PinjamZoomCalender>
                     </div>
                 </div>
 

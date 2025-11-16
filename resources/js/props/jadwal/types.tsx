@@ -16,22 +16,14 @@ export type PinjamZoomContextType = PinjamZoomProps & {
     setEventDialog: (eventDialog: pinjam_zoom_dialog_event) => void;
 };
 
-export interface zoom_app_recurrence {
-    type: number;
-    repeat_interval: number;
-    end_times: number | null;
-    end_date_time: string | null;
-    weekly_days: string | null;
-}
 
 export interface zoom_app {
     id: number;
     type: number;
-    recurrence: zoom_app_recurrence | null;
     topic: string;
     start_time: string;
     duration: number;
-    zoom_join_url: string | null;
+    join_url: string;
 }
 
 export interface zoom_app_with_status {
@@ -41,7 +33,8 @@ export interface zoom_app_with_status {
 
 export interface pinjam_zoom {
     id: string;
-    kegiatan: string;
+    topic: string;
+    password: string;
     tipe: string;
     tanggal: string | null;
     berulang_tanggal_awal: string | null;
@@ -60,7 +53,8 @@ export interface pinjam_zoom {
 
 export interface pinjam_zoom_req {
     id: string;
-    kegiatan: string;
+    topic: string;
+    password: string;
     tipe: string;
     tanggal: string | null;
     tanggal_awal: string | null;
@@ -70,11 +64,14 @@ export interface pinjam_zoom_req {
     status: "menunggu" | "disetujui" | "ditolak" | "diapp";
     pembuat_username: string;
     confirm_username: string | null;
+    zoom_akun: 'statsulbar' | 'sp2020' | null;
 }
 
 export interface PinjamZoomIEvent extends IEvent {
     pinjam_zoom_ori: pinjam_zoom | null;
     zoom_akun: 'statsulbar' | 'sp2020' | null;
+    join_url: string | null;
+    start_url: string | null;
 }
 
 export interface pinjam_zoom_dialog_event {
@@ -116,12 +113,14 @@ export function producePinjamZoomIEvent(
                 _endDate: tanggal_akhir,
                 _startTime: element.waktu_awal,
                 _endTime: element.waktu_akhir,
-                title: element.kegiatan,
+                title: element.topic,
                 color: element.status == "disetujui" ? "green" : "blue",
                 description: "Peminjaman Zoom",
                 user: null,
                 zoom_akun: element.zoom_akun as 'statsulbar' | 'sp2020' | null,
                 pinjam_zoom_ori: element,
+                join_url: element.zoom_join_url,
+                start_url: element.zoom_start_url
             });
         }
     });
@@ -194,6 +193,8 @@ export function producePinjamZoomIEventFromZoomApp(
                     user: null,
                     zoom_akun: zoom_akun,
                     pinjam_zoom_ori: null,
+                    join_url: element.join_url,
+                    start_url: null
                 });
             }else{
                 const satu_startDate: Date = parseISO(format(date_awal, "yyyy-MM-dd HH:mm"))
@@ -216,6 +217,8 @@ export function producePinjamZoomIEventFromZoomApp(
                     user: null,
                     zoom_akun: zoom_akun,
                     pinjam_zoom_ori: null,
+                    join_url: element.join_url,
+                    start_url: null
                 });
 
                 retur_data.push({
@@ -233,6 +236,8 @@ export function producePinjamZoomIEventFromZoomApp(
                     user: null,
                     zoom_akun: zoom_akun,
                     pinjam_zoom_ori: null,
+                    join_url: element.join_url,
+                    start_url: null,
                 });
 
             }
