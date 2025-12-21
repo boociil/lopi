@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('username', 100);
             $table->dateTime('tanggal');
+            $table->unsignedSmallInteger('tinggi_badan')->nullable();
             $table->unsignedSmallInteger('berat_badan')->nullable();
             $table->unsignedSmallInteger('linkar_perut')->nullable();
             $table->string('tekanan_darah', 10)->nullable();

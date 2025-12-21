@@ -10,6 +10,7 @@ use App\Http\Controllers\Umum\Beranda_Controller;
 use App\Http\Controllers\Lopi\Appreciate_Controller;
 use App\Http\Controllers\Lopi\Jadwal_Controller;
 use App\Http\Controllers\Lopi\Kesehatan_Controller;
+use App\Http\Controllers\Lopi\Notif_Controller;
 use App\Http\Controllers\Lopi\Pinjam_Mobil_Controller;
 use App\Http\Controllers\Lopi\Pinjam_Ruang_Controller;
 use App\Http\Controllers\Lopi\Pinjam_Zoom_Controller;
@@ -53,6 +54,14 @@ Route::get('tahun/{tahun}/ubah', function ($tahun) {
 Route::get('/tampilan', function () {
     return Inertia::render('tampilan');
 })->name('tampilan')->middleware(['auth', 'check_maintenance', 'statistik']);
+
+Route::group(
+[
+    'prefix' => 'notif',
+    'middleware' => ['auth', 'check_maintenance', 'statistik'],
+], function () {
+    Route::post('/count', [Notif_Controller::class, 'get_menu_count'])->name('notif-count');
+});
 
 //beranda
 Route::group(
@@ -108,15 +117,15 @@ Route::group(
 
 Route::group(
 [
-    'prefix' => 'ruang',
+    'prefix' => 'jadwal',
     'middleware' => ['auth', 'check_maintenance', 'statistik'],
 ], function () {
-    Route::get('/', [Jadwal_Controller::class, 'index'])->name('pinjam-ruang-index');
-    Route::post('/', [Jadwal_Controller::class, 'index'])->name('pinjam-ruang-index');
-    Route::post('/tambah', [Jadwal_Controller::class, 'tambah'])->name('pinjam-ruang-tambah');
-    Route::post('/{ruang}/ubah', [Jadwal_Controller::class, 'ubah'])->name('pinjam-ruang-ubah');
-    Route::post('/{ruang}/hapus', [Jadwal_Controller::class, 'hapus'])->name('pinjam-ruang-hapus');
-    Route::post('/{ruang}/approval', [Jadwal_Controller::class, 'approval'])->name('pinjam-ruang-approval');
+    Route::get('/', [Jadwal_Controller::class, 'index'])->name('jadwal-index');
+    Route::post('/', [Jadwal_Controller::class, 'index'])->name('jadwal-index');
+    Route::post('/tambah', [Jadwal_Controller::class, 'tambah'])->name('jadwal-tambah');
+    Route::post('/{ruang}/ubah', [Jadwal_Controller::class, 'ubah'])->name('jadwal-ubah');
+    Route::post('/{ruang}/hapus', [Jadwal_Controller::class, 'hapus'])->name('jadwal-hapus');
+    Route::post('/{ruang}/approval', [Jadwal_Controller::class, 'approval'])->name('jadwal-approval');
 });
 
 Route::group(

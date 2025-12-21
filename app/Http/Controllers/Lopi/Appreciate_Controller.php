@@ -7,11 +7,13 @@ use App\Model\Lopi\Appreciate_Data;
 use App\Model\Lopi\Appreciate_Master;
 use App\Model\Umum\Peran;
 use App\Model\Umum\User;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Inertia\Inertia;
 
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
@@ -44,41 +46,57 @@ class Appreciate_Controller extends Controller
             'pesan' => 'required|string',
         ]);
 
-        $target_master = [];
-        $target_username = [];
-        $appreciate_master = Appreciate_Master::with('target')->where('isi_awal', "<=", Carbon::today()->format('Y-m-d'))
-                ->where('isi_akhir', ">=", Carbon::today()->format('Y-m-d'))
-                ->get();
+        DB::beginTransaction();
+        try
+        {
+            $target_master = [];
+            $target_username = [];
+            $appreciate_master = Appreciate_Master::with('target')->where('isi_awal', "<=", Carbon::today()->format('Y-m-d'))
+                    ->where('isi_akhir', ">=", Carbon::today()->format('Y-m-d'))
+                    ->get();
 
-        foreach($appreciate_master as $item){
-            foreach($item->target as $item_target){
-                array_push($target_username, $item_target->username);
-                $target_master[$item_target->username] = $item->id;
+            foreach($appreciate_master as $item){
+                foreach($item->target as $item_target){
+                    array_push($target_username, $item_target->username);
+                    $target_master[$item_target->username] = $item->id;
+                }
             }
-        }
 
-        if(!in_array($request->input('tujuan'), $target_username)){
+            if(!in_array($request->input('tujuan'), $target_username)){
+                throw ValidationException::withMessages([
+                    '_status' => 'Gagal menambah data',
+                ]);
+            }
+
+            Appreciate_Data::where('master_id', $target_master[$request->input('tujuan')])
+                ->where('tujuan', $request->input('tujuan'))
+                ->where('dari', Auth::user()->username)
+                ->delete();
+
+            $data = new Appreciate_Data();
+
+            $data->master_id = $target_master[$request->input('tujuan')];
+            $data->tujuan = $request->input('tujuan');
+            $data->dari = Auth::user()->username;
+            $data->status_anonim = $request->status_anonim;
+            $data->pesan = $request->input('pesan');
+            $data->status = "0";
+            $data->save();
+
+            DB::commit();
+
+            return $data;
+
+        }catch(Exception $ex){
+            DB::rollBack();
+            Log::error($ex);
             throw ValidationException::withMessages([
                 '_status' => 'Gagal menambah data',
             ]);
         }
 
-        $data = Appreciate_Data::where('master_id', $target_master[$request->input('tujuan')])
-            ->where('tujuan', $request->input('tujuan'))
-            ->where('dari', Auth::user()->username)
-            ->first();
-        if(!$data){
-            $data = new Appreciate_Data();
-        }
-        $data->master_id = $target_master[$request->input('tujuan')];
-        $data->tujuan = $request->input('tujuan');
-        $data->dari = Auth::user()->username;
-        $data->status_anonim = $request->status_anonim;
-        $data->pesan = $request->input('pesan');
-        $data->status = "0";
-        $data->save();
 
-        return $data;
+
     }
 
     public function buka(Request $request)

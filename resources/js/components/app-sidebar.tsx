@@ -6,10 +6,13 @@ import { type Peran, type NavGeneral, type NavItem, type SharedData } from '@/ty
 import { Link, usePage } from '@inertiajs/react';
 import { LayoutGrid, CalendarDays, Video, LinkIcon, LockKeyholeOpen, Car, SmilePlus, Table } from 'lucide-react';
 import AppLogo from './app-logo';
+import { useEffect, useState } from 'react';
+import { useApi } from '@/lib/API/useApi';
 
 export function AppSidebar() {
     const auth = usePage<SharedData>().props.auth;
     const peran = auth.peran;
+    const axiosClient = useApi();
 
 
     const mainNavItems: NavGeneral[] = [
@@ -145,6 +148,35 @@ export function AppSidebar() {
 
     const footerNavItems: NavGeneral[] = []
 
+    const [countMenu, setCountMenu] = useState<Map<string, number>>(new Map<string, number>);
+
+
+    const fetchData = async () => {
+         axiosClient.post(route('notif-count'))
+            .then(function (response) {
+                let countMenu_ = new Map<string, number>();
+                const data = response.data
+                Object.entries(data).forEach(([key, value]) => {
+                    countMenu_.set(key as string, value as number)
+                });
+                setCountMenu(countMenu_)
+            })
+            .catch(function (error) {
+                console.log(error)
+            });
+    };
+
+    useEffect(() => {
+        // fetch pertama kali
+        fetchData();
+
+        // fetch tiap 1 menit
+        const interval = setInterval(fetchData, 60_000);
+
+        // cleanup saat component unmount
+        return () => clearInterval(interval);
+    }, []);
+
     return (
         <Sidebar collapsible="icon" variant="inset">
             <SidebarHeader>
@@ -160,7 +192,7 @@ export function AppSidebar() {
             </SidebarHeader>
 
             <SidebarContent>
-                <NavMain items={mainNavItems} />
+                <NavMain items={mainNavItems} countMenu={countMenu}/>
             </SidebarContent>
 
             <SidebarFooter>
