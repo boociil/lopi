@@ -2,9 +2,9 @@ import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
-import { type Peran, type NavGeneral, type NavItem, type SharedData } from '@/types';
+import type { Peran, NavGeneral, NavItem, SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { LayoutGrid, CalendarDays, Video, LinkIcon, LockKeyholeOpen, Car, SmilePlus, Table } from 'lucide-react';
+import { LayoutGrid, CalendarDays, LockKeyholeOpen, Car, SmilePlus, Archive, Hospital } from 'lucide-react';
 import AppLogo from './app-logo';
 import { useEffect, useState } from 'react';
 import { useApi } from '@/lib/API/useApi';
@@ -30,23 +30,51 @@ export function AppSidebar() {
         },
         {
             type: 'item',
-            title: 'Pemakaian Ruang',
-            href: '/lopi/pinjam/ruang',
-            icon: Table,
-        },
-        {
-            type: 'item',
-            title: 'Pemakaian Zoom',
-            href: '/lopi/pinjam/zoom',
-            icon: Video,
-        },
-        {
-            type: 'item',
             title: 'Pemakaian Mobil',
             href: '/lopi/pinjam/mobil',
             icon: Car,
         }
     ];
+
+    let find_arsip = peran.find(item => {
+        if(item.peran == 'arsip'){
+            return true
+        }
+    })
+
+    if(find_arsip){
+        mainNavItems.push({
+            type: 'group',
+            title: 'Arsip',
+            href: '/lopi/arsip',
+            icon: Archive,
+            subItems: [
+                {
+                    title: 'Master',
+                    href: '/lopi/arsip/master',
+                },
+                {
+                    title: 'Daftar',
+                    href: '/lopi/arsip',
+                }
+            ]
+        })
+    }else{
+         mainNavItems.push( {
+            type: 'item',
+            title: 'Arsip',
+            href: '/lopi/arsip',
+            icon: Archive,
+        })
+    }
+
+     mainNavItems.push( {
+        type: 'item',
+        title: 'Kesehatan',
+        href: '/lopi/kesehatan',
+        icon: Hospital,
+    })
+
 
     let find_appreciate = peran.find(item => {
         if(item.peran == 'appreciate'){
