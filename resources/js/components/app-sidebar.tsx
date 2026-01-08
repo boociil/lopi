@@ -25,7 +25,7 @@ export function AppSidebar() {
         {
             type: 'item',
             title: 'Jadwal',
-            href: '/lopi/pinjam/jadwal',
+            href: '/lopi/jadwal',
             icon: CalendarDays,
         },
         {

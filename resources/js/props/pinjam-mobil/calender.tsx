@@ -2,7 +2,7 @@ import { CalendarBody } from "@/components/calender_modules/calendar-body";
 import { CalendarProvider } from "@/components/calender_modules/contexts/calendar-context";
 import { DndProvider } from "@/components/calender_modules/contexts/dnd-context";
 import { CalendarHeader } from "@/components/calender_modules/header/calendar-header";
-import { pairIEventDenganUser, pinjam_mobil, pinjam_mobil_req, PinjamMobilIEvent, producePinjamMobilIEvent } from "./types";
+import { pairIEventDenganUser, pinjam_mobil, PinjamMobilIEvent, producePinjamMobilIEvent } from "./types";
 import { type SharedData, type User } from "@/types";
 import { CalenderUser, produceCalenderUser, SettingCalender, type IEvent, type IUser } from "@/components/calender_modules/interfaces";
 import { AddEditEventDialog } from "./dialog/add-edit-event-dialog";

@@ -156,30 +156,6 @@ Route::group(
         Route::post('/{pinjamMobil}/approval', [Pinjam_Mobil_Controller::class, 'approval'])->name('pinjam-mobil-approval');
     });
 
-    Route::group(
-    [
-        'prefix' => 'zoom',
-    ], function () {
-        Route::get('/', [Pinjam_Zoom_Controller::class, 'index'])->name('pinjam-zoom-index');
-        Route::post('/', [Pinjam_Zoom_Controller::class, 'index'])->name('pinjam-zoom-index');
-        Route::post('/tambah', [Pinjam_Zoom_Controller::class, 'tambah'])->name('pinjam-zoom-tambah');
-        Route::post('/{pinjamZoom}/ubah', [Pinjam_Zoom_Controller::class, 'ubah'])->name('pinjam-zoom-ubah');
-        Route::post('/{pinjamZoom}/hapus', [Pinjam_Zoom_Controller::class, 'hapus'])->name('pinjam-zoom-hapus');
-        Route::post('/{pinjamZoom}/approval', [Pinjam_Zoom_Controller::class, 'approval'])->name('pinjam-zoom-approval');
-    });
-
-    Route::group(
-    [
-        'prefix' => 'ruang',
-    ], function () {
-        Route::get('/', [Pinjam_Ruang_Controller::class, 'index'])->name('pinjam-ruang-index');
-        Route::post('/', [Pinjam_Ruang_Controller::class, 'index'])->name('pinjam-ruang-index');
-        Route::post('/tambah', [Pinjam_Ruang_Controller::class, 'tambah'])->name('pinjam-ruang-tambah');
-        Route::post('/{pinjamRuang}/ubah', [Pinjam_Ruang_Controller::class, 'ubah'])->name('pinjam-ruang-ubah');
-        Route::post('/{pinjamRuang}/hapus', [Pinjam_Ruang_Controller::class, 'hapus'])->name('pinjam-ruang-hapus');
-        Route::post('/{pinjamRuang}/approval', [Pinjam_Ruang_Controller::class, 'approval'])->name('pinjam-ruang-approval');
-    });
-
 });
 
 

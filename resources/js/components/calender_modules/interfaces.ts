@@ -20,6 +20,7 @@ export interface IEvent {
 	color: TEventColor;
 	description: string;
 	user: IUser | null;
+    oriKey: string | null;
 }
 
 export interface ICalendarCell {

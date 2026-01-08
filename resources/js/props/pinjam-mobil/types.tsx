@@ -85,6 +85,7 @@ export function producePinjamMobilIEvent(pinjam_mobil: pinjam_mobil[]): PinjamMo
                 description: "Peminjaman Mobil",
                 user: null,
                 pinjam_mobil_ori: element,
+                oriKey: 'pinjam_mobil_ori'
             })
         }
 

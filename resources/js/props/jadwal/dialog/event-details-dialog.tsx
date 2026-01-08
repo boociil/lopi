@@ -29,20 +29,20 @@ import { capitalizeWords, formatTime } from "@/components/calender_modules/helpe
 import { Event_Details_Dialog_IProps } from "@/components/calender_modules/dialogs/props-dialog";
 import { progress as progressIndikator } from '@inertiajs/react'
 import { CalenderUser, IEvent } from "@/components/calender_modules/interfaces";
-import { pairIEventDenganUser, pinjam_zoom, PinjamZoomIEvent, producePinjamZoomIEvent } from "../types";
+import { pairIEventDenganUser, jadwal, JadwalIEvent, produceJadwalIEvent } from "../types";
 import { useEffect, useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface Approval_Event {
-    event: PinjamZoomIEvent;
+    event: JadwalIEvent;
     zoom_akun: 'statsulbar' | 'sp2020' | null;
     status: 'disetujui'|'ditolak' | null;
 }
 
 
 export function EventDetailsDialog({ _event, children }: Event_Details_Dialog_IProps) {
-    const [event, setEvent] = useState<PinjamZoomIEvent>(_event as PinjamZoomIEvent)
+    const [event, setEvent] = useState<JadwalIEvent>(_event as JadwalIEvent)
 	const startDate = parseISO(event.startDate);
 	const endDate = parseISO(event.endDate);
 	const { settingCalender, use24HourFormat, updateEvent, removeEvent, AddEditEventDialog, canChange, canApprove, axiosClient, users } = useCalendar();
@@ -90,8 +90,8 @@ export function EventDetailsDialog({ _event, children }: Event_Details_Dialog_IP
         axiosClient.post(route("pinjam-zoom-approval", {pinjamZoom: event_id}), {status: status, zoom_akun: approval})
             .then(function (response) {
                  try {
-                    const return_data: IEvent[] = producePinjamZoomIEvent([response.data.data] as pinjam_zoom[]);
-                    pairIEventDenganUser(return_data as PinjamZoomIEvent[], users  as CalenderUser[])
+                    const return_data: IEvent[] = produceJadwalIEvent([response.data.data] as jadwal[]);
+                    pairIEventDenganUser(return_data as JadwalIEvent[], users  as CalenderUser[])
                     updateEvent(return_data[0])
 
                     progressIndikator.finish()
@@ -118,7 +118,7 @@ export function EventDetailsDialog({ _event, children }: Event_Details_Dialog_IP
 
 				<ScrollArea className="max-h-[80vh]">
 					<div className="space-y-4 p-4">
-                        {event.pinjam_zoom_ori &&
+                        {event.jadwal_ori &&
                             <div className="flex items-start gap-2">
                                 <User className="mt-1 size-4 shrink-0 text-muted-foreground" />
                                 <div>
@@ -141,47 +141,47 @@ export function EventDetailsDialog({ _event, children }: Event_Details_Dialog_IP
 							</div>
 						</div>
 
-                        { (event as PinjamZoomIEvent).zoom_akun != null ? <>
+                        { (event as JadwalIEvent).zoom_akun != null ? <>
 
                             <div className="flex items-start gap-2">
                                 <Video className="mt-1 size-4 shrink-0 text-muted-foreground" />
                                 <div>
                                     <p className="text-sm font-medium text-secondary">Zoom Akun</p>
                                     <p className="text-sm text-muted-foreground">
-                                        {(event as PinjamZoomIEvent).zoom_akun}
+                                        {(event as JadwalIEvent).zoom_akun}
                                     </p>
                                 </div>
                             </div>
                         </> : <></>}
 
-                         { (event as PinjamZoomIEvent).join_url != null ? <>
+                         { (event as JadwalIEvent).join_url != null ? <>
 
                             <div className="flex items-start gap-2">
                                 <Link className="mt-1 size-4 shrink-0 text-muted-foreground" />
                                 <div>
                                     <p className="text-sm font-medium text-secondary">Join Zoom
-                                        <button onClick={() => {navigator.clipboard.writeText((event as PinjamZoomIEvent).join_url); toast('Copy Link')}} className="text-sm text-muted-foreground">
+                                        <button onClick={() => {navigator.clipboard.writeText((event as JadwalIEvent).join_url!); toast('Copy Link')}} className="text-sm text-muted-foreground">
                                            <Copy className="ml-3 size-4 shrink-0 text-muted-foreground" />
                                         </button>
                                     </p>
-                                    <a prefetch target="_blank" href={(event as PinjamZoomIEvent).join_url} className="text-sm text-muted-foreground">
+                                    <a target="_blank" href={(event as JadwalIEvent).join_url!} className="text-sm text-muted-foreground">
                                         <span>Buka Join Link</span>
                                     </a>
                                 </div>
                             </div>
                         </> : <></>}
 
-                         { (event as PinjamZoomIEvent).start_url != null ? <>
+                         { (event as JadwalIEvent).start_url != null ? <>
 
                             <div className="flex items-start gap-2">
                                 <Link className="mt-1 size-4 shrink-0 text-muted-foreground" />
                                 <div>
                                     <p className="text-sm font-medium text-secondary">Start Zoom
-                                        <button onClick={() => {navigator.clipboard.writeText((event as PinjamZoomIEvent).start_url); toast('Copy Link')}} className="text-sm text-muted-foreground">
+                                        <button onClick={() => {navigator.clipboard.writeText((event as JadwalIEvent).start_url!); toast('Copy Link')}} className="text-sm text-muted-foreground">
                                            <Copy className="ml-3 size-4 shrink-0 text-muted-foreground" />
                                         </button>
                                     </p>
-                                    <a prefetch target="_blank" href={(event as PinjamZoomIEvent).start_url} className="text-sm text-muted-foreground">
+                                    <a target="_blank" href={(event as JadwalIEvent).start_url!} className="text-sm text-muted-foreground">
                                         <span>Buka Start Link</span>
                                     </a>
                                 </div>
@@ -315,7 +315,7 @@ export function EventDetailsDialog({ _event, children }: Event_Details_Dialog_IP
                         </AlertDialog>
                     }
                     {canChange(event) &&
-                        <AddEditEventDialog event={event} onUpdateOpenChange={(_event: IEvent) => setEvent(_event as PinjamZoomIEvent)}>
+                        <AddEditEventDialog event={event} onUpdateOpenChange={(_event: IEvent) => setEvent(_event as JadwalIEvent)}>
                             <Button variant="outline" className="text-accent-foreground">Ubah</Button>
                         </AddEditEventDialog>
                     }

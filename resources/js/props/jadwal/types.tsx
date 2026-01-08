@@ -5,15 +5,16 @@ import { User } from "@/types";
 import { v4 as uuidv4 } from "uuid";
 import { TEventColor } from "@/components/calender_modules/types";
 
-export type PinjamZoomProps = {
-    pinjam_zoom: pinjam_zoom[];
+
+export type JadwalProps = {
+    jadwal: jadwal[];
     user: User[];
     havePinjamMovilRole: boolean;
 };
 
-export type PinjamZoomContextType = PinjamZoomProps & {
-    eventDialog: pinjam_zoom_dialog_event;
-    setEventDialog: (eventDialog: pinjam_zoom_dialog_event) => void;
+export type JadwalContextType = JadwalProps & {
+    eventDialog: jadwal_dialog_event;
+    setEventDialog: (eventDialog: jadwal_dialog_event) => void;
 };
 
 
@@ -31,59 +32,77 @@ export interface zoom_app_with_status {
     data: zoom_app[];
 }
 
-export interface pinjam_zoom {
+export interface jadwal {
     id: string;
-    topic: string;
-    password: string;
+    kegiatan: string;
+    description: string;
+
     tipe: string;
     tanggal: string | null;
     berulang_tanggal_awal: string | null;
     berulang_tanggal_akhir: string | null;
     waktu_awal: string;
     waktu_akhir: string;
-    status: "menunggu" | "disetujui" | "ditolak" | "diapp";
+
+    status: "menunggu" | "disetujui" | "ditolak";
     pembuat_username: string;
-    confirm_username: string | null;
+
+    url_daftar_hadir: string | null;
+    url_notulensi: string | null;
+    url_dokumentasi: string | null;
+    url_undangan: string | null;
+
+    ruang_status: 'tidak' | 'menunggu' | 'disetujui' | 'ditolak';
+    ruang: string | null;
+    ruang_confirm_username: string | null;
+
+    zoom_status: 'tidak' | 'langsung' | 'menunggu' | 'disetujui' | 'ditolak';
+    zoom_password: string | null;
+    zoom_confirm_username: string | null;
     zoom_akun: 'statsulbar' | 'sp2020' | null;
     zoom_meeting_id: number | null;
     zoom_start_url: string | null;
     zoom_join_url: string | null;
-    jadwal_id: string | null;
 }
 
-export interface pinjam_zoom_req {
+export interface jadwal_req {
     id: string;
-    topic: string;
-    password: string;
+    kegiatan: string;
+
     tipe: string;
     tanggal: string | null;
     tanggal_awal: string | null;
     tanggal_akhir: string | null;
     waktu_awal: string;
     waktu_akhir: string;
-    status: "menunggu" | "disetujui" | "ditolak" | "diapp";
-    pembuat_username: string;
-    confirm_username: string | null;
+    status: "menunggu" | "disetujui" | "ditolak";
+
+    ruang_menggunakan: 0 | 1;
+    ruang: string | null;
+
+    zoom_menggunakan:  0 | 1;
+    zoom_password: string | null;
     zoom_akun: 'statsulbar' | 'sp2020' | null;
+    zoom_join_url_langsung: string | null;
 }
 
-export interface PinjamZoomIEvent extends IEvent {
-    pinjam_zoom_ori: pinjam_zoom | null;
+export interface JadwalIEvent extends IEvent {
+    jadwal_ori: jadwal | null;
     zoom_akun: 'statsulbar' | 'sp2020' | null;
     join_url: string | null;
     start_url: string | null;
 }
 
-export interface pinjam_zoom_dialog_event {
+export interface jadwal_dialog_event {
     status: null | "lihat" | "tambah" | "ubah" | "hapus" | "approval";
-    data: pinjam_zoom | null;
+    data: jadwal | null;
 }
 
-export function producePinjamZoomIEvent(
-    pinjam_zoom: pinjam_zoom[],
-): PinjamZoomIEvent[] {
-    const retur_data: PinjamZoomIEvent[] = [];
-    pinjam_zoom.forEach((element) => {
+export function produceJadwalIEvent(
+    jadwal: jadwal[],
+): JadwalIEvent[] {
+    const retur_data: JadwalIEvent[] = [];
+    jadwal.forEach((element) => {
         if (element.status != "ditolak") {
             let tanggal: string = "";
             let tanggal_awal: string = "";
@@ -113,46 +132,49 @@ export function producePinjamZoomIEvent(
                 _endDate: tanggal_akhir,
                 _startTime: element.waktu_awal,
                 _endTime: element.waktu_akhir,
-                title: element.topic,
+                title: element.kegiatan,
                 color: element.status == "disetujui" ? "green" : "blue",
                 description: "Peminjaman Zoom",
                 user: null,
                 zoom_akun: element.zoom_akun as 'statsulbar' | 'sp2020' | null,
-                pinjam_zoom_ori: element,
+                jadwal_ori: element,
                 join_url: element.zoom_join_url,
-                start_url: element.zoom_start_url
+                start_url: element.zoom_start_url,
+                oriKey: 'jadwal_ori',
             });
         }
     });
     return retur_data;
 }
 
-export function producePinjamZoomIEventFromZoomApp(
-    awal: PinjamZoomIEvent[],
+export function produceJadwalIEventFromZoomApp(
+    awal: JadwalIEvent[],
     pinjam_zoom: zoom_app[],
     zoom_akun: 'statsulbar' | 'sp2020' | null,
 ): void {
     const zoom_meeting_id_s: number[] = [];
+    const zoom_join_url_s: string[] = [];
     awal.forEach((element) => {
-        if (element.pinjam_zoom_ori?.zoom_meeting_id) {
-            zoom_meeting_id_s.push(element.pinjam_zoom_ori?.zoom_meeting_id);
+        if(element.jadwal_ori){
+            zoom_meeting_id_s.push(element.jadwal_ori.zoom_meeting_id!);
+            zoom_join_url_s.push(element.jadwal_ori.zoom_join_url!)
         }
     });
 
     const pinjam_zoom_filter = pinjam_zoom.filter((item) => {
-        if (!zoom_meeting_id_s.includes(item.id)) {
+        if (! (zoom_meeting_id_s.includes(item.id) || zoom_join_url_s.includes(item.join_url) )) {
             return true;
         } else {
             return false;
         }
     });
 
-    const retur_data: PinjamZoomIEvent[] = [];
+    const retur_data: JadwalIEvent[] = [];
 
     pinjam_zoom_filter.forEach((element) => {
         let ada = false;
         for (let i = 0; i < retur_data.length; i++) {
-            if (retur_data[i].pinjam_zoom_ori?.zoom_meeting_id == element.id) {
+            if (retur_data[i].jadwal_ori?.zoom_meeting_id == element.id) {
                 ada = true;
                 const date_awal = new Date(element.start_time);
                 const date_akhir = new Date(
@@ -171,11 +193,6 @@ export function producePinjamZoomIEventFromZoomApp(
             );
 
             let color: TEventColor = "purple"
-            if(zoom_akun == 'statsulbar'){
-                color='green'
-            }else if(zoom_akun == 'sp2020'){
-                color='yellow'
-            }
 
             if(formatDate(date_awal) == formatDate(date_akhir)){
                  retur_data.push({
@@ -192,9 +209,10 @@ export function producePinjamZoomIEventFromZoomApp(
                     description: "Peminjaman Zoom",
                     user: null,
                     zoom_akun: zoom_akun,
-                    pinjam_zoom_ori: null,
+                    jadwal_ori: null,
                     join_url: element.join_url,
-                    start_url: null
+                    start_url: null,
+                    oriKey: null,
                 });
             }else{
                 const satu_startDate: Date = parseISO(format(date_awal, "yyyy-MM-dd HH:mm"))
@@ -216,9 +234,10 @@ export function producePinjamZoomIEventFromZoomApp(
                     description: "Peminjaman Zoom",
                     user: null,
                     zoom_akun: zoom_akun,
-                    pinjam_zoom_ori: null,
+                    jadwal_ori: null,
                     join_url: element.join_url,
-                    start_url: null
+                    start_url: null,
+                    oriKey: null,
                 });
 
                 retur_data.push({
@@ -235,14 +254,12 @@ export function producePinjamZoomIEventFromZoomApp(
                     description: "Peminjaman Zoom",
                     user: null,
                     zoom_akun: zoom_akun,
-                    pinjam_zoom_ori: null,
+                    jadwal_ori: null,
                     join_url: element.join_url,
                     start_url: null,
+                    oriKey: null,
                 });
-
             }
-
-
         }
     });
 
@@ -250,14 +267,14 @@ export function producePinjamZoomIEventFromZoomApp(
 }
 
 export function pairIEventDenganUser(
-    pinjam_zoom_event: PinjamZoomIEvent[],
+    pinjam_zoom_event: JadwalIEvent[],
     users: CalenderUser[],
 ) {
     for (let i = 0; i < pinjam_zoom_event.length; i++) {
         const user = users.find(
             (e) =>
                 e.username ==
-                pinjam_zoom_event[i].pinjam_zoom_ori?.pembuat_username,
+                pinjam_zoom_event[i].jadwal_ori?.pembuat_username,
         );
         if (user) {
             pinjam_zoom_event[i].user = user;

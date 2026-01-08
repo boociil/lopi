@@ -217,8 +217,8 @@ trait Zoom_Traits
         if($instance instanceof Pinjam_Zoom){
             if($instance->tipe == 'sekali'){
                 $zoom_mmet = $this->zoom_createMeeting($path, [
-                    "agenda" => $instance->topic,
-                    "topic" => $instance->topic,
+                    "agenda" => $instance->kegiatan,
+                    "topic" => $instance->kegiatan,
                     "default_password" => false,
                     "password" => $instance->password,
                     "start_time" => $instance->tanggal. "T" .$instance->waktu_awal.":00",
@@ -239,8 +239,8 @@ trait Zoom_Traits
                 }
             }else if($instance->tipe == 'berulang'){
                  $zoom_mmet = $this->zoom_createMeeting($path, [
-                    "agenda" => $instance->topic,
-                    "topic" => $instance->topic,
+                    "agenda" => $instance->kegiatan,
+                    "topic" => $instance->kegiatan,
                     "default_password" => false,
                     "password" => $instance->password,
                     "start_time" => $instance->berulang_tanggal_awal. "T" .$instance->waktu_awal.":00",
@@ -275,8 +275,8 @@ trait Zoom_Traits
         if($instance instanceof Pinjam_Zoom){
             if($instance->tipe == 'sekali'){
                 $zoom_mmet = $this->zoom_updateMeeting($path, "".$instance->zoom_meeting_id ,[
-                    "agenda" => $instance->topic,
-                    "topic" => $instance->topic,
+                    "agenda" => $instance->kegiatan,
+                    "topic" => $instance->kegiatan,
                     "default_password" => false,
                     "password" => $instance->password,
                     "start_time" => $instance->tanggal. "T" .$instance->waktu_awal.":00",
@@ -292,8 +292,8 @@ trait Zoom_Traits
                 }
             }else if($instance->tipe == 'berulang'){
                 $zoom_mmet = $this->zoom_updateMeeting($path, "".$instance->zoom_meeting_id ,[
-                    "agenda" => $instance->topic,
-                    "topic" => $instance->topic,
+                    "agenda" => $instance->kegiatan,
+                    "topic" => $instance->kegiatan,
                     "default_password" => false,
                     "password" => $instance->password,
                     "start_time" => $instance->berulang_tanggal_awal. "T" .$instance->waktu_awal.":00",

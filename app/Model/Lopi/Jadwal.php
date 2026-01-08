@@ -16,13 +16,14 @@ class Jadwal extends Model
     public $timestamps = true;
 
     protected $fillable = ['id', 'pembuat_username', 'pemilik_tipe_str', 'pemilik_type', 'pemilik_id'
-        , 'topic', 'description'
-        , 'tipe', 'berulang_tanggal_awal', 'berulang_tanggal_akhir'
+        , 'kegiatan', 'description'
+        , 'tipe', 'tanggal', 'berulang_tanggal_awal', 'berulang_tanggal_akhir'
         , 'tanggal_awal', 'tanggal_akhir', 'waktu_awal', 'waktu_akhir', 'status'
-        , 'url_daftar_hadir', 'url_notulensi', 'url_dokumentasi', 'url_dokumentasi', 'url_undangan'
-        , 'zoom_id', 'ruang_id' ];
+        , 'url_daftar_hadir', 'url_notulensi', 'url_dokumentasi', 'url_undangan'
+        , 'ruang_status', 'ruang', 'ruang_confirm_username'
+        , 'zoom_status', 'zoom_password', 'zoom_confirm_username', 'zoom_akun', 'zoom_meeting_id', 'zoom_start_url', 'zoom_join_url' ];
 
-    public function pemilik(): HasMany
+    public function peserta(): HasMany
     {
         return $this->hasMany(Jadwal_Peserta::class, 'jadwal_id', 'id');
     }

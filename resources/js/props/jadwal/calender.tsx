@@ -2,7 +2,7 @@ import { CalendarBody } from "@/components/calender_modules/calendar-body";
 import { CalendarProvider } from "@/components/calender_modules/contexts/calendar-context";
 import { DndProvider } from "@/components/calender_modules/contexts/dnd-context";
 import { CalendarHeader } from "@/components/calender_modules/header/calendar-header";
-import { pairIEventDenganUser, pinjam_zoom, pinjam_zoom_req, PinjamZoomIEvent, producePinjamZoomIEvent, producePinjamZoomIEventFromZoomApp, zoom_app } from "./types";
+import { jadwal, pairIEventDenganUser, JadwalIEvent, produceJadwalIEvent, zoom_app, produceJadwalIEventFromZoomApp } from "./types";
 import { type SharedData, type User } from "@/types";
 import { CalenderUser, produceCalenderUser, SettingCalender, type IEvent, type IUser } from "@/components/calender_modules/interfaces";
 import { AddEditEventDialog } from "./dialog/add-edit-event-dialog";
@@ -18,14 +18,14 @@ import { formatDate, formatTime } from "@/components/calender_modules/helpers";
 import { useApi } from "@/lib/API/useApi";
 import { progress } from '@inertiajs/react'
 
-export function PinjamZoomCalender({
-        pinjam_zoom_data,
+export function JadwalCalender({
+        jadwal_data,
         user,
         have_zoom_peran,
         zoom_statsulbar,
         zoom_sp2020,
     }: {
-        pinjam_zoom_data: pinjam_zoom[];
+        jadwal_data: jadwal[];
         user: User[];
         have_zoom_peran: boolean;
         zoom_statsulbar: zoom_app[];
@@ -37,13 +37,13 @@ export function PinjamZoomCalender({
 
     const settingCalender: SettingCalender = {name_event: 'kegiatan', calender_show: ["week", "month","agenda"], show_filter: true, filter_name: [['green', 'statsulbar'], ['yellow', 'sp2020']], show_filter_user: false}
     const _user: IUser[] = produceCalenderUser(user);
-    const _allEvents: PinjamZoomIEvent[] = producePinjamZoomIEvent(pinjam_zoom_data);
+    const _allEvents: JadwalIEvent[] = produceJadwalIEvent(jadwal_data);
 
 
-    producePinjamZoomIEventFromZoomApp(_allEvents, zoom_statsulbar, 'statsulbar');
-    producePinjamZoomIEventFromZoomApp(_allEvents, zoom_sp2020, 'sp2020');
+    produceJadwalIEventFromZoomApp(_allEvents, zoom_statsulbar, 'statsulbar');
+    produceJadwalIEventFromZoomApp(_allEvents, zoom_sp2020, 'sp2020');
 
-    pairIEventDenganUser(_allEvents as PinjamZoomIEvent[], _user as CalenderUser[])
+    pairIEventDenganUser(_allEvents as JadwalIEvent[], _user as CalenderUser[])
 
     /////////////////////
     function reload_data(selectedDate: Date, currentView: TCalendarView, setAllEventsOri: (_allEvents: IEvent[]) => void){
@@ -53,11 +53,11 @@ export function PinjamZoomCalender({
             .then(function (response: any) {
                 try {
 
-                    const _allEvents_: PinjamZoomIEvent[] = producePinjamZoomIEvent(response.data.pinjam_zoom_data as pinjam_zoom[]);
+                    const _allEvents_: JadwalIEvent[] = produceJadwalIEvent(response.data.pinjam_zoom_data as jadwal[]);
 
-                    producePinjamZoomIEventFromZoomApp(_allEvents_, response.data.zoom_statsulbar.data as zoom_app[], 'statsulbar');
-                    producePinjamZoomIEventFromZoomApp(_allEvents_, response.data.zoom_sp2020.data as zoom_app[], 'sp2020');
-                    pairIEventDenganUser(_allEvents_ as PinjamZoomIEvent[], _user as CalenderUser[])
+                    produceJadwalIEventFromZoomApp(_allEvents_, response.data.zoom_statsulbar.data as zoom_app[], 'statsulbar');
+                    produceJadwalIEventFromZoomApp(_allEvents_, response.data.zoom_sp2020.data as zoom_app[], 'sp2020');
+                    pairIEventDenganUser(_allEvents_ as JadwalIEvent[], _user as CalenderUser[])
 
                     setAllEventsOri(_allEvents_)
                     progress.finish()
@@ -93,8 +93,8 @@ export function PinjamZoomCalender({
         axiosClient.post(route("pinjam-zoom-ubah", { pinjamZoom: event.id }), data)
             .then(function (response: any) {
                 try {
-                    const return_data: IEvent[] = producePinjamZoomIEvent([response.data.data] as pinjam_zoom[]);
-                    pairIEventDenganUser(return_data  as PinjamZoomIEvent[], _user as CalenderUser[])
+                    const return_data: IEvent[] = produceJadwalIEvent([response.data.data] as jadwal[]);
+                    pairIEventDenganUser(return_data  as JadwalIEvent[], _user as CalenderUser[])
                     updateEvent(return_data[0])
                     progress.finish()
                     toast.success('Berhasil mengubah data')
@@ -119,22 +119,22 @@ export function PinjamZoomCalender({
         return true
     }
     function canChange(event: IEvent):  boolean{
-        const event_ = event as PinjamZoomIEvent
-        if(!event_.pinjam_zoom_ori){
+        const event_ = event as JadwalIEvent
+        if(!event_.jadwal_ori){
             return false
         }
-        if(have_zoom_peran || event_.pinjam_zoom_ori.pembuat_username == auth.user.username){
+        if(have_zoom_peran || event_.jadwal_ori.pembuat_username == auth.user.username){
             return true
         }else{
             return false
         }
     }
     function canApprove(event: IEvent):  boolean{
-        const event_ = event as PinjamZoomIEvent
-        if(!event_.pinjam_zoom_ori){
+        const event_ = event as JadwalIEvent
+        if(!event_.jadwal_ori){
             return false
         }
-        if(have_zoom_peran && event_.pinjam_zoom_ori.status == 'menunggu'){
+        if(have_zoom_peran && event_.jadwal_ori.status == 'menunggu'){
             return true
         }else{
             return false
