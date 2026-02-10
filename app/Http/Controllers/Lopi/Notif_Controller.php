@@ -16,11 +16,11 @@ class Notif_Controller extends Controller
     {
         $peran = Peran::get_my_peran();
 
-        $count_appreciate = 1;
-        $count_jadwal = 1;
-        $count_pinjam_ruang = 1;
-        $count_pinjam_zoom = 1;
-        $count_pinjam_mobil = 1;
+        $count_appreciate = 0;
+        $count_jadwal = 0;
+        $count_pinjam_ruang = 0;
+        $count_pinjam_zoom = 0;
+        $count_pinjam_mobil = 0;
 
         if($peran->contains('peran', 'appreciate')){
              $count_appreciate = Appreciate_Data::where('status', '0')->count();

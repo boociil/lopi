@@ -21,8 +21,6 @@ use App\Model\Umum\User;
 use Exception;
 use Inertia\Inertia;
 
-use function PHPUnit\Framework\isNull;
-
 class Pinjam_Zoom_Controller extends Controller
 {
 
@@ -136,7 +134,7 @@ class Pinjam_Zoom_Controller extends Controller
     public function tambah(Request $request)
     {
         $validated = $request->validate([
-            'topic'             => 'required|string|max:255',
+            'kegiatan'          => 'required|string|max:255',
             'password'          => 'required|string',
             'tipe'              => 'required|in:sekali,berulang',
             'tanggal'           => 'date',
@@ -147,7 +145,7 @@ class Pinjam_Zoom_Controller extends Controller
             'zoom_akun'         => 'in:statsulbar,sp2020'
         ]);
 
-        if(!isNull($request->input('tanggal')) || (!isNull($request->input('tanggal_awal')) && !isNull($request->input('tanggal_akhir')))){
+        if(!is_null($request->input('tanggal')) || (!is_null($request->input('tanggal_awal')) && !is_null($request->input('tanggal_akhir')))){
             throw ValidationException::withMessages([
                 '_status' => 'Peran tidak dapat dibuat',
             ]);
@@ -162,7 +160,7 @@ class Pinjam_Zoom_Controller extends Controller
         {
             $pinjam_zoom = new Pinjam_Zoom();
             $pinjam_zoom->id = Str::uuid();
-            $pinjam_zoom->topic = $request->input('topic');
+            $pinjam_zoom->kegiatan = $request->input('kegiatan');
             $pinjam_zoom->tipe = $request->input('tipe');
             $pinjam_zoom->password = $request->input('password');
 
@@ -211,7 +209,7 @@ class Pinjam_Zoom_Controller extends Controller
     public function ubah(Request $request, Pinjam_Zoom $pinjamZoom)
     {
         $validated = $request->validate([
-            'topic'          => 'required|string|max:255',
+            'kegiatan'          => 'required|string|max:255',
             'tipe'              => 'required|in:sekali,berulang',
             'tanggal'           => 'date',
             'tanggal_awal'      => 'date',
@@ -221,7 +219,7 @@ class Pinjam_Zoom_Controller extends Controller
             'zoom_akun'         => 'in:statsulbar,sp2020'
         ]);
 
-        if(!isNull($request->input('tanggal')) || (!isNull($request->input('tanggal_awal')) && !isNull($request->input('tanggal_akhir')))){
+        if(!is_null($request->input('tanggal')) || (!is_null($request->input('tanggal_awal')) && !is_null($request->input('tanggal_akhir')))){
             throw ValidationException::withMessages([
                 '_status' => 'Peran tidak dapat dibuat',
             ]);
@@ -240,7 +238,7 @@ class Pinjam_Zoom_Controller extends Controller
         DB::beginTransaction();
         try
         {
-            $pinjamZoom->topic = $request->input('topic');
+            $pinjamZoom->kegiatan = $request->input('kegiatan');
             $pinjamZoom->tipe = $request->input('tipe');
             $pinjamZoom->password = $request->input('password');
             if($request->input('tipe') == 'sekali'){

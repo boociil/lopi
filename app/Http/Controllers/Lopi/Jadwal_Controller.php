@@ -22,8 +22,6 @@ use App\Model\Umum\User;
 use Exception;
 use Inertia\Inertia;
 
-use function PHPUnit\Framework\isNull;
-
 class Jadwal_Controller extends Controller
 {
 
@@ -161,7 +159,7 @@ class Jadwal_Controller extends Controller
             'zoom_menggunakan'  => Rule::in([0, 1]),
         ]);
 
-        if(!isNull($request->input('tanggal')) || (!isNull($request->input('tanggal_awal')) && !isNull($request->input('tanggal_akhir')))){
+        if(!is_null($request->input('tanggal')) || (!is_null($request->input('tanggal_awal')) && !is_null($request->input('tanggal_akhir')))){
             throw ValidationException::withMessages([
                 '_status' => 'Peran tidak dapat dibuat',
             ]);
@@ -282,7 +280,7 @@ class Jadwal_Controller extends Controller
             'zoom_menggunakan'  => Rule::in([0, 1]),
         ]);
 
-        if(!isNull($request->input('tanggal')) || (!isNull($request->input('tanggal_awal')) && !isNull($request->input('tanggal_akhir')))){
+        if(!is_null($request->input('tanggal')) || (!is_null($request->input('tanggal_awal')) && !is_null($request->input('tanggal_akhir')))){
             throw ValidationException::withMessages([
                 '_status' => 'Peran tidak dapat dibuat',
             ]);

@@ -40,7 +40,7 @@ export default function Login({ tahun_array, tahun_default }: LoginProps) {
          <div className="flex min-h-svh flex-col items-center justify-center gap-6 bg-background md:p-10">
             <Head title="Log in" />
             <div className="w-full max-w-sm">
-                <Card className="flex flex-col gap-8 p-6">
+                <Card className="flex flex-col">
                     <CardHeader>
                         <div className="flex flex-col items-center gap-4">
                             <div className="flex flex-col items-center gap-2 font-medium">

@@ -21,7 +21,7 @@ class Jadwal extends Model
         , 'tanggal_awal', 'tanggal_akhir', 'waktu_awal', 'waktu_akhir', 'status'
         , 'url_daftar_hadir', 'url_notulensi', 'url_dokumentasi', 'url_undangan'
         , 'ruang_status', 'ruang', 'ruang_confirm_username'
-        , 'zoom_status', 'zoom_password', 'zoom_confirm_username', 'zoom_akun', 'zoom_meeting_id', 'zoom_start_url', 'zoom_join_url' ];
+        , 'zoom_status', 'zoom_pinjam_id' ];
 
     public function peserta(): HasMany
     {

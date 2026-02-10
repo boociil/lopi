@@ -19,8 +19,6 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
-use function PHPUnit\Framework\isNull;
-
 class Pinjam_Ruang_Controller extends Controller
 {
     public function index(Request $request)
@@ -116,7 +114,7 @@ class Pinjam_Ruang_Controller extends Controller
             'waktu_akhir'       => 'required|date_format:H:i|after:waktu_awal',
         ]);
 
-        if(!isNull($request->input('tanggal')) || (!isNull($request->input('tanggal_awal')) && !isNull($request->input('tanggal_akhir')))){
+        if(!is_null($request->input('tanggal')) || (!is_null($request->input('tanggal_awal')) && !is_null($request->input('tanggal_akhir')))){
             throw ValidationException::withMessages([
                 '_status' => 'Peran tidak dapat dibuat',
             ]);
@@ -201,7 +199,7 @@ class Pinjam_Ruang_Controller extends Controller
             'waktu_akhir'       => 'required|date_format:H:i|after:waktu_awal',
         ]);
 
-        if(!isNull($request->input('tanggal')) || (!isNull($request->input('tanggal_awal')) && !isNull($request->input('tanggal_akhir')))){
+        if(!is_null($request->input('tanggal')) || (!is_null($request->input('tanggal_awal')) && !is_null($request->input('tanggal_akhir')))){
             throw ValidationException::withMessages([
                 '_status' => 'Peran tidak dapat dibuat',
             ]);

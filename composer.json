@@ -17,6 +17,7 @@
         "php": "^8.2",
         "cloudwalkerid/jkd-sso": "dev-master",
         "google/apiclient": "2.13.2",
+        "google/cloud-firestore": "^1.55",
         "guzzlehttp/guzzle": "^7.9.3",
         "inertiajs/inertia-laravel": "^2.0.4",
         "laravel/framework": "^12.0",

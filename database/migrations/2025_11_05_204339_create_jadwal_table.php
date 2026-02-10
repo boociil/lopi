@@ -36,6 +36,38 @@ return new class extends Migration
             $table->foreign('confirm_username', 'mobil_fk_confirm_username')->references('username')->on('siakip2_users');
         });
 
+        Schema::create('siakip2_pinjam_zoom', function (Blueprint $table) {
+            //peserta ruang mana tanggal, tautan daftar hadrir, notulensi, tautan dokumentasi, tautan undangan
+            $table->string('id', 36)->primary();
+            $table->string('kegiatan', 2000);
+            $table->string('password', 10);
+
+            $table->enum('tipe', ['sekali', 'berulang'])->default('sekali');
+            $table->date('tanggal')->nullable();
+            $table->date('berulang_tanggal_awal')->nullable();
+            $table->date('berulang_tanggal_akhir')->nullable();
+
+            $table->time('waktu_awal');
+            $table->time('waktu_akhir');
+            $table->enum('status', ['menunggu', 'disetujui', 'ditolak'])->default('menunggu');
+
+            $table->string('pembuat_username', 100);
+            $table->string('confirm_username', 100)->nullable();
+
+            $table->string('zoom_akun', 100)->nullable();
+            $table->unsignedBigInteger('zoom_meeting_id')->nullable();
+            $table->string('zoom_start_url', 2000)->nullable();
+            $table->string('zoom_join_url', 2000)->nullable();
+
+            $table->timestamps();
+            $table->softDeletes();
+            $table->engine = 'InnoDB';
+
+            $table->foreign('pembuat_username', 'zoom_fk_pembuat_username')->references('username')->on('siakip2_users');
+            $table->foreign('confirm_username', 'zoom_fk_confirm_username')->references('username')->on('siakip2_users');
+        });
+
+
         Schema::create('siakip2_jadwal', function (Blueprint $table) {
             //peserta ruang mana tanggal, tautan daftar hadrir, notulensi, tautan dokumentasi, tautan undangan
             $table->string('id', 36)->primary();
@@ -67,20 +99,15 @@ return new class extends Migration
             $table->string('ruang_confirm_username', 100)->nullable();
 
             $table->enum('zoom_status', ['tidak', 'langsung', 'menunggu', 'disetujui', 'ditolak'])->default('tidak');
-            $table->string('zoom_password', 10)->nullable();
-            $table->string('zoom_confirm_username', 100)->nullable();
-            $table->string('zoom_akun', 100)->nullable();
-            $table->unsignedBigInteger('zoom_meeting_id')->nullable();
-            $table->string('zoom_start_url', 2000)->nullable();
-            $table->string('zoom_join_url', 2000)->nullable();
+            $table->string('zoom_pinjam_id', 36)->nullable();
 
             $table->timestamps();
             $table->softDeletes();
             $table->engine = 'InnoDB';
 
             $table->foreign('pembuat_username', 'jadwal_fk_pembuat_username')->references('username')->on('siakip2_users');
-            $table->foreign('ruang_confirm_username', 'ruang_fk_confirm_username')->references('username')->on('siakip2_users');
-            $table->foreign('zoom_confirm_username', 'zoom_fk_confirm_username')->references('username')->on('siakip2_users');
+            $table->foreign('ruang_confirm_username', 'j_ruang_fk_confirm_username')->references('username')->on('siakip2_users');
+            $table->foreign('zoom_pinjam_id', 'jadwal_fk_zoom_pinjam_id')->references('id')->on('siakip2_pinjam_zoom');
         });
 
 
@@ -104,5 +131,7 @@ return new class extends Migration
     {
         Schema::dropIfExists('siakip2_jadwal_peserta');
         Schema::dropIfExists('siakip2_jadwal');
+        Schema::dropIfExists('siakip2_pinjam_zoom');
+        Schema::dropIfExists('siakip2_pinjam_mobil');
     }
 };

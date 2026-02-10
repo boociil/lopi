@@ -17,7 +17,7 @@ class Pinjam_Zoom extends Model
 
     protected $fillable = [
         'id',
-        'topic',
+        'kegiatan',
         'password',
         'tipe',
         'tanggal',
