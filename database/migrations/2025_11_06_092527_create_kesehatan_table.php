@@ -14,15 +14,16 @@ return new class extends Migration
         Schema::create('siakip2_kesehatan', function (Blueprint $table) {
             $table->id();
             $table->string('username', 100);
-            $table->dateTime('tanggal');
-            $table->unsignedSmallInteger('tinggi_badan')->nullable();
-            $table->unsignedSmallInteger('berat_badan')->nullable();
-            $table->unsignedSmallInteger('linkar_perut')->nullable();
+            $table->date('tanggal');
+            $table->decimal('tinggi_badan', total: 5, places: 2)->nullable();
+            $table->decimal('berat_badan', total: 5, places: 2)->nullable();
+            $table->decimal('linkar_perut', total: 5, places: 2)->nullable();
             $table->string('tekanan_darah', 10)->nullable();
-            $table->unsignedSmallInteger('asam_urat')->nullable();
-            $table->unsignedSmallInteger('gula_darah')->nullable();
-            $table->enum('gula_darah_tipe', ['dgp', 'gds'])->nullable();
+            $table->decimal('asam_urat', total: 5, places: 2)->nullable();
+            $table->decimal('gula_darah', total: 5, places: 2)->nullable();
+            $table->enum('gula_darah_tipe', ['gdp', 'gds'])->nullable();
 
+            $table->softDeletes();
             $table->foreign('username', 'kesehatan_fk_username')->references('username')->on('siakip2_users');
         });
     }

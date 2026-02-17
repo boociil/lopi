@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('siakip2_klasifikasi_arsip', function (Blueprint $table) {
+        Schema::create('siakip2_arsip_klasifikasi', function (Blueprint $table) {
             $table->id();
             $table->string('kode', 30)->unique(); // contoh: KP.02
             $table->string('nama');               // Kepegawaian
@@ -36,7 +36,7 @@ return new class extends Migration
 
             $table->timestamps();
 
-            $table->foreign('klasifikasi_arsip_id', 'arsip_fk_klasifikasi_arsip_id')->references('id')->on('siakip2_klasifikasi_arsip')->constrained()->cascadeOnDelete();
+            $table->foreign('klasifikasi_arsip_id', 'arsip_fk_klasifikasi_arsip_id')->references('id')->on('siakip2_arsip_klasifikasi')->constrained()->cascadeOnDelete();
             $table->foreign('unit_cipta_arsip', 'arsip_fk_unit_cipta_arsip')->references('id')->on('siakip2_satuan_kerja_tahun');
         });
 

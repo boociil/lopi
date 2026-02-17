@@ -20,12 +20,12 @@ class Kesehatan_Controller extends Controller
     {
        $validated = $request->validate([
             'tanggal' => 'required|date',
-            'tinggi_badan' => 'nullable|decimal:2',
-            'berat_badan' => 'nullable|decimal:2',
-            'linkar_perut' => 'nullable|decimal:2',
+            'tinggi_badan' => 'nullable',
+            'berat_badan' => 'nullable',
+            'linkar_perut' => 'nullable',
             'tekanan_darah' => 'nullable|string|max:10',
-            'asam_urat' => 'nullable|decimal:2',
-            'gula_darah' => 'nullable|decimal:2',
+            'asam_urat' => 'nullable',
+            'gula_darah' => 'nullable',
             'gula_darah_tipe' => 'nullable|in:dgp,gds',
         ]);
 
@@ -56,7 +56,7 @@ class Kesehatan_Controller extends Controller
 
         return response()->json([
             'message' => 'Data kesehatan berhasil ditambahkan',
-        ], 201);
+        ], 200);
     }
 
 

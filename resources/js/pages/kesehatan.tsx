@@ -59,6 +59,33 @@ export default function Index({
 
       const [isModalOpen, setIsModalOpen] = useState(false);
       const [healthData, setHealthData] = useState<kesehatan[]>(kesehatan_);
+
+      const latestData: kesehatan = healthData[healthData.length-1] || {};
+      healthData.forEach(element => {
+        if(!latestData.tinggi_badan && element.tinggi_badan){
+            latestData.tinggi_badan = element.tinggi_badan
+        }
+        if(!latestData.berat_badan && element.berat_badan){
+            latestData.berat_badan = element.berat_badan
+        }
+        if(!latestData.linkar_perut && element.linkar_perut){
+            latestData.linkar_perut = element.linkar_perut
+        }
+         if(!latestData.tekanan_darah && element.tekanan_darah){
+            latestData.tekanan_darah = element.tekanan_darah
+        }
+        if(!latestData.asam_urat && element.asam_urat){
+            latestData.asam_urat = element.asam_urat
+        }
+        if(!latestData.gula_darah && element.gula_darah){
+            latestData.gula_darah = element.gula_darah
+        }
+        if(!latestData.gula_darah_tipe && element.gula_darah_tipe){
+            latestData.gula_darah_tipe = element.gula_darah_tipe
+        }
+
+      });
+
       const [formData, setFormData] = useState<{
             id: number,
             tanggal: string,
@@ -74,7 +101,7 @@ export default function Index({
       >({
         id: 0,
         tanggal: new Date().toISOString().slice(0, 16),
-        tinggi_badan: null,
+        tinggi_badan: latestData.tinggi_badan,
         berat_badan: null,
         linkar_perut: null,
         tekanan_darah_sistolik: null,
@@ -85,15 +112,6 @@ export default function Index({
       });
 
       const axiosClient = useApi();
-
-      useEffect(() => {
-        const dummyData: kesehatan[] = [
-          { id: 1, tanggal: '2023-10-01', tinggi_badan: 170, berat_badan: 70, linkar_perut: 85, tekanan_darah: '120/80', asam_urat: 6.0, gula_darah: 110, gula_darah_tipe: 'gds' },
-          { id: 2, tanggal: '2023-11-01', tinggi_badan: 170, berat_badan: 72, linkar_perut: 86, tekanan_darah: '130/85', asam_urat: 6.5, gula_darah: 105, gula_darah_tipe: 'gds' },
-          { id: 3, tanggal: '2023-12-01', tinggi_badan: 170, berat_badan: 68, linkar_perut: 82, tekanan_darah: '115/75', asam_urat: 5.8, gula_darah: 95, gula_darah_tipe: 'dgp' },
-        ];
-        setHealthData(dummyData);
-      }, []);
 
       const handleSubmit = (e:  React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -114,7 +132,7 @@ export default function Index({
             .then(function (response) {
                 setIsModalOpen(false);
                 setHealthData([newData, ...healthData]);
-                setFormData({ ...formData, tanggal: new Date().toISOString().slice(0, 16), tinggi_badan: null, berat_badan: null, linkar_perut: null, tekanan_darah_sistolik: null, tekanan_darah_diastolik: null, asam_urat: null, gula_darah: null, gula_darah_tipe: 'gds' });
+                setFormData({ ...formData, tanggal: new Date().toISOString().slice(0, 16), tinggi_badan: latestData.tinggi_badan, berat_badan: null, linkar_perut: null, tekanan_darah_sistolik: null, tekanan_darah_diastolik: null, asam_urat: null, gula_darah: null, gula_darah_tipe: 'gds' });
                 toast.success("Berhasil menambah data.");
             })
             .catch(function (error) {
@@ -153,7 +171,6 @@ export default function Index({
         return bmi.toFixed(1)+ " ("+kategori+")";
       };
 
-      const latestData = healthData[0] || {};
       const bmiValue = calculateBMI(latestData.berat_badan, latestData.tinggi_badan);
 
       return (
@@ -200,7 +217,8 @@ export default function Index({
                                     </CardHeader>
                                     <CardContent>
                                         <div className="text-2xl font-bold">{latestData.gula_darah || '0'}</div>
-                                        <p className="text-xs">Tipe: {latestData.gula_darah_tipe}</p>
+                                        {latestData.gula_darah_tipe == 'gdp' &&   <p className="text-xs">Gula Darah Puasa</p>}
+                                        {latestData.gula_darah_tipe == 'gds' &&   <p className="text-xs">Gula Darah Sewaktu</p>}
                                     </CardContent>
                                 </Card>
 
@@ -238,7 +256,7 @@ export default function Index({
                                     </CardHeader>
                                     <CardContent className="h-[300px]">
                                     <ResponsiveContainer width="100%" height="100%">
-                                        <LineChart data={[...healthData].reverse()}>
+                                        <LineChart data={[...healthData]}>
                                         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
                                         <XAxis
                                             dataKey="tanggal"
@@ -247,7 +265,7 @@ export default function Index({
                                             tickLine={false}
                                             tick={{fontSize: 12, fill: '#64748b'}}
                                         />
-                                        <YAxis axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#64748b'}} />
+                                        <YAxis axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#64748b'}} domain={[0, 200]}/>
                                         <Tooltip
                                             contentStyle={{ borderRadius: '8px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                                         />
@@ -266,7 +284,7 @@ export default function Index({
                                     </CardHeader>
                                     <CardContent className="h-[300px]">
                                     <ResponsiveContainer width="100%" height="100%">
-                                        <AreaChart data={[...healthData].reverse()}>
+                                        <AreaChart data={[...healthData]}>
                                         <defs>
                                             <linearGradient id="colorWeight" x1="0" y1="0" x2="0" y2="1">
                                                 <stop offset="5%" stopColor="#f2a154" stopOpacity={0.1}/>
@@ -312,22 +330,22 @@ export default function Index({
                                         </tr>
                                         </thead>
                                         <tbody className="[&_tr:last-child]:border-0 text-accent-foregroun">
-                                        {healthData.map((item) => (
+                                        {[...healthData].reverse().map((item) => (
                                             <tr key={item.id} className="border-b transition-colors hover:bg-slate-50/50">
                                                 <td className="p-4 align-middle font-medium">
                                                     {new Date(item.tanggal).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })}
                                                 </td>
                                                 <td className="p-4 align-middle">
-                                                    {item.tinggi_badan}cm / {item.berat_badan}kg
+                                                    {item.tinggi_badan ? item.tinggi_badan : '-' } cm / {item.berat_badan ? item.berat_badan : '-'} kg
                                                 </td>
                                                 <td className="p-4 align-middle">
-                                                    {item.tekanan_darah}
+                                                    {item.tekanan_darah ? item.tekanan_darah : '-'}
                                                 </td>
                                                  <td className="p-4 align-middle">
-                                                    {item.gula_darah_tipe} {item.gula_darah}
+                                                    {item.gula_darah && <>({item.gula_darah_tipe?.toUpperCase()}) {item.gula_darah}</>}
                                                 </td>
                                                 <td className="p-4 align-middle">
-                                                    {item.asam_urat}
+                                                    {item.asam_urat ? item.asam_urat : '-'}
                                                 </td>
                                                 <td className="p-4 align-middle text-right">
                                                     <Button

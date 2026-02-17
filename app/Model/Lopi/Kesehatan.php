@@ -8,8 +8,10 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Kesehatan extends Model
 {
+    use SoftDeletes;
+
     protected $table = 'siakip2_kesehatan';
-    public $timestamps = true;
+    public $timestamps = false;
 
     protected $fillable = ['username', 'tanggal', 'berat_badan'
         , 'linkar_perut', 'tekanan_darah', 'asam_urat', 'gula_darah', 'gula_darah_tipe'];
