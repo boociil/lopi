@@ -73,9 +73,9 @@ return new class extends Migration
             $table->string('id', 36)->primary();
 
             $table->string('pembuat_username', 100)->nullable();
-            $table->string('pemilik_tipe_str', 30);// 0: global, 1:satuan_kerja_tahun, 2:tim, 3
-            $table->string('pemilik_type')->nullable();
-            $table->string('pemilik_id',100)->nullable();
+            // $table->string('pemilik_tipe_str', 30);// 0: global, 1:satuan_kerja_tahun, 2:tim, 3
+            // $table->string('pemilik_type')->nullable();
+            // $table->string('pemilik_id',100)->nullable();
 
             $table->string('kegiatan');
             $table->text('deskripsi')->nullable();
@@ -100,6 +100,7 @@ return new class extends Migration
 
             $table->enum('zoom_status', ['tidak', 'langsung', 'menunggu', 'disetujui', 'ditolak'])->default('tidak');
             $table->string('zoom_pinjam_id', 36)->nullable();
+            $table->string('zoom_langsung_join_url', 36)->nullable();
 
             $table->timestamps();
             $table->softDeletes();
@@ -115,12 +116,11 @@ return new class extends Migration
             //peserta ruang mana tanggal, tautan daftar hadrir, notulensi, tautan dokumentasi, tautan undangan
             $table->string('id', 36)->primary();
             $table->string('jadwal_id', 36);
-            $table->string('username')->nullable();
+            $table->nullableUuidMorphs('peserta');
 
             $table->engine = 'InnoDB';
 
             $table->foreign('jadwal_id', 'peserta_fk_jadwal_id')->references('id')->on('siakip2_jadwal');
-            $table->foreign('username', 'peserta_fk_username')->references('username')->on('siakip2_users');
         });
     }
 

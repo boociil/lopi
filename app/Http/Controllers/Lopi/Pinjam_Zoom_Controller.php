@@ -158,39 +158,19 @@ class Pinjam_Zoom_Controller extends Controller
         DB::beginTransaction();
         try
         {
-            $pinjam_zoom = new Pinjam_Zoom();
-            $pinjam_zoom->id = Str::uuid();
-            $pinjam_zoom->kegiatan = $request->input('kegiatan');
-            $pinjam_zoom->tipe = $request->input('tipe');
-            $pinjam_zoom->password = $request->input('password');
 
-            if($request->input('tipe') == 'sekali'){
-                $pinjam_zoom->tanggal = $request->input('tanggal');
-                $pinjam_zoom->waktu_awal = $request->input('waktu_awal');
-                $pinjam_zoom->waktu_akhir = $request->input('waktu_akhir');
-            }else if($request->input('tipe') == 'berulang'){
-                $pinjam_zoom->berulang_tanggal_awal = $request->input('tanggal_awal');
-                $pinjam_zoom->berulang_tanggal_akhir = $request->input('tanggal_akhir');
-                $pinjam_zoom->waktu_awal = $request->input('waktu_awal');
-                $pinjam_zoom->waktu_akhir = $request->input('waktu_akhir');
-            }
-
-            $pinjam_zoom->status = 'menunggu';
-            $pinjam_zoom->pembuat_username = Auth::user()->username;
-
-            if($have_zoom_peran && in_array($request->input('zoom_akun'), ['statsulbar', 'sp2020'])){
-                $pinjam_zoom->status = 'disetujui';
-                $pinjam_zoom->confirm_username = Auth::user()->username;
-
-                if(in_array($request->input('zoom_akun'), ['statsulbar', 'sp2020'])){
-                    $this->zoom_meta_createMeeting($request->input('zoom_akun'), $pinjam_zoom);
-                }else{
-                    throw ValidationException::withMessages([
-                        'status' => 'Zoom tidak dapat dibuat',
-                    ]);
-                }
-            }
-            $pinjam_zoom->save();
+            $pinjam_zoom = Pinjam_Zoom::helper_tambah(
+                $request->input('kegiatan'),
+                $request->input('tipe'),
+                $request->input('password'),
+                $request->input('tanggal'),
+                $request->input('tanggal_awal'),
+                $request->input('tanggal_akhir'),
+                $request->input('waktu_awal'),
+                $request->input('waktu_akhir'),
+                $have_zoom_peran,
+                $request->input('zoom_akun')
+            );
 
             DB::commit();
             return [
@@ -238,50 +218,18 @@ class Pinjam_Zoom_Controller extends Controller
         DB::beginTransaction();
         try
         {
-            $pinjamZoom->kegiatan = $request->input('kegiatan');
-            $pinjamZoom->tipe = $request->input('tipe');
-            $pinjamZoom->password = $request->input('password');
-            if($request->input('tipe') == 'sekali'){
-                $pinjamZoom->tanggal = $request->input('tanggal');
-                $pinjamZoom->waktu_awal = $request->input('waktu_awal');
-                $pinjamZoom->waktu_akhir = $request->input('waktu_akhir');
-            }else if($request->input('tipe') == 'berulang'){
-                $pinjamZoom->berulang_tanggal_awal = $request->input('tanggal_awal');
-                $pinjamZoom->berulang_tanggal_akhir = $request->input('tanggal_akhir');
-                $pinjamZoom->waktu_awal = $request->input('waktu_awal');
-                $pinjamZoom->waktu_akhir = $request->input('waktu_akhir');
-            }
-            $pinjamZoom->status = 'menunggu';
-            $pinjamZoom->pembuat_username = Auth::user()->username;
-
-            if($have_zoom_peran && in_array($request->input('zoom_akun'), ['statsulbar', 'sp2020'])){
-                $pinjamZoom->status = 'disetujui';
-                $pinjamZoom->confirm_username = Auth::user()->username;
-                // if($pinjamZoom->zoom_meeting_id){
-                //     $this->zoom_meta_updateMeeting($request->input('zoom_akun'), $pinjamZoom);
-                // }else
-                if(!$pinjamZoom->zoom_meeting_id){
-                    $this->zoom_meta_createMeeting($request->input('zoom_akun'), $pinjamZoom);
-                }else if($pinjamZoom->zoom_meeting_id && $pinjamZoom->zoom_akun != $request->input('zoom_akun')){
-                    $this->zoom_deleteMeeting($request->input('zoom_akun'), $pinjamZoom->zoom_meeting_id);
-                    $this->zoom_meta_createMeeting($request->input('zoom_akun'), $pinjamZoom);
-                }else if($pinjamZoom->zoom_meeting_id && $pinjamZoom->zoom_akun == $request->input('zoom_akun')){
-                    $this->zoom_meta_updateMeeting($request->input('zoom_akun'), $pinjamZoom);
-                }
-            }else{
-                if($pinjamZoom->zoom_meeting_id){
-                    $this->zoom_deleteMeeting($pinjamZoom->zoom_akun, "".$pinjamZoom->zoom_meeting_id);
-                    throw ValidationException::withMessages([
-                        'status' => 'Zoom gagal diubah',
-                    ]);
-
-                    $pinjamZoom->zoom_akun = null;
-                    $pinjamZoom->zoom_meeting_id = null;
-                    $pinjamZoom->zoom_start_url = null;
-                    $pinjamZoom->zoom_join_url = null;
-                }
-            }
-            $pinjamZoom->save();
+           $pinjamZoom->helper_ubah(
+                $request->input('kegiatan'),
+                $request->input('tipe'),
+                $request->input('password'),
+                $request->input('tanggal'),
+                $request->input('tanggal_awal'),
+                $request->input('tanggal_akhir'),
+                $request->input('waktu_awal'),
+                $request->input('waktu_akhir'),
+                $have_zoom_peran,
+                $request->input('zoom_akun')
+            );
             DB::commit();
             return [
                 "_status" => 'Berhasil mengubah peminjaman zoom!',
@@ -305,25 +253,10 @@ class Pinjam_Zoom_Controller extends Controller
             ->where('peran', 'zoom')
             ->first();
 
-        if(! ($have_zoom_peran || $pinjamZoom->pembuat_username == Auth::user()->username) ){
-            throw ValidationException::withMessages([
-                '_status' => 'Gagal menghapus peminjaman zoom!',
-            ]);
-        }
-
-        if($pinjamZoom->zoom_meeting_id){
-            $zoom_app = $this->zoom_deleteMeeting($pinjamZoom->zoom_akun, "".$pinjamZoom->zoom_meeting_id);
-            if(!$zoom_app['status']){
-                throw ValidationException::withMessages([
-                    'status' => 'Zoom gagal dihapus',
-                ]);
-            }
-        }
-
         DB::beginTransaction();
         try
         {
-            $pinjamZoom->delete();
+            $pinjamZoom->helper_hapus($have_zoom_peran);
             DB::commit();
             return [
                 "_status" => 'Berhasil menghapus peminjaman zoom!'
@@ -361,35 +294,7 @@ class Pinjam_Zoom_Controller extends Controller
         DB::beginTransaction();
         try
         {
-            if($request->input('status') == 'ditolak'){
-                if($pinjamZoom->zoom_meeting_id){
-                    $zoom_app = $this->zoom_deleteMeeting($pinjamZoom->zoom_akun, "".$pinjamZoom->zoom_meeting_id);
-                    if(!$zoom_app['status']){
-                        throw ValidationException::withMessages([
-                            'status' => 'Zoom gagal dibuat',
-                        ]);
-                    }
-
-                    $pinjamZoom->status = 1;
-                    $pinjamZoom->zoom_akun = null;
-                    $pinjamZoom->zoom_meeting_id = null;
-                    $pinjamZoom->zoom_start_url = null;
-                    $pinjamZoom->zoom_join_url = null;
-                }
-            }else if($request->input('status') == 'disetujui'){
-                if(!$pinjamZoom->zoom_meeting_id){
-                    $this->zoom_meta_createMeeting($request->input('zoom_akun'), $pinjamZoom);
-                }else {
-                    if($pinjamZoom->zoom_akun != $request->input('zoom_akun')){
-                        $this->zoom_deleteMeeting($request->input('zoom_akun'), $pinjamZoom->zoom_meeting_id);
-                        $this->zoom_meta_createMeeting($request->input('zoom_akun'), $pinjamZoom);
-                    }
-                }
-            }
-
-            $pinjamZoom->status = $request->input('status');
-            $pinjamZoom->confirm_username = Auth::user()->username;
-            $pinjamZoom->save();
+            $pinjamZoom->helper_approval($request->input('status'), $request->input('zoom_akun'));
             DB::commit();
             return [
                 "_status" => 'Berhasil approval peminjaman zoom!',

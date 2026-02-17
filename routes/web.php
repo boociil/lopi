@@ -133,10 +133,9 @@ Route::group(
     'prefix' => 'kesehatan',
     'middleware' => ['auth', 'check_maintenance', 'statistik'],
 ], function () {
-    Route::get('/', [Kesehatan_Controller::class, 'index'])->name('pinjam-kesehatan-index');
-    Route::post('/', [Kesehatan_Controller::class, 'index'])->name('pinjam-kesehatan-index');
-    Route::post('/tambah', [Kesehatan_Controller::class, 'tambah'])->name('pinjam-kesehatan-tambah');
-    Route::post('/{kesehatan}/hapus', [Kesehatan_Controller::class, 'hapus'])->name('pinjam-kesehatan-hapus');
+    Route::get('/', [Kesehatan_Controller::class, 'index'])->name('kesehatan-index');
+    Route::post('/tambah', [Kesehatan_Controller::class, 'tambah'])->name('kesehatan-tambah');
+    Route::post('/{kesehatan}/hapus', [Kesehatan_Controller::class, 'hapus'])->name('kesehatan-hapus');
 });
 
 Route::group(
@@ -166,6 +165,27 @@ Route::group(
         Route::post('/{pinjamZoom}/ubah', [Pinjam_Zoom_Controller::class, 'ubah'])->name('pinjam-zoom-ubah');
         Route::post('/{pinjamZoom}/hapus', [Pinjam_Zoom_Controller::class, 'hapus'])->name('pinjam-zoom-hapus');
         Route::post('/{pinjamZoom}/approval', [Pinjam_Zoom_Controller::class, 'approval'])->name('pinjam-zoom-approval');
+    });
+});
+
+
+Route::group(
+[
+    'prefix' => 'arsip',
+    'middleware' => ['auth', 'check_maintenance', 'statistik'],
+], function () {
+    Route::get('/', [Kesehatan_Controller::class, 'index'])->name('arsip-index');
+    Route::post('/tambah', [Kesehatan_Controller::class, 'tambah'])->name('arsip-tambah');
+    Route::post('/{arsip}/hapus', [Kesehatan_Controller::class, 'hapus'])->name('arsip-hapus');
+
+    Route::group(
+    [
+        'prefix' => 'klasifikasi',
+    ], function () {
+        Route::get('/', [Kesehatan_Controller::class, 'index'])->name('arsip-klasifikasi-index');
+        Route::post('/', [Kesehatan_Controller::class, 'index'])->name('arsip-klasifikasi-index');
+        Route::post('/tambah', [Kesehatan_Controller::class, 'tambah'])->name('arsip-klasifikasi--tambah');
+        Route::post('/{klasifikasi}/hapus', [Kesehatan_Controller::class, 'hapus'])->name('arsip-klasifikasi--hapus');
     });
 });
 

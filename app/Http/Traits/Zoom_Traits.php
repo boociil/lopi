@@ -317,4 +317,22 @@ trait Zoom_Traits
 
         }
     }
+
+    public function zoom_meta_deleteMeeting($path, $instance)
+    {
+        if($instance instanceof Pinjam_Zoom){
+            $zoom_mmet = $this->zoom_deleteMeeting($path, "".$instance->zoom_meeting_id);
+
+            if($zoom_mmet['status']){
+                $instance->zoom_akun = null;
+                $instance->zoom_meeting_id = null;
+                $instance->zoom_start_url = null;
+                $instance->zoom_join_url = null;
+            }else{
+                throw ValidationException::withMessages([
+                    'status' => 'Zoom tidak dapat dibuat',
+                ]);
+            }
+        }
+    }
 }

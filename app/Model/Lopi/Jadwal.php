@@ -4,6 +4,7 @@ namespace App\Model\Lopi;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Jadwal extends Model
@@ -21,10 +22,15 @@ class Jadwal extends Model
         , 'tanggal_awal', 'tanggal_akhir', 'waktu_awal', 'waktu_akhir', 'status'
         , 'url_daftar_hadir', 'url_notulensi', 'url_dokumentasi', 'url_undangan'
         , 'ruang_status', 'ruang', 'ruang_confirm_username'
-        , 'zoom_status', 'zoom_pinjam_id' ];
+        , 'zoom_status', 'zoom_pinjam_id', 'zoom_langsung_join_url'];
 
     public function peserta(): HasMany
     {
         return $this->hasMany(Jadwal_Peserta::class, 'jadwal_id', 'id');
+    }
+
+    public function zoom_pinjam(): HasOne
+    {
+        return $this->hasOne(Pinjam_Zoom::class, 'zoom_pinjam_id', 'id');
     }
 }

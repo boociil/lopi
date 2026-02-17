@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Traits\Zoom_Traits;
 use App\Model\Lopi\Jadwal;
 use App\Model\Lopi\Jadwal_Peserta;
+use App\Model\Lopi\Pinjam_Zoom;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Builder;
@@ -25,13 +26,10 @@ use Inertia\Inertia;
 class Jadwal_Controller extends Controller
 {
 
-    use Zoom_Traits;
-
     public $ruang = ['aula', 'pokja', 'pst'];
 
     public function __construct()
     {
-        $this->define_config();
     }
 
      public function index(Request $request)
@@ -88,7 +86,7 @@ class Jadwal_Controller extends Controller
 
         $tanggal_carbon = Carbon::today();
 
-        $jadwal_daftar = Jadwal::with(['peserta'])-> orWhere(function (Builder $query) use ($tanggal_awal, $tanggal_akhir){
+        $jadwal_daftar = Jadwal::with(['peserta', 'zoom'])-> orWhere(function (Builder $query) use ($tanggal_awal, $tanggal_akhir){
                     $query->where('tipe', 'sekali')
                         ->whereBetween('tanggal', [$tanggal_awal->format('Y-m-d'), $tanggal_akhir->format('Y-m-d')]);
                 })
@@ -115,26 +113,20 @@ class Jadwal_Controller extends Controller
             }
         }
 
-        $zoom_statsulbar = $this->zoom_getAllMeeting('statsulbar', $tanggal_awal->format('Y-m-d'), $tanggal_akhir->format('Y-m-d'));
-        $zoom_sp2020 = $this->zoom_getAllMeeting('sp2020', $tanggal_awal->format('Y-m-d'), $tanggal_akhir->format('Y-m-d'));
 
         if($request->isMethod('get')){
             return Inertia::render('jadwal', [
-                "user" => User::all(),
                 "have_zoom_peran" => $have_zoom_peran,
-                "jadwal_daftar" => $jadwal_daftar,
-                "zoom_statsulbar" => $zoom_statsulbar,
-                "zoom_sp2020" => $zoom_sp2020,
                 "have_ruang_peran" => $have_ruang_peran,
+                "jadwal_daftar" => $jadwal_daftar,
                 "ruang" => $this->ruang,
+                "user" => User::all(),
             ]);
         }else if($request->isMethod('post')){
             return [
                 "have_zoom_peran" => $have_zoom_peran,
-                "jadwal_daftar" => $jadwal_daftar,
-                "zoom_statsulbar" => $zoom_statsulbar,
-                "zoom_sp2020" => $zoom_sp2020,
                 "have_ruang_peran" => $have_ruang_peran,
+                "jadwal_daftar" => $jadwal_daftar,
                 "ruang" => $this->ruang,
             ];
         }
@@ -208,20 +200,30 @@ class Jadwal_Controller extends Controller
 
             $jadwal->zoom_status = 'tidak';
             if($request->input('zoom_menggunakan') == 1){
-                $jadwal->zoom_status = 'menunggu';
                 if($request->input('zoom_join_url_langsung')){
                     $jadwal->zoom_status = 'langsung';
                     $jadwal->zoom_join_url = $request->input('zoom_join_url_langsung');
-                }else if($have_zoom_peran && in_array($request->input('zoom_akun'), ['statsulbar', 'sp2020'])){
-                    $jadwal->zoom_status = 'disetujui';
-                    $jadwal->zoom_confirm_username = Auth::user()->username;
+                }else{
+                    $jadwal->zoom_status = 'menunggu';
 
-                    if(in_array($request->input('zoom_akun'), ['statsulbar', 'sp2020'])){
-                        $this->zoom_meta_createMeeting($request->input('zoom_akun'), $jadwal);
-                    }else{
-                        throw ValidationException::withMessages([
-                            'status' => 'Zoom tidak dapat dibuat',
-                        ]);
+                    $pinjam_zoom = Pinjam_Zoom::helper_tambah(
+                        $request->input('kegiatan'),
+                        $request->input('tipe'),
+                        $request->input('password'),
+                        $request->input('tanggal'),
+                        $request->input('tanggal_awal'),
+                        $request->input('tanggal_akhir'),
+                        $request->input('waktu_awal'),
+                        $request->input('waktu_akhir'),
+                        $have_zoom_peran,
+                        $request->input('zoom_akun')
+                    );
+
+                     $jadwal->zoom_pinjam_id = $pinjam_zoom->id;
+
+                    if($have_zoom_peran && in_array($request->input('zoom_akun'), ['statsulbar', 'sp2020'])){
+                        $jadwal->zoom_status = 'disetujui';
+                        $jadwal->zoom_confirm_username = Auth::user()->username;
                     }
                 }
             }
@@ -320,7 +322,7 @@ class Jadwal_Controller extends Controller
 
             $jadwal->status = 'menunggu';
 
-            if($request->input('zoom_menggunakan') == 1){
+            if($request->input('ruang_menggunakan') == 1){
                 if($jadwal->ruang != $request->input('ruang') && in_array($request->input('ruang'), $this->ruang)){
                     $jadwal->ruang_status = 'tidak';
                     if($request->input('ruang_menggunakan') == 1){
@@ -343,8 +345,9 @@ class Jadwal_Controller extends Controller
                 if($request->input('zoom_join_url_langsung') && $request->input('zoom_join_url_langsung') != $jadwal->zoom_join_url){
                     $jadwal->zoom_status = 'langsung';
                     $jadwal->zoom_join_url = $request->input('zoom_join_url_langsung');
-                    if($jadwal->zoom_meeting_id){
-                        $this->zoom_deleteMeeting($request->input('zoom_akun'), $jadwal->zoom_meeting_id);
+                    if($jadwal->zoom_pinjam_id){
+                        $zoom_pinjam = $jadwal->zoom_pinjam;
+                        $zoom_pinjam->helper_hapus($have_zoom_peran);
                     }
                 }else if($have_zoom_peran && in_array($request->input('zoom_akun'), ['statsulbar', 'sp2020'])){
                     $jadwal->zoom_status = 'disetujui';
@@ -430,18 +433,19 @@ class Jadwal_Controller extends Controller
             ]);
         }
 
-        if($jadwal->zoom_meeting_id){
-            $zoom_app = $this->zoom_deleteMeeting($jadwal->zoom_akun, "".$jadwal->zoom_meeting_id);
-            if(!$zoom_app['status']){
-                throw ValidationException::withMessages([
-                    'status' => 'Zoom gagal dihapus',
-                ]);
-            }
-        }
+        $have_zoom_peran =  Peran::where('pemilik_username', Auth::user()->username)
+            ->where('peran', 'zoom')
+            ->first();
+
 
         DB::beginTransaction();
         try
         {
+            if($jadwal->zoom_pinjam_id){
+                $zoom_pinjam = $jadwal->zoom_pinjam;
+                $zoom_pinjam->helper_hapus($have_zoom_peran);
+            }
+
             Jadwal_Peserta::where('jadwal_id', $jadwal->id)->delete();
             $jadwal->delete();
             DB::commit();
@@ -486,33 +490,11 @@ class Jadwal_Controller extends Controller
         try
         {
             if($have_zoom_peran){
-                if($request->input('zoom_status') == 'ditolak'){
-                    if($jadwal->zoom_meeting_id){
-                        $zoom_app = $this->zoom_deleteMeeting($jadwal->zoom_akun, "".$jadwal->zoom_meeting_id);
-                        if(!$zoom_app['status']){
-                            throw ValidationException::withMessages([
-                                'status' => 'Zoom gagal dibuat',
-                            ]);
-                        }
-
-                        $jadwal->zoom_status = 'ditolak';
-                        $jadwal->zoom_akun = null;
-                        $jadwal->zoom_meeting_id = null;
-                        $jadwal->zoom_start_url = null;
-                        $jadwal->zoom_join_url = null;
-                    }
-                }else if($request->input('zoom_status') == 'disetujui'){
-                    if(!$jadwal->zoom_meeting_id){
-                        $this->zoom_meta_createMeeting($request->input('zoom_akun'), $jadwal);
-                    }else {
-                        if($jadwal->zoom_akun != $request->input('zoom_akun')){
-                            $this->zoom_deleteMeeting($request->input('zoom_akun'), $jadwal->zoom_meeting_id);
-                            $this->zoom_meta_createMeeting($request->input('zoom_akun'), $jadwal);
-                        }
-                    }
-                    $jadwal->zoom_status = 'disetujui';
+                if($jadwal->zoom_pinjam_id){
+                    $zoom_pinjam = $jadwal->zoom_pinjam;
+                    $zoom_pinjam->helper_approval($request->input('zoom_status'), $request->input('zoom_status'));
+                    $jadwal->zoom_status = $request->input('zoom_status');
                 }
-                $jadwal->zoom_confirm_username = Auth::user()->username;
             }
 
             if($have_ruang_peran && in_array($request->ruang_status, ['disetujui', 'ditolak'])){
