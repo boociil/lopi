@@ -42,8 +42,8 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectVa
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: "Klasifikasi",
-        href: '/lopi/arsip/klasifikasi',
+        title: "Daftar",
+        href: '/lopi/arsip',
     }
 ];
 
@@ -63,6 +63,7 @@ export type arsip_arsip_type = {
     uraian_arsip: string,
     kurun_waktu_awal: number,
     kurun_waktu_akhir: number,
+    arsip_filename: string,
 };
 
 export type arsip_akses_type = {
@@ -70,7 +71,7 @@ export type arsip_akses_type = {
     arsip_id: number,
     username: string,
     status: 'menunggu'| 'disetujui'| 'ditolak',
-    arsip: arsip_akses_type | null
+    arsip: arsip_arsip_type | null
 };
 
 
@@ -129,6 +130,7 @@ export default function Index({
         uraian_arsip: '',
         kurun_waktu_awal: 2026,
         kurun_waktu_akhir: 2030,
+        arsip_filename: ''
     });
 
     const axiosClient = useApi();
@@ -172,7 +174,7 @@ export default function Index({
             const newData: arsip_arsip_type = {
             ...formData,
             };
-            axiosClient.post(route('arsip-ubah', {'klasifikasi' : formData.id}), newData)
+            axiosClient.post(route('arsip-ubah', {'arsip' : formData.id}), newData)
                 .then(function (response) {
                     setIsModalOpen(false);
                     const _newData: arsip_arsip_type = response.data.data as arsip_arsip_type;
@@ -197,8 +199,8 @@ export default function Index({
 
     };
 
-    function habpusArsipData(target: arsip_arsip_type){
-        axiosClient.post(route('arsip-klasifikasi-hapus', {'klasifikasi': target.id}))
+    function hapusArsipData(target: arsip_arsip_type){
+        axiosClient.post(route('arsip-hapus', {'arsip': target.id}))
             .then(function (response) {
                 setArsipArsip(arsipArsip.filter(h => h.id !== target.id))
                 toast.success("Berhasil hapus data.");
@@ -222,11 +224,11 @@ export default function Index({
             });
     };
 
-    function load_data({type, page, success}: {type: 'semua'|'akses', page: number, success(): void}){
+    function load_data(type: 'semua'|'akses', page: number, success: () => void){
         axiosClient.post(route('arsip-index'), {'page': page, 'limit': 20, 'tab': type})
             .then(function (response) {
                 if(type == 'akses'){
-                    setArsipAkses(response.data.arsip as arsip_akses_type[])
+                    setArsipAkses(response.data.akses as arsip_akses_type[])
                     setTotalAkses(response.data.total_akses as number)
                     setCurrentPageAkses(page)
                 }else {
@@ -242,10 +244,10 @@ export default function Index({
             });
     }
 
-    const handleDownload = async (id: number) => {
+    const handleDownload = async (target: arsip_arsip_type) => {
         try {
             const response = await axiosClient.get(
-                `arsip/akses/${id}/buka`,
+                `arsip/akses/${target.id}/buka`,
                 {
                     responseType: "blob", // WAJIB untuk file
                 }
@@ -266,7 +268,7 @@ export default function Index({
                 if (match?.[1]) fileName = match[1];
             }
 
-            link.setAttribute("download", fileName);
+            link.setAttribute("download", target.arsip_filename);
             document.body.appendChild(link);
             link.click();
 
@@ -279,7 +281,7 @@ export default function Index({
 
       return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Arsip" />
+            <Head title="Daftar Arsip Digital" />
 
                 <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4 overflow-x-auto">
                     <div className="w-full">
@@ -304,13 +306,13 @@ export default function Index({
 
                             <div className="inline-flex h-10 items-center justify-center rounded-md bg-slate-100 p-1 ">
                                 <button
-                                    onClick={() => { setSubTabArsip('semua'); setCurrentPageSemua(1); }}
+                                    onClick={() => { load_data('semua', 1, () => {setSubTabArsip('semua');setCurrentPageSemua(1) }) }}
                                     className={`inline-flex items-center justify-center whitespace-nowrap rounded-sm px-4 py-1.5 text-sm font-medium ring-offset-white transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-2 ${subTabArsip === 'semua' ? 'bg-white text-slate-950 shadow-sm' : 'hover:text-slate-900'}`}
                                     >
                                     Semua Akses
                                 </button>
                                 <button
-                                    onClick={() => { setSubTabArsip('akses'); setCurrentPageAkses(1); }}
+                                    onClick={() => { load_data('akses', 1, () => {setSubTabArsip('akses'); setCurrentPageAkses(1) })}}
                                     className={`inline-flex items-center justify-center whitespace-nowrap rounded-sm px-4 py-1.5 text-sm font-medium ring-offset-white transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-2 ${subTabArsip === 'akses' ? 'bg-white text-slate-950 shadow-sm' : 'hover:text-slate-900'}`}
                                     >
                                     Memiliki Akses
@@ -318,10 +320,65 @@ export default function Index({
                             </div>
 
                             {subTabArsip == 'akses' ?
-                            <></>
+                            <>
+                                 <Card className="overflow-hidden p-0 mt-4">
+                                    <div className="w-full overflow-auto">
+                                        <table className="w-full caption-bottom text-sm">
+                                             <thead className="[&_tr]:border-b bg-accent">
+                                                 <tr className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
+                                                    <th className="h-12 px-4 text-center align-middle font-medium ">No</th>
+                                                    <th className="h-12 px-4 text-left align-middle font-medium ">Klasifikasi</th>
+                                                    <th className="h-12 px-4 text-left align-middle font-medium ">Uraian</th>
+                                                    <th className="h-12 px-4 text-left align-middle font-medium ">Pencipta</th>
+                                                    <th className="h-12 px-4 text-left align-middle font-medium ">Status</th>
+                                                    <th className="h-12 px-4 align-middle font-medium ">Aksi</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="[&_tr:last-child]:border-0">
+                                                {arsipAkses.map((item, index) => (
+                                                <tr key={item.id} className="border-b transition-colors hover:bg-slate-50/50">
+                                                    <td className="p-4 align-middle font-mono font-bold">{(currentPageSemua-1)*20 + index + 1}</td>
+                                                    <td className="p-4 align-middle font-mono font-bold text-blue-600">
+                                                        {(item.arsip && item.arsip!.klasifikasi_arsip_id != -1 && arsipKlasifikasiDict.has(item.arsip!.klasifikasi_arsip_id)) ?
+                                                            <>({arsipKlasifikasiDict.get(item.arsip!.klasifikasi_arsip_id)?.kode}) {arsipKlasifikasiDict.get(item.arsip!.klasifikasi_arsip_id)?.nama}</> : '-'}
+                                                    </td>
+                                                    <td className="p-4 align-middle font-medium max-w-[300px] truncate">{item.arsip && item.arsip!.uraian_arsip}</td>
+                                                    <td className="p-4 text-left align-middle">
+                                                        {(item.arsip && item.arsip!.unit_cipta_arsip && satuanKerjaTahunDict.has(item.arsip!.unit_cipta_arsip)) ?
+                                                        <>({satuanKerjaTahunDict.get(item.arsip!.unit_cipta_arsip)?.kode_satuan_kerja}) {satuanKerjaTahunDict.get(item.arsip!.unit_cipta_arsip)?.nama}</> : '-'}
+                                                    </td>
+                                                    <td className="p-4 align-middle">
+                                                        {item.status === 'menunggu' && <Badge variant="warning_">Menunggu</Badge>}
+                                                        {item.status === 'disetujui' && <Badge variant="success_">Disetujui</Badge>}
+                                                        {item.status === 'ditolak' && <Badge variant="destructive_">Ditolak</Badge>}
+                                                    </td>
+                                                    <td className="p-4 align-middle text-center">
+                                                        {(item.arsip && item.status == 'disetujui') &&
+                                                            <Button variant="ghost" className="h-8 w-8 p-0"
+                                                                onClick={() => {
+                                                                    handleDownload(item.arsip!);
+                                                                }}>
+                                                                <DownloadIcon size={16} />
+                                                            </Button>
+                                                        }
+                                                    </td>
+                                                </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <PaginationFooter
+                                        currentPage={currentPageAkses}
+                                        itemsPerPage={20}
+                                        totalItems={totalAkses}
+                                        totalPages={Math.max(Math.ceil(totalAkses / 20), 1)}
+                                        setCurrentPage={(page: number): void => { load_data('akses', page, () => setCurrentPageAkses(page)) }}
+                                    />
+                                </Card>
+                            </>
                             :
                             <>
-                                <Card className="overflow-hidden">
+                                <Card className="overflow-hidden p-0  mt-4">
                                     <div className="w-full overflow-auto">
                                         <table className="w-full caption-bottom text-sm">
                                              <thead className="[&_tr]:border-b bg-accent">
@@ -370,7 +427,7 @@ export default function Index({
                                                         {have_arsip_peran &&
                                                              <Button variant="ghost" className="h-8 w-8 p-0"
                                                                 onClick={() => {
-                                                                    handleDownload(item.id);
+                                                                    handleDownload(item);
                                                                 }}>
                                                                 <DownloadIcon size={16} />
                                                             </Button>
@@ -385,7 +442,7 @@ export default function Index({
                                                         </Button>
                                                         <Button variant="ghost" className="h-8 w-8 p-0"
                                                             onClick={() => {
-                                                                habpusArsipData(item)
+                                                                hapusArsipData(item)
                                                             }}>
                                                             <Trash2 size={16} />
                                                         </Button>
@@ -400,9 +457,7 @@ export default function Index({
                                         itemsPerPage={20}
                                         totalItems={totalArsip}
                                         totalPages={Math.max(Math.ceil(totalArsip / 20), 1)}
-                                        setCurrentPage={setCurrentPageSemua}
-                                        previousPage={() => { setCurrentPageSemua(p => Math.max(1, p - 1)) } }
-                                        nextPage={() => { setCurrentPageSemua(p => Math.min(Math.ceil(totalArsip / 20), p+1)) } }
+                                        setCurrentPage={(page: number): void => { load_data('semua', page, () => setCurrentPageSemua(page)) }}
                                     />
                                 </Card>
                             </>}
@@ -436,7 +491,7 @@ export default function Index({
                                                         className="justify-between text-secondary"
                                                     >
                                                         { (formData.klasifikasi_arsip_id != -1) ?
-                                                             (arsipKlasifikasiDict.has(formData.klasifikasi_arsip_id ) ? <>({arsipKlasifikasiDict.get(formData.klasifikasi_arsip_id)?.kode}) {arsipKlasifikasiDict.get(formData.klasifikasi_arsip_id)?.nama}</> : formData.klasifikasi_arsip_id)
+                                                             (arsipKlasifikasiDict.has(Number(formData.klasifikasi_arsip_id) ) ? <>({arsipKlasifikasiDict.get(formData.klasifikasi_arsip_id)?.kode}) {arsipKlasifikasiDict.get(formData.klasifikasi_arsip_id)?.nama}</> : formData.klasifikasi_arsip_id)
                                                             : "Pilih Klasifikasi..."}
                                                         <ChevronsUpDown className="opacity-50" />
                                                     </Button>
@@ -497,7 +552,7 @@ export default function Index({
                                         <div className="grid gap-2">
                                             <Label>Tingkat Pengembangan</Label>
                                             <Select required
-                                                defaultValue={formData.kondisi_arsip}
+                                                defaultValue={formData.tingkat_perkembangan}
                                                 onValueChange={(value) => {
                                                     setFormData(prev => ({ ...prev, ['tingkat_perkembangan']: value as  'Asli' | 'Salinan' | 'Copy' }))
                                                 }}>
@@ -584,12 +639,15 @@ export default function Index({
                                                 </Input>
                                             </div>
                                         </div>
-                                        <div className="grid gap-2">
-                                            <Label>File</Label>
-                                            <Input type="file" name="file" placeholder="Contoh: SK ..."
-                                                required>
-                                            </Input>
-                                        </div>
+                                        {formData.id == -1 &&
+                                            <div className="grid gap-2">
+                                                <Label>File</Label>
+                                                <Input type="file" name="file" placeholder="Contoh: SK ..."
+                                                    required>
+                                                </Input>
+                                            </div>
+                                        }
+
                                     </CardContent>
                                     <div className="flex items-center justify-end gap-3 p-6 pt-0">
                                         <Button variant="outline" type="button" onClick={() => setIsModalOpen(false)}>Batal</Button>
@@ -601,12 +659,11 @@ export default function Index({
                         )}
                     </div>
                 </div>
-
         </AppLayout>
       );
 }
 
-const PaginationFooter = ({ currentPage, itemsPerPage, totalItems, totalPages, setCurrentPage, previousPage ,nextPage } : { currentPage: number, itemsPerPage: number, totalItems: number, totalPages: number, setCurrentPage(page: number): void, previousPage(): void , nextPage(): void}) => (
+const PaginationFooter = ({ currentPage, itemsPerPage, totalItems, totalPages, setCurrentPage } : { currentPage: number, itemsPerPage: number, totalItems: number, totalPages: number, setCurrentPage(page: number): void}) => (
   <div className="flex items-center justify-between px-4 py-4 border-t border-slate-100">
     <p className="text-xs ">
       Menampilkan <span className="font-medium ">{(currentPage - 1) * itemsPerPage + 1}</span> hingga <span className="font-medium ">{Math.min(currentPage * itemsPerPage, totalItems)}</span> dari <span className="font-medium ">{totalItems}</span> data
@@ -615,7 +672,7 @@ const PaginationFooter = ({ currentPage, itemsPerPage, totalItems, totalPages, s
       <Button
         variant="outline"
         className="h-8 w-8 p-0"
-        onClick={() => previousPage()}
+        onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
         disabled={currentPage === 1}
       >
         <ChevronLeft size={16} />
@@ -637,7 +694,7 @@ const PaginationFooter = ({ currentPage, itemsPerPage, totalItems, totalPages, s
       <Button
         variant="outline"
         className="h-8 w-8 p-0"
-        onClick={() => nextPage()}
+        onClick={() => setCurrentPage(Math.min(totalPages, currentPage+1)) }
         disabled={currentPage === totalPages}
       >
         <ChevronRight size={16} />

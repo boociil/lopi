@@ -7,6 +7,8 @@ use App\Model\Lopi\Arsip_Akses;
 use App\Model\Lopi\Arsip_Arsip;
 use App\Model\Lopi\Arsip_KlasifikasiArsip;
 use App\Model\Umum\Peran;
+use App\Model\Umum\Satuan_Kerja_Tahun;
+use App\Model\Umum\User;
 use Carbon\Carbon;
 use Exception;
 
@@ -112,13 +114,6 @@ class Arsip_AdminController extends Controller
             // 'jumlah' => 'nullable|string|max:50',
             // 'lokasi_simpan' => 'nullable|string|max:255',
         ]);
-
-        if (!$request->file('file')->isValid()) {
-             throw ValidationException::withMessages([
-                '_status' => 'Gagal!',
-            ]);
-        }
-
 
         DB::beginTransaction();
         try{
@@ -234,13 +229,17 @@ class Arsip_AdminController extends Controller
          if($request->isMethod('get')){
             return Inertia::render('arsip/akses', [
                 "akses" => Arsip_Akses::with(["arsip"])->offset(($page - 1)*$limit)
-                    ->limit($limit)->get(),
+                    ->limit($limit)->orderBy('id', 'desc')->get(),
+                "total_akses" => Arsip_Akses::count(),
                 "klasifikasi" => Arsip_KlasifikasiArsip::all(),
+                "satuan_kerja_tahun" => Satuan_Kerja_Tahun::where('kode_satuan_kerja', '7600')->get(),
+                "user" => User::all()
             ]);
         }else if($request->isMethod('post')){
             return [
                 "akses" => Arsip_Akses::with(["arsip"])->offset(($page - 1)*$limit)
                     ->limit($limit)->get(),
+                "total_akses" => Arsip_Akses::count(),
             ];
         }
     }
@@ -252,5 +251,10 @@ class Arsip_AdminController extends Controller
 
         $akses->status = $request->input('status');
         $akses->save();
+
+        return response()->json([
+            'message' => 'Data berhasil diaprove',
+            'data' => $akses
+        ], 200);
     }
 }
