@@ -155,6 +155,7 @@ export default function DialogFormManage() {
                                             <SelectItem value="ruang">Pinjam Ruang</SelectItem>
                                             <SelectItem value="mobil">Pinjam Mobil</SelectItem>
                                             <SelectItem value="appreciate">Toples Apresiasi</SelectItem>
+                                            <SelectItem value="arsip">Arsip</SelectItem>
                                         </SelectGroup>
                                     </SelectContent>
                                 </Select>

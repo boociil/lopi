@@ -172,6 +172,7 @@ export default function Index({
                                                         {(item.peran == "ruang") && (<>Pinjam Ruang</>)}
                                                         {(item.peran == "mobil") && (<>Pinjam Mobil</>)}
                                                         {(item.peran == "appreciate") && (<>Toples Apresiasi</>)}
+                                                        {(item.peran == "arsip") && (<>Arsip</>)}
                                                     </TableCell>
                                                     <TableCellWrap>
                                                         {satuanKerjaTahunDict.has(item.parent_id) ?

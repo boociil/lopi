@@ -8,6 +8,8 @@ use App\Http\Controllers\Auth\SSO_Controller;
 use App\Http\Controllers\Lopi\Appreciate_Admin_Controller;
 use App\Http\Controllers\Umum\Beranda_Controller;
 use App\Http\Controllers\Lopi\Appreciate_Controller;
+use App\Http\Controllers\Lopi\Arsip_AdminController;
+use App\Http\Controllers\Lopi\Arsip_Controller;
 use App\Http\Controllers\Lopi\Jadwal_Controller;
 use App\Http\Controllers\Lopi\Kesehatan_Controller;
 use App\Http\Controllers\Lopi\Notif_Controller;
@@ -174,19 +176,34 @@ Route::group(
     'prefix' => 'arsip',
     'middleware' => ['auth', 'check_maintenance', 'statistik'],
 ], function () {
-    Route::get('/', [Kesehatan_Controller::class, 'index'])->name('arsip-index');
-    Route::post('/tambah', [Kesehatan_Controller::class, 'tambah'])->name('arsip-tambah');
-    Route::post('/{arsip}/hapus', [Kesehatan_Controller::class, 'hapus'])->name('arsip-hapus');
+    Route::get('/', [Arsip_Controller::class, 'index'])->name('arsip-index');
+    Route::post('/', [Arsip_Controller::class, 'index'])->name('arsip-index');
+    Route::post('/tambah', [Arsip_AdminController::class, 'arsip_tambah'])->name('arsip-tambah');
+    Route::post('/{arsip}/ubah', [Arsip_AdminController::class, 'arsip_ubah'])->name('arsip-ubah');
+    Route::post('/{arsip}/hapus', [Arsip_AdminController::class, 'arsip_hapus'])->name('arsip-hapus');
+
+    Route::group(
+    [
+        'prefix' => 'akses',
+    ], function () {
+        Route::get('/', [Arsip_AdminController::class, 'akses_daftar'])->name('arsip-akses_daftar');
+        Route::post('/', [Arsip_AdminController::class, 'akses_daftar'])->name('arsip-akses_daftar');
+        Route::post('/{arsip}/ajukan', [Arsip_Controller::class, 'akses_ajukan'])->name('arsip-akses_ajukan');
+        Route::get('/{arsip}/buka', [Arsip_Controller::class, 'akses_buka'])->name('arsip-akses_buka');
+        Route::post('/{akses}/approval', [Arsip_AdminController::class, 'akses_approval'])->name('arsip-akses_approval');
+    });
 
     Route::group(
     [
         'prefix' => 'klasifikasi',
     ], function () {
-        Route::get('/', [Kesehatan_Controller::class, 'index'])->name('arsip-klasifikasi-index');
-        Route::post('/', [Kesehatan_Controller::class, 'index'])->name('arsip-klasifikasi-index');
-        Route::post('/tambah', [Kesehatan_Controller::class, 'tambah'])->name('arsip-klasifikasi--tambah');
-        Route::post('/{klasifikasi}/hapus', [Kesehatan_Controller::class, 'hapus'])->name('arsip-klasifikasi--hapus');
+        Route::get('/', [Arsip_AdminController::class, 'klasifikasi_index'])->name('arsip-klasifikasi-index');
+        Route::post('/tambah', [Arsip_AdminController::class, 'klasifikasi_tambah'])->name('arsip-klasifikasi-tambah');
+        Route::post('/{klasifikasi}/ubah', [Arsip_AdminController::class, 'klasifikasi_ubah'])->name('arsip-klasifikasi-ubah');
+        Route::post('/{klasifikasi}/hapus', [Arsip_AdminController::class, 'klasifikasi_hapus'])->name('arsip-klasifikasi-hapus');
     });
+
+
 });
 
 

@@ -17,8 +17,10 @@ class Arsip_Arsip extends Model
         'uraian_arsip',
         'kurun_waktu_awal',
         'kurun_waktu_akhir',
-        'jumlah',
-        'lokasi_simpan'
+        // 'jumlah',
+        // 'lokasi_simpan',
+        'arsip_filename',
+        'arsip_path',
     ];
 
     public function klasifikasi()

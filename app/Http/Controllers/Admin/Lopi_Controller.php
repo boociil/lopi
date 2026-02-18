@@ -33,7 +33,7 @@ class Lopi_Controller extends Controller
         }
 
         return Inertia::render('peran', [
-            "peranLopi" => Peran::whereIn('peran', ['zoom', 'ruang', 'mobil', 'appreciate'])->where('tahun', session('tahun_active'))->get(),
+            "peranLopi" => Peran::whereIn('peran', ['zoom', 'ruang', 'mobil', 'appreciate', 'arsip'])->where('tahun', session('tahun_active'))->get(),
             "satuanKerjaTahun" => Satuan_Kerja_Tahun::with(['peran_daftar'])->where('tahun', session('tahun_active'))->get(),
             "user" => User::all(),
         ]);
@@ -44,7 +44,7 @@ class Lopi_Controller extends Controller
         $validated = $request->validate([
             'satuan_kerja_tahun' => 'required|string',
             'username' => 'required|string',
-            'peran' => ['string', Rule::in(['zoom', 'ruang', 'mobil', 'appreciate'])]
+            'peran' => ['string', Rule::in(['zoom', 'ruang', 'mobil', 'appreciate', 'arsip'])]
         ]);
 
         $peran_admin_global = Peran::where('pemilik_username', Auth::user()->username)
@@ -57,7 +57,7 @@ class Lopi_Controller extends Controller
             return abort(401);
         }
 
-        if($request->input('peran') == 'zoom'){
+        if($request->input('peran') == 'zoom' || $request->input('peran') == 'arsip'){
             $parent = Satuan_Kerja_Tahun::where('id', $request->input('satuan_kerja_tahun'))
                 ->where('kode_satuan_kerja', '7600')
                 ->first();

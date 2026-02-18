@@ -56,6 +56,7 @@ class Kesehatan_Controller extends Controller
 
         return response()->json([
             'message' => 'Data kesehatan berhasil ditambahkan',
+            'data' => $kesehatan
         ], 200);
     }
 

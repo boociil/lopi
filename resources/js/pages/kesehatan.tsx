@@ -1,16 +1,14 @@
 import AppLayout from "@/layouts/app-layout";
 import {
-    type User,
     type BreadcrumbItem,
 } from "@/types";
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, AreaChart, Area
 } from 'recharts';
 import {
   Activity, Heart, Thermometer, Trash2,
-  Database, TrendingUp, X, Check, Calendar as CalendarIcon,
-  ChevronDown, MoreHorizontal,
+  TrendingUp, X, Calendar as CalendarIcon,
   User as UserIcon,
   Plus,
 } from 'lucide-react';
@@ -20,12 +18,10 @@ import { Button } from "@/components/ui/button";
 import Heading from "@/components/heading";
 import { useApi } from "@/lib/API/useApi";
 import { toast } from "sonner";
-import { appreciate_data } from "@/props/appreciate/types";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Head } from "@inertiajs/react";
-import { number } from "framer-motion";
 import { DatePicker22 } from "@/components/ui/date-picker";
 import { formatDate } from "@/components/calender_modules/helpers";
 
@@ -60,7 +56,20 @@ export default function Index({
       const [isModalOpen, setIsModalOpen] = useState(false);
       const [healthData, setHealthData] = useState<kesehatan[]>(kesehatan_);
 
-      const latestData: kesehatan = healthData[healthData.length-1] || {};
+
+      const latestData: kesehatan = healthData.length > 0 ? healthData[healthData.length-1] :
+      {
+        id: 0,
+        tanggal: new Date().toISOString().slice(0, 16),
+        tinggi_badan: null,
+        berat_badan: null,
+        linkar_perut: null,
+        tekanan_darah: null,
+        asam_urat: null,
+        gula_darah: null,
+        gula_darah_tipe: 'gds'
+      };
+
       healthData.forEach(element => {
         if(!latestData.tinggi_badan && element.tinggi_badan){
             latestData.tinggi_badan = element.tinggi_badan
@@ -131,7 +140,8 @@ export default function Index({
         axiosClient.post(route('kesehatan-tambah'), newData)
             .then(function (response) {
                 setIsModalOpen(false);
-                setHealthData([newData, ...healthData]);
+                const _newData: kesehatan = response.data.data as kesehatan;
+                setHealthData([_newData, ...healthData]);
                 setFormData({ ...formData, tanggal: new Date().toISOString().slice(0, 16), tinggi_badan: latestData.tinggi_badan, berat_badan: null, linkar_perut: null, tekanan_darah_sistolik: null, tekanan_darah_diastolik: null, asam_urat: null, gula_darah: null, gula_darah_tipe: 'gds' });
                 toast.success("Berhasil menambah data.");
             })
@@ -152,7 +162,7 @@ export default function Index({
     };
 
       const calculateBMI = (w: number | null, h: number | null) => {
-        if (!w || !h) return 0;
+        if (!w || !h) return "";
         const heightInMeters = h / 100;
 
         let bmi = (w / (heightInMeters * heightInMeters));
@@ -183,7 +193,7 @@ export default function Index({
                             title="Dashboard Kesehatan"
                             description="Pantau dan kelola data kesehatan Anda secara efisien."
                         />
-                             <div className="flex justify-end mt-2 mb-6 gap-x-1.5">
+                             <div className="flex justify-end mt-2 mb-2 gap-x-1.5">
                                     <Button
                                         className="flex items-center gap-1 bg-primary text-primary-foreground"
                                         onClick={() =>

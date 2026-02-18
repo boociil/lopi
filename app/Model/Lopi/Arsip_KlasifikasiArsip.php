@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Arsip_KlasifikasiArsip extends Model
 {
-    protected $table = 'siakip2_klasifikasi_arsip';
+    protected $table = 'siakip2_arsip_klasifikasi';
 
     protected $fillable = [
         'kode',

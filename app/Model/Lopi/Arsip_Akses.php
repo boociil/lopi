@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Arsip_Akses extends Model
 {
     protected $table = 'siakip2_arsip_akses';
+    public $timestamps = false;
 
     protected $fillable = [
         'arsip_id',

@@ -21,18 +21,20 @@ return new class extends Migration
         Schema::create('siakip2_arsip', function (Blueprint $table) {
             $table->id();
             // RELASI PILIHAN
-            $table->unsignedBigInteger('klasifikasi_arsip_id')->nullable();
-            $table->string('unit_cipta_arsip', 36)->nullable();
-            $table->enum('tingkat_perkembangan', ['Asli', 'Salinan', 'Copy'])->nullable();
-            $table->enum('media_arsip', ['Digital', 'Kertas', 'Foto'])->nullable();
+            $table->unsignedBigInteger('klasifikasi_arsip_id');
+            $table->string('unit_cipta_arsip', 36);
+            $table->enum('tingkat_perkembangan', ['Asli', 'Salinan', 'Copy']);
+            $table->enum('media_arsip', ['Digital', 'Kertas', 'Foto']);
 
             $table->enum('kondisi_arsip', ['baik', 'kurang_baik'])->default('baik');
             // ISIAN BEBAS
             $table->text('uraian_arsip');
             $table->year('kurun_waktu_awal');
             $table->year('kurun_waktu_akhir')->nullable();
-            $table->string('jumlah', 50)->nullable();          // 1 berkas / 3 lembar
-            $table->string('lokasi_simpan', 255)->nullable();  // Lemari 2 – Rak B – Boks 05
+            // $table->string('jumlah', 50)->nullable();          // 1 berkas / 3 lembar
+            // $table->string('lokasi_simpan', 255)->nullable();  // Lemari 2 – Rak B – Boks 05
+            $table->string('arsip_filename', 512);  // Lemari 2 – Rak B – Boks 05
+            $table->string('arsip_path', 512);
 
             $table->timestamps();
 

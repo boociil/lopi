@@ -56,12 +56,16 @@ export function AppSidebar() {
             icon: Archive,
             subItems: [
                 {
-                    title: 'Master',
-                    href: '/lopi/arsip/master',
+                    title: 'Arsip',
+                    href: '/lopi/arsip',
                 },
                 {
-                    title: 'Daftar',
-                    href: '/lopi/arsip',
+                    title: 'Klasifikasi',
+                    href: '/lopi/arsip/klasifikasi',
+                },
+                {
+                    title: 'Akses',
+                    href: '/lopi/arsip/akses',
                 }
             ]
         })
