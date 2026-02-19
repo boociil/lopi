@@ -43,28 +43,31 @@ class Kesehatan extends Seeder
             // Log::info( $datetime->format('Y-m-d'));
 
             $kesehatan->tanggal =  $datetime->format('Y-m-d') ;
-            if($item[4] && $item[4] != '-' && is_numeric($item[4])){
-                $kesehatan->tinggi_badan = $item[4] ;
+            if($item[4] && $item[4] != '-' && is_numeric(str_replace(',','.',$item[4]))){
+                $kesehatan->tinggi_badan = str_replace(',','.',$item[4]);
             }
-            if($item[8] && $item[8] != '-' && is_numeric($item[8])){
-                $kesehatan->berat_badan = $item[8] ;
+            if($item[8] && $item[8] != '-' && is_numeric(str_replace(',','.',$item[8]))){
+                $kesehatan->berat_badan = str_replace(',','.',$item[8]);
             }
-            if($item[10] && $item[10] != '-' && is_numeric($item[10])){
-                $kesehatan->linkar_perut = $item[10] ;
+            if($item[10] && $item[10] != '-' && is_numeric(str_replace(',','.',$item[10]))){
+                $kesehatan->linkar_perut = str_replace(',','.',$item[10]);
             }
             if($item[11] && $item[11] != '-' ){
                 $kesehatan->tekanan_darah = $item[11];
             }
-            if($item[14] && $item[14] != '-' && is_numeric($item[14])){
-                $kesehatan->asam_urat = $item[14];
+            if($item[14] && $item[14] != '-' && is_numeric(str_replace(',','.',$item[14]))){
+                $kesehatan->asam_urat = str_replace(',','.',$item[14]);
             }
-            if($item[15] && $item[16] && $item[15] != '-' && $item[16] != 'Tidak diukur' && is_numeric($item[15])){
-                $kesehatan->gula_darah = $item[15] ;
+            if($item[15] && $item[16] && $item[15] != '-' && $item[16] != 'Tidak diukur' && is_numeric(str_replace(',','.',$item[15]))){
+                $kesehatan->gula_darah = str_replace(',','.',$item[15]) ;
                 if('Gula Darah Sewaktu (GDS)'){
                     $kesehatan->gula_darah_tipe = 'gds';
                 }else if('Gula Darah Puasa (GDP)'){
                     $kesehatan->gula_darah_tipe = 'gdp';
                 }
+            }
+            if($item[17] && $item[17] != '-' && is_numeric(str_replace(',','.',$item[17]))){
+                $kesehatan->kolestrol = str_replace(',','.',$item[17]);
             }
             if(!$kesehatan->username){
                 continue;

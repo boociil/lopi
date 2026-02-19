@@ -14,7 +14,7 @@ class Kesehatan extends Model
     public $timestamps = false;
 
     protected $fillable = ['username', 'tanggal', 'berat_badan'
-        , 'linkar_perut', 'tekanan_darah', 'asam_urat', 'gula_darah', 'gula_darah_tipe'];
+        , 'linkar_perut', 'tekanan_darah', 'asam_urat', 'gula_darah', 'gula_darah_tipe', 'kolestrol'];
 
      public function peserta(): MorphTo
     {

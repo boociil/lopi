@@ -7,10 +7,11 @@ import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, AreaChart, Area
 } from 'recharts';
 import {
-  Activity, Heart, Thermometer, Trash2,
-  TrendingUp, X, Calendar as CalendarIcon,
-  User as UserIcon,
+  Activity, Heart, Trash2,
+  TrendingUp, X,
   Plus,
+  Beaker,
+  HeartPulse,
 } from 'lucide-react';
 
 import { Button } from "@/components/ui/button";
@@ -24,7 +25,7 @@ import { Input } from "@/components/ui/input";
 import { Head } from "@inertiajs/react";
 import { DatePicker22 } from "@/components/ui/date-picker";
 import { formatDate } from "@/components/calender_modules/helpers";
-
+import { Badge } from "@/components/ui/badge";
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -43,6 +44,7 @@ export type kesehatan = {
     asam_urat: number | null,
     gula_darah: number | null,
     gula_darah_tipe: string | null,
+    kolestrol: number | null
 };
 
 
@@ -67,7 +69,8 @@ export default function Index({
         tekanan_darah: null,
         asam_urat: null,
         gula_darah: null,
-        gula_darah_tipe: 'gds'
+        gula_darah_tipe: 'gds',
+        kolestrol: null
       };
 
       healthData.forEach(element => {
@@ -106,6 +109,7 @@ export default function Index({
             asam_urat: number | null,
             gula_darah: number | null,
             gula_darah_tipe: string | null,
+            kolestrol: number | null,
         }
       >({
         id: 0,
@@ -117,7 +121,8 @@ export default function Index({
         tekanan_darah_diastolik: null,
         asam_urat: null,
         gula_darah: null,
-        gula_darah_tipe: 'gds'
+        gula_darah_tipe: 'gds',
+        kolestrol: null
       });
 
       const axiosClient = useApi();
@@ -125,24 +130,29 @@ export default function Index({
       const handleSubmit = (e:  React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         const newData: kesehatan = {
-          ...formData,
-          id: -1,
-          tanggal: formData.tanggal,
-          tinggi_badan: formData.tinggi_badan,
-          berat_badan: formData.berat_badan,
-          linkar_perut: formData.linkar_perut,
-          tekanan_darah: formData.tekanan_darah_sistolik && formData.tekanan_darah_diastolik ? formData.tekanan_darah_sistolik+'/'+formData.tekanan_darah_diastolik : null,
-          asam_urat: formData.asam_urat,
-          gula_darah: formData.gula_darah,
-          gula_darah_tipe: formData.gula_darah_tipe
+            ...formData,
+            id: -1,
+            tanggal: formData.tanggal,
+            tinggi_badan: formData.tinggi_badan,
+            berat_badan: formData.berat_badan,
+            linkar_perut: formData.linkar_perut,
+            tekanan_darah: formData.tekanan_darah_sistolik && formData.tekanan_darah_diastolik ? formData.tekanan_darah_sistolik+'/'+formData.tekanan_darah_diastolik : null,
+            asam_urat: formData.asam_urat,
+            gula_darah: formData.gula_darah,
+            gula_darah_tipe: formData.gula_darah_tipe,
+            kolestrol: formData.kolestrol
         };
 
         axiosClient.post(route('kesehatan-tambah'), newData)
             .then(function (response) {
                 setIsModalOpen(false);
                 const _newData: kesehatan = response.data.data as kesehatan;
-                setHealthData([_newData, ...healthData]);
-                setFormData({ ...formData, tanggal: new Date().toISOString().slice(0, 16), tinggi_badan: latestData.tinggi_badan, berat_badan: null, linkar_perut: null, tekanan_darah_sistolik: null, tekanan_darah_diastolik: null, asam_urat: null, gula_darah: null, gula_darah_tipe: 'gds' });
+
+                const nextList = [ ...healthData, _newData];
+                nextList.sort((a, b ) => {return (new Date(a.tanggal).getTime() - new Date(b.tanggal).getTime())})
+                setHealthData(nextList);
+
+                setFormData({ ...formData, tanggal: new Date().toISOString().slice(0, 16), tinggi_badan: latestData.tinggi_badan, berat_badan: null, linkar_perut: null, tekanan_darah_sistolik: null, tekanan_darah_diastolik: null, asam_urat: null, gula_darah: null, gula_darah_tipe: 'gds', kolestrol: null });
                 toast.success("Berhasil menambah data.");
             })
             .catch(function (error) {
@@ -150,7 +160,7 @@ export default function Index({
             });
     };
 
-    function habpusData(target: kesehatan){
+    function hapusData(target: kesehatan){
         axiosClient.post(route('kesehatan-hapus', {'kesehatan': target.id}))
             .then(function (response) {
                 setHealthData(healthData.filter(h => h.id !== target.id))
@@ -166,22 +176,12 @@ export default function Index({
         const heightInMeters = h / 100;
 
         let bmi = (w / (heightInMeters * heightInMeters));
-        let kategori = "";
 
-        if (bmi < 18.5) {
-            kategori = "Kurus";
-        } else if (bmi < 25) {
-            kategori = "Normal";
-        } else if (bmi < 30) {
-            kategori = "Overweight";
-        } else {
-            kategori = "Obesitas";
-        }
-
-        return bmi.toFixed(1)+ " ("+kategori+")";
+        return bmi.toFixed(1);
       };
 
       const bmiValue = calculateBMI(latestData.berat_badan, latestData.tinggi_badan);
+
 
       return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -193,7 +193,7 @@ export default function Index({
                             title="Dashboard Kesehatan"
                             description="Pantau dan kelola data kesehatan Anda secara efisien."
                         />
-                             <div className="flex justify-end mt-2 mb-2 gap-x-1.5">
+                             <div className="flex justify-end mt-2 mb-4 gap-x-1.5">
                                     <Button
                                         className="flex items-center gap-1 bg-primary text-primary-foreground"
                                         onClick={() =>
@@ -205,54 +205,87 @@ export default function Index({
                                     </Button>
                                 </div>
                             {/* Stats Grid */}
-                            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
 
                                 <Card className="bg-muted text-accent-foreground">
                                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1">
-                                        <CardTitle className="text-sm font-medium  uppercase tracking-wider">Tekanan Darah</CardTitle>
+                                        <CardTitle className="text-sm font-semibold  tracking-wide uppercase">Tekanan Darah</CardTitle>
                                         <Heart className="h-4 w-4 " />
                                     </CardHeader>
                                     <CardContent>
-                                        <div className="text-2xl font-bold">{latestData.tekanan_darah || '--/--'}</div>
-                                        <p className="text-xs">mmHg</p>
+                                        <div className="flex items-end gap-2">
+                                            <span className="text-4xl font-bold ">{latestData.tekanan_darah ? latestData.tekanan_darah : '-'}</span>
+                                            <span className="text-xs  mb-1">mmHg</span>
+                                        </div>
+                                        <span className="inline-block mt-3 px-0 py-1 text-xs font-semibold rounded-full uppercase">
+                                            <StatusNilai latestData={latestData} type="tekanan_darah" ></StatusNilai>
+                                        </span>
                                     </CardContent>
                                 </Card>
 
-
-
-                                <Card className="bg-muted text-accent-foreground">
+                                <Card className="bg-muted text-accent-foreground pb-3">
                                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1">
-                                        <CardTitle className="text-sm font-medium  uppercase tracking-wider">Gula Darah</CardTitle>
+                                        <CardTitle className="text-sm font-semibold  tracking-wide uppercase">Gula Darah</CardTitle>
                                         <Activity className="h-4 w-4 " />
                                     </CardHeader>
                                     <CardContent>
-                                        <div className="text-2xl font-bold">{latestData.gula_darah || '0'}</div>
-                                        {latestData.gula_darah_tipe == 'gdp' &&   <p className="text-xs">Gula Darah Puasa</p>}
-                                        {latestData.gula_darah_tipe == 'gds' &&   <p className="text-xs">Gula Darah Sewaktu</p>}
+                                        <div className="flex items-end gap-2">
+                                            <span className="text-4xl font-bold ">{latestData.gula_darah ? latestData.gula_darah : '-'}</span>
+                                            <span className="text-xs  mb-1">mg/dl</span>
+                                        </div>
+                                        {latestData.gula_darah_tipe == 'gdp' &&   <p className="text-xs mt-1">Gula Darah Puasa</p>}
+                                        {latestData.gula_darah_tipe == 'gds' &&   <p className="text-xs mt-1">Gula Darah Sewaktu</p>}
+                                        <span className="inline-block mt-3 px-0 py-1 text-xs font-semibold rounded-full uppercase">
+                                            <StatusNilai latestData={latestData} type="gula_darah" ></StatusNilai>
+                                        </span>
                                     </CardContent>
                                 </Card>
 
-
                                 <Card className="bg-muted text-accent-foreground">
                                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1">
-                                        <CardTitle className="text-sm font-medium  uppercase tracking-wider">Asam Urat</CardTitle>
-                                        <Thermometer className="h-4 w-4 " />
+                                        <CardTitle className="text-sm font-semibold  tracking-wide uppercase">Asam Urat</CardTitle>
+                                        <Beaker className="h-4 w-4 " />
                                     </CardHeader>
                                     <CardContent>
-                                        <div className="text-2xl font-bold">{latestData.asam_urat || '0'}</div>
-                                        <p className="text-xs">mg/dL</p>
+                                        <div className="flex items-end gap-2">
+                                            <span className="text-4xl font-bold ">{latestData.asam_urat ? latestData.asam_urat : '-'}</span>
+                                            <span className="text-xs  mb-1">mg/dl</span>
+                                        </div>
+                                        <span className="inline-block mt-3 px-0 py-1 text-xs font-semibold rounded-full uppercase">
+                                            <StatusNilai latestData={latestData} type="asam_urat" ></StatusNilai>
+                                        </span>
                                     </CardContent>
                                 </Card>
 
+                                <Card className="bg-muted text-accent-foreground">
+                                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1">
+                                        <CardTitle className="text-sm font-semibold  tracking-wide uppercase">Kolestrol</CardTitle>
+                                        <HeartPulse className="h-4 w-4 " />
+                                    </CardHeader>
+                                    <CardContent>
+                                        <div className="flex items-end gap-2">
+                                            <span className="text-4xl font-bold ">{latestData.kolestrol ? latestData.kolestrol : '-'}</span>
+                                            <span className="text-xs  mb-1">mg/dl</span>
+                                        </div>
+                                        <span className="inline-block mt-3 px-0 py-1 text-xs font-semibold rounded-full uppercase">
+                                            <StatusNilai latestData={latestData} type="kolestrol" ></StatusNilai>
+                                        </span>
+                                    </CardContent>
+                                </Card>
 
                                 <Card className="bg-muted text-accent-foreground">
                                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1">
-                                        <CardTitle className="text-sm font-medium  uppercase tracking-wider">BMI Score</CardTitle>
+                                        <CardTitle className="text-sm font-semibold  tracking-wide uppercase">BMI Score</CardTitle>
                                         <TrendingUp className="h-4 w-4 " />
                                     </CardHeader>
                                     <CardContent>
-                                        <div className="text-2xl font-bold">{bmiValue}</div>
-                                        <p className="text-xs">Indeks Massa Tubuh</p>
+                                        <div className="flex items-end gap-2">
+                                            <span className="text-4xl font-bold ">{bmiValue}</span>
+                                            {/* <span className="text-xs  mb-1">mg/dl</span> */}
+                                        </div>
+                                        <span className="inline-block mt-3 px-0 py-1 text-xs font-semibold rounded-full uppercase">
+                                            <StatusNilai latestData={latestData} type="bmi" ></StatusNilai>
+                                        </span>
                                     </CardContent>
                                 </Card>
                             </div>
@@ -281,6 +314,7 @@ export default function Index({
                                         />
                                         <Legend verticalAlign="top" align="right" iconType="circle" wrapperStyle={{ paddingBottom: '20px', fontSize: '12px' }} />
                                             <Line type="monotone" dataKey="gula_darah" name="Gula Darah" stroke="#f2a154" strokeWidth={2} dot={{ r: 4, fill: '#f2a154' }} activeDot={{ r: 6 }} />
+                                             <Line type="monotone" dataKey="kolestrol" name="Kolestrol" stroke="#9c87f5" strokeWidth={2} dot={{ r: 4, fill: '#9c87f5' }} activeDot={{ r: 6 }} />
                                             <Line type="monotone" dataKey="asam_urat" name="Asam Urat" stroke="#c96442" strokeWidth={2} strokeDasharray="5 5" dot={{ r: 4, fill: '#c96442' }} />
                                         </LineChart>
                                     </ResponsiveContainer>
@@ -313,7 +347,8 @@ export default function Index({
                                             contentStyle={{ borderRadius: '8px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}/>
                                         <Legend verticalAlign="top" align="right" iconType="circle" wrapperStyle={{ paddingBottom: '20px', fontSize: '12px' }} />
                                         <Area type="monotone" dataKey="berat_badan" name="Berat (kg)" stroke="#f2a154" fillOpacity={1} fill="url(#colorWeight)" strokeWidth={2} />
-                                        <Area type="monotone" dataKey="linkar_perut" name="Lingkar (cm)" stroke="#c96442" fill="transparent" strokeWidth={2} strokeDasharray="4 4" />
+                                        <Area type="monotone" dataKey="tinggi_badan" name="Tingi (cm)" stroke="#9c87f5" fill="transparent" strokeWidth={2}/>
+                                        <Area type="monotone" dataKey="linkar_perut" name="Lingkar (cm)" stroke="#c96442" fill="transparent" strokeWidth={2} />
                                         </AreaChart>
                                     </ResponsiveContainer>
                                     </CardContent>
@@ -321,7 +356,7 @@ export default function Index({
                             </div>
 
                             {/* Table Section */}
-                            <Card>
+                            <Card className="mt-4">
                                 <CardHeader>
                                     <CardTitle className="text-base font-semibold">Riwayat Pemeriksaan</CardTitle>
                                     <CardDescription>Daftar lengkap hasil pemeriksaan kesehatan Anda.</CardDescription>
@@ -332,10 +367,11 @@ export default function Index({
                                         <thead className="[&_tr]:border-b bg-accent">
                                         <tr className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
                                             <th className="h-12 px-4 text-left align-middle font-medium">Tanggal</th>
-                                            <th className="h-12 px-4 text-left align-middle font-medium">TB/BB</th>
+                                            <th className="h-12 px-4 text-left align-middle font-medium">TB/BB/Lingkar</th>
                                             <th className="h-12 px-4 text-left align-middle font-medium">Tekanan Darah</th>
                                             <th className="h-12 px-4 text-left align-middle font-medium">Gula Darah</th>
                                             <th className="h-12 px-4 text-left align-middle font-medium">Asam Urat</th>
+                                            <th className="h-12 px-4 text-left align-middle font-medium">Kolestrol</th>
                                             <th className="h-12 px-4 text-right align-middle font-mediu">Aksi</th>
                                         </tr>
                                         </thead>
@@ -346,7 +382,7 @@ export default function Index({
                                                     {new Date(item.tanggal).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })}
                                                 </td>
                                                 <td className="p-4 align-middle">
-                                                    {item.tinggi_badan ? item.tinggi_badan : '-' } cm / {item.berat_badan ? item.berat_badan : '-'} kg
+                                                    {item.tinggi_badan ? item.tinggi_badan : '-' } cm / {item.berat_badan ? item.berat_badan : '-'} kg / {item.linkar_perut ? item.linkar_perut : '-'} cm
                                                 </td>
                                                 <td className="p-4 align-middle">
                                                     {item.tekanan_darah ? item.tekanan_darah : '-'}
@@ -357,11 +393,14 @@ export default function Index({
                                                 <td className="p-4 align-middle">
                                                     {item.asam_urat ? item.asam_urat : '-'}
                                                 </td>
+                                                <td className="p-4 align-middle">
+                                                    {item.kolestrol ? item.kolestrol : '-'}
+                                                </td>
                                                 <td className="p-4 align-middle text-right">
                                                     <Button
                                                         variant="ghost"
                                                         size="sm"
-                                                        onClick={() => habpusData(item)}
+                                                        onClick={() => hapusData(item)}
                                                         className="h-8 w-8 p-0"
                                                         >
                                                         <Trash2 className="h-4 w-4  hover:text-red-500" />
@@ -390,7 +429,7 @@ export default function Index({
                                 </Button>
                                 </CardHeader>
                                 <form onSubmit={handleSubmit}>
-                                <CardContent className="grid gap-4 py-4">
+                                <CardContent className="grid gap-4 py-4 mb-2">
                                     <div className="grid gap-2">
                                         <Label>Tanggal</Label>
                                         <DatePicker22
@@ -429,19 +468,25 @@ export default function Index({
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="grid gap-2">
                                             <Label>Tinggi (cm)</Label>
-                                            <Input type="number" name="tinggi_badan"
+                                            <Input type="number" name="tinggi_badan" step="0.1"
                                                 value={formData.tinggi_badan ? formData.tinggi_badan : ""}
                                                 onChange={e => setFormData(prev => ({ ...prev, ['tinggi_badan']: e.target.value ? Number(e.target.value) : null })) }
                                             />
                                         </div>
                                         <div className="grid gap-2">
                                             <Label>Berat (kg)</Label>
-                                            <Input type="number" name="berat_badan"
+                                            <Input type="number" name="berat_badan" step="0.1"
                                                 value={formData.berat_badan ? formData.berat_badan : ""}
                                                 onChange={e => setFormData(prev => ({ ...prev, ['berat_badan']: e.target.value ? Number(e.target.value) : null })) }/>
                                         </div>
                                     </div>
                                     <div className="grid grid-cols-2 gap-4">
+                                         <div className="grid gap-2">
+                                            <Label>Lingkar Perut (cm)</Label>
+                                            <Input type="number" name="linkar_perut"  step="0.1"
+                                                value={formData.linkar_perut ? formData.linkar_perut : ""}
+                                                onChange={e => setFormData(prev => ({ ...prev, ['linkar_perut']:  e.target.value ? Number(e.target.value) : null })) }/>
+                                        </div>
                                         <div className="grid gap-2">
                                             <Label>Gula Darah</Label>
                                             <div className="flex gap-1">
@@ -459,18 +504,22 @@ export default function Index({
                                             </select>
                                             </div>
                                         </div>
+
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+
+                                        <div className="grid gap-2">
+                                            <Label>Kolestrol</Label>
+                                            <Input type="number" name="kolestrol"
+                                                value={formData.kolestrol ? formData.kolestrol : ""}
+                                                onChange={e =>  setFormData(prev => ({ ...prev, ['kolestrol']:  e.target.value ? Number(e.target.value) : null })) }/>
+                                        </div>
                                         <div className="grid gap-2">
                                             <Label>Asam Urat</Label>
                                             <Input type="number" step="0.1" name="asam_urat"
                                                 value={formData.asam_urat ? formData.asam_urat : ""}
                                                 onChange={e => setFormData(prev => ({ ...prev, ['asam_urat']: e.target.value ? Number(e.target.value) : null })) }/>
                                         </div>
-                                    </div>
-                                    <div className="grid gap-2">
-                                        <Label>Lingkar Perut (cm)</Label>
-                                        <Input type="number" name="linkar_perut"
-                                            value={formData.linkar_perut ? formData.linkar_perut : ""}
-                                            onChange={e => setFormData(prev => ({ ...prev, ['linkar_perut']:  e.target.value ? Number(e.target.value) : null })) }/>
                                     </div>
                                 </CardContent>
                                 <div className="flex items-center justify-end gap-3 p-6 pt-0">
@@ -487,3 +536,84 @@ export default function Index({
         </AppLayout>
       );
 }
+
+const StatusNilai = ({ latestData, type } : { latestData: kesehatan, type: string }) => {
+        if(type == 'bmi'){
+            if (!latestData.berat_badan || !latestData.tinggi_badan) return (<></>);
+            const heightInMeters = latestData.tinggi_badan / 100;
+            let bmi = (latestData.berat_badan / (heightInMeters * heightInMeters));
+
+            if (bmi < 18.5) {
+                return (<Badge variant="warning_">Kurus</Badge>)
+            } else if (bmi < 25) {
+                return (<Badge variant="success_">Normal</Badge>)
+            } else if (bmi < 30) {
+                return (<Badge variant="warning_">Overweight</Badge>)
+            } else {
+                return (<Badge variant="destructive_">Obesitas</Badge>)
+            }
+        }else if(type == 'tekanan_darah'){
+            if (!latestData.tekanan_darah) return (<></>)
+
+            const parts = latestData.tekanan_darah.split("/");
+            if (parts.length !== 2) return  (<></>)
+
+            const sistolik = parseInt(parts[0], 10);
+            const diastolik = parseInt(parts[1], 10);
+
+            if (isNaN(sistolik) || isNaN(diastolik)) {
+                return (<></>)
+            }
+            if (sistolik < 90 || diastolik < 60) {
+                return  (<Badge variant="destructive_">Hipotensi</Badge>)
+            }
+            if (sistolik >= 90 && sistolik <= 119 && diastolik >= 60 && diastolik <= 79) {
+                return (<Badge variant="success_">Normal</Badge>)
+            }
+
+            if (sistolik >= 120 && sistolik <= 129 && diastolik < 80) {
+                return (<Badge variant="warning_">Normal Tinggi</Badge>)
+            }
+
+            if ((sistolik >= 130 && sistolik <= 139) || (diastolik >= 80 && diastolik <= 89)) {
+                return (<Badge variant="warning_">Prehipertensi</Badge>)
+            }
+
+            if (sistolik >= 140 || diastolik >= 90) {
+                return (<Badge variant="destructive_">Hipertensi</Badge>)
+            }
+
+            return (<></>)
+        }else if(type == 'gula_darah'){
+            const angka = latestData.gula_darah
+            const tipe = latestData.gula_darah_tipe
+            if (!angka || !tipe) return (<></>)
+
+            if (isNaN(angka)) return (<></>);
+
+            if (angka < 70) return (<Badge variant="destructive_">Hipoglikemia</Badge>)
+
+            if (tipe === "gdp") {
+                if (angka <= 99) return (<Badge variant="success_">Normal</Badge>)
+                if (angka <= 125) return (<Badge variant="warning_">Prediabetes</Badge>)
+                return (<Badge variant="destructive_">Diabetes</Badge>)
+            }
+
+            if (tipe === "gds") {
+                if (angka <= 140) return (<Badge variant="success_">Normal</Badge>)
+                if (angka <= 199) return (<Badge variant="warning_">Prediabetes</Badge>)
+                return (<Badge variant="destructive_">Diabetes</Badge>)
+            }
+
+            return (<></>);;
+        }else if(type == 'kolestrol'){
+            const nilai = latestData.kolestrol
+            if (!nilai) return "-";
+
+            if (nilai < 200) return (<Badge variant="success_">Normal</Badge>)
+            if (nilai <= 239) return (<Badge variant="warning_">Borderline Tinggi</Badge>)
+            return (<Badge variant="destructive_">Tinggi</Badge>)
+        }
+
+      }
+

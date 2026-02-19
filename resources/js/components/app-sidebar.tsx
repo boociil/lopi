@@ -56,7 +56,7 @@ export function AppSidebar() {
             icon: Archive,
             subItems: [
                 {
-                    title: 'Arsip',
+                    title: 'Daftar',
                     href: '/lopi/arsip',
                 },
                 {

@@ -15,13 +15,14 @@ return new class extends Migration
             $table->id();
             $table->string('username', 100);
             $table->date('tanggal');
-            $table->decimal('tinggi_badan', total: 5, places: 2)->nullable();
+           $table->decimal('tinggi_badan', total: 5, places: 2)->nullable();
             $table->decimal('berat_badan', total: 5, places: 2)->nullable();
             $table->decimal('linkar_perut', total: 5, places: 2)->nullable();
             $table->string('tekanan_darah', 10)->nullable();
             $table->decimal('asam_urat', total: 5, places: 2)->nullable();
-            $table->decimal('gula_darah', total: 5, places: 2)->nullable();
+            $table->unsignedSmallInteger('gula_darah')->nullable();
             $table->enum('gula_darah_tipe', ['gdp', 'gds'])->nullable();
+            $table->unsignedSmallInteger('kolestrol')->nullable();
 
             $table->softDeletes();
             $table->foreign('username', 'kesehatan_fk_username')->references('username')->on('siakip2_users');
