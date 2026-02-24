@@ -207,48 +207,46 @@ export default function Index({
                             {/* Stats Grid */}
                             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
 
-                                <Card className="bg-muted text-accent-foreground">
-                                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1">
-                                        <CardTitle className="text-sm font-semibold  tracking-wide uppercase">Tekanan Darah</CardTitle>
+                                <Card className="border gap-3 py-4 my-0">
+                                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 text-muted-foreground">
+                                        <CardTitle className="text-sm font-normal">Tekanan Darah</CardTitle>
                                         <Heart className="h-4 w-4 " />
                                     </CardHeader>
                                     <CardContent>
-                                        <div className="flex items-end gap-2">
+                                        <div className="flex items-end gap-2 mt-2">
                                             <span className="text-4xl font-bold ">{latestData.tekanan_darah ? latestData.tekanan_darah : '-'}</span>
                                             <span className="text-xs  mb-1">mmHg</span>
                                         </div>
-                                        <span className="inline-block mt-3 px-0 py-1 text-xs font-semibold rounded-full uppercase">
+                                        <span className="inline-block px-0 py-1 text-xs font-semibold rounded-full uppercase mt-4 mb-0">
                                             <StatusNilai latestData={latestData} type="tekanan_darah" ></StatusNilai>
                                         </span>
                                     </CardContent>
                                 </Card>
-
-                                <Card className="bg-muted text-accent-foreground pb-3">
-                                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1">
-                                        <CardTitle className="text-sm font-semibold  tracking-wide uppercase">Gula Darah</CardTitle>
+                                <Card className="border gap-3 py-4 my-0">
+                                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 text-muted-foreground">
+                                        <CardTitle className="text-sm font-normal">Gula Darah</CardTitle>
                                         <Activity className="h-4 w-4 " />
                                     </CardHeader>
                                     <CardContent>
-                                        <div className="flex items-end gap-2">
+                                        <div className="flex items-end gap-2 mt-2">
                                             <span className="text-4xl font-bold ">{latestData.gula_darah ? latestData.gula_darah : '-'}</span>
                                             <span className="text-xs  mb-1">mg/dl</span>
                                         </div>
-                                        {latestData.gula_darah_tipe == 'gdp' &&   <p className="text-xs mt-1">Gula Darah Puasa</p>}
+                                         {latestData.gula_darah_tipe == 'gdp' &&   <p className="text-xs mt-1">Gula Darah Puasa</p>}
                                         {latestData.gula_darah_tipe == 'gds' &&   <p className="text-xs mt-1">Gula Darah Sewaktu</p>}
                                         <span className="inline-block mt-3 px-0 py-1 text-xs font-semibold rounded-full uppercase">
                                             <StatusNilai latestData={latestData} type="gula_darah" ></StatusNilai>
                                         </span>
                                     </CardContent>
                                 </Card>
-
-                                <Card className="bg-muted text-accent-foreground">
-                                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1">
-                                        <CardTitle className="text-sm font-semibold  tracking-wide uppercase">Asam Urat</CardTitle>
+                                <Card className="border gap-3 py-4 my-0">
+                                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 text-muted-foreground">
+                                        <CardTitle className="text-sm font-normal">Asam Urat</CardTitle>
                                         <Beaker className="h-4 w-4 " />
                                     </CardHeader>
                                     <CardContent>
-                                        <div className="flex items-end gap-2">
-                                            <span className="text-4xl font-bold ">{latestData.asam_urat ? latestData.asam_urat : '-'}</span>
+                                        <div className="flex items-end gap-2 mt-2">
+                                             <span className="text-4xl font-bold ">{latestData.asam_urat ? latestData.asam_urat : '-'}</span>
                                             <span className="text-xs  mb-1">mg/dl</span>
                                         </div>
                                         <span className="inline-block mt-3 px-0 py-1 text-xs font-semibold rounded-full uppercase">
@@ -257,34 +255,34 @@ export default function Index({
                                     </CardContent>
                                 </Card>
 
-                                <Card className="bg-muted text-accent-foreground">
-                                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1">
-                                        <CardTitle className="text-sm font-semibold  tracking-wide uppercase">Kolestrol</CardTitle>
+                                <Card className="border gap-3 py-4 my-0">
+                                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 text-muted-foreground">
+                                        <CardTitle className="text-sm font-normal">Kolestrol</CardTitle>
                                         <HeartPulse className="h-4 w-4 " />
                                     </CardHeader>
                                     <CardContent>
-                                        <div className="flex items-end gap-2">
-                                            <span className="text-4xl font-bold ">{latestData.kolestrol ? latestData.kolestrol : '-'}</span>
+                                        <div className="flex items-end gap-2 mt-2">
+                                             <span className="text-4xl font-bold ">{latestData.kolestrol ? latestData.kolestrol : '-'}</span>
                                             <span className="text-xs  mb-1">mg/dl</span>
                                         </div>
                                         <span className="inline-block mt-3 px-0 py-1 text-xs font-semibold rounded-full uppercase">
-                                            <StatusNilai latestData={latestData} type="kolestrol" ></StatusNilai>
+                                             <StatusNilai latestData={latestData} type="kolestrol" ></StatusNilai>
                                         </span>
                                     </CardContent>
                                 </Card>
 
-                                <Card className="bg-muted text-accent-foreground">
-                                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1">
-                                        <CardTitle className="text-sm font-semibold  tracking-wide uppercase">BMI Score</CardTitle>
-                                        <TrendingUp className="h-4 w-4 " />
+                                 <Card className="border gap-3 py-4 my-0">
+                                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 text-muted-foreground">
+                                        <CardTitle className="text-sm font-normal">BMI Score</CardTitle>
+                                         <TrendingUp className="h-4 w-4 " />
                                     </CardHeader>
                                     <CardContent>
-                                        <div className="flex items-end gap-2">
-                                            <span className="text-4xl font-bold ">{bmiValue}</span>
-                                            {/* <span className="text-xs  mb-1">mg/dl</span> */}
+                                        <div className="flex items-end gap-2 mt-2">
+                                             <span className="text-4xl font-bold ">{latestData.kolestrol ? latestData.kolestrol : '-'}</span>
+
                                         </div>
                                         <span className="inline-block mt-3 px-0 py-1 text-xs font-semibold rounded-full uppercase">
-                                            <StatusNilai latestData={latestData} type="bmi" ></StatusNilai>
+                                             <StatusNilai latestData={latestData} type="bmi" ></StatusNilai>
                                         </span>
                                     </CardContent>
                                 </Card>
@@ -292,7 +290,7 @@ export default function Index({
 
                             {/* Charts Grid */}
                             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7 mt-4">
-                                <Card className="lg:col-span-4 bg-muted text-accent-foregroundt" >
+                                <Card className="lg:col-span-4 border" >
                                     <CardHeader>
                                         <CardTitle className="font-semibold text-accent-foreground">Analisis Metabolik</CardTitle>
                                         <CardDescription>Tren gula darah dan asam urat dalam 3 bulan terakhir.</CardDescription>
@@ -321,7 +319,7 @@ export default function Index({
                                     </CardContent>
                                 </Card>
 
-                                <Card className="lg:col-span-3 bg-muted text-accent-foreground">
+                                <Card className="lg:col-span-3 border">
                                     <CardHeader>
                                         <CardTitle className="font-semibold  text-accent-foreground">Komposisi Tubuh</CardTitle>
                                         <CardDescription>Monitor berat badan dan lingkar perut.</CardDescription>
@@ -356,7 +354,7 @@ export default function Index({
                             </div>
 
                             {/* Table Section */}
-                            <Card className="mt-4">
+                            <Card className="mt-4 border">
                                 <CardHeader>
                                     <CardTitle className="text-base font-semibold">Riwayat Pemeriksaan</CardTitle>
                                     <CardDescription>Daftar lengkap hasil pemeriksaan kesehatan Anda.</CardDescription>

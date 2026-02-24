@@ -37,7 +37,7 @@ export default function Login({ tahun_array, tahun_default }: LoginProps) {
     });
 
     return (
-         <div className="flex min-h-svh flex-col items-center justify-center gap-6 bg-background md:p-10">
+         <div className="flex min-h-svh flex-col items-center justify-center gap-6 bg-sidebar md:p-10">
             <Head title="Log in" />
             <div className="w-full max-w-sm">
                 <Card className="flex flex-col">
@@ -78,7 +78,7 @@ export default function Login({ tahun_array, tahun_default }: LoginProps) {
 
 
 
-                                <Button type="submit" className="mt-4 w-full" tabIndex={4} disabled={processing}>
+                                <Button type="submit" className="mt-4 w-full focus-visible:ring-ring bg-primary text-primary-foreground hover:bg-primary/90" tabIndex={4} disabled={processing}>
                                     {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}
                                     Log in
                                 </Button>

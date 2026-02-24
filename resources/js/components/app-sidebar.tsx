@@ -221,7 +221,7 @@ export function AppSidebar() {
                 <SidebarMenu>
                     <SidebarMenuItem>
                         <SidebarMenuButton size="lg" asChild>
-                            <Link href="./beranda" prefetch>
+                            <Link href="/lopi/beranda" prefetch>
                                 <AppLogo />
                             </Link>
                         </SidebarMenuButton>
