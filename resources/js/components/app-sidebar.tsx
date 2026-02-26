@@ -48,36 +48,6 @@ export function AppSidebar() {
         }
     })
 
-    if(find_arsip){
-        mainNavItems.push({
-            type: 'group',
-            title: 'Arsip',
-            href: '/lopi/arsip',
-            icon: Archive,
-            subItems: [
-                {
-                    title: 'Daftar',
-                    href: '/lopi/arsip',
-                },
-                {
-                    title: 'Klasifikasi',
-                    href: '/lopi/arsip/klasifikasi',
-                },
-                {
-                    title: 'Akses',
-                    href: '/lopi/arsip/akses',
-                }
-            ]
-        })
-    }else{
-         mainNavItems.push( {
-            type: 'item',
-            title: 'Arsip',
-            href: '/lopi/arsip',
-            icon: Archive,
-        })
-    }
-
      mainNavItems.push( {
         type: 'item',
         title: 'Kesehatan',
