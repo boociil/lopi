@@ -5,46 +5,55 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Model\Umum\Peran;
 use App\Model\Umum\User;
-use Illuminate\Support\Facades\DB;
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use Exception;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Storage;
-use Webpatser\Uuid\Uuid;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+
+use Exception;
+
+use Inertia\Inertia;
 
 class User_Controller extends Controller
 {
-    private $username, $user;
-
-    public function load_pertama(Request $request)
-    {
-        $this->username = $request->route('username');
-        if($this->username){
-            $this->user = User::helper_getBy_Username($this->username)->first();
-        }
-    }
-
-
     public function daftar(Request $request)
     {
-        if(!$request->limit || !$request->page ){
-            return [
-                'daftar' =>  User::with("photo_url")
+        $page = 1;
+        $limit = 25;
+        if($request->page ){
+            $page = $request->page;
+        }
+        if($request->limit){
+            $limit = $request->limit;
+        }
+        $search_term = "";
+        if($request->search_term){
+            $search_term = $request->search_term;
+        }
+
+        if($request->isMethod('get')){
+            return Inertia::render('admin/pengguna', [
+                'daftar_' =>  User::with("photo_url")
+                    ->where('nama', 'LIKE', '%'.$search_term.'%')
+                    ->offset(($page - 1)*$limit)
+                    ->limit($limit)
                     ->orderBy('nama', 'asc')
                     ->get(),
-                'total' => User::count()
-            ];
-        }else{
+                'total_' => User::where('nama', 'LIKE', '%'.$search_term.'%')->count()
+            ]);
+        }else if($request->isMethod('post')){
             return [
-                'daftar' =>  User::with("photo_url")
-                    ->where('nama', 'LIKE', '%'.$request->search_term.'%')
-                    ->offset(($request->page - 1)*$request->limit)
-                    ->limit($request->limit)
+                'daftar_' =>  User::with("photo_url")
+                    ->where('nama', 'LIKE', '%'.$search_term.'%')
+                    ->offset(($page - 1)*$limit)
+                    ->limit($limit)
                     ->orderBy('nama', 'asc')
                     ->get(),
-                'total' => User::where('nama', 'LIKE', '%'.$request->search_term.'%')->count()
+                'total_' => User::where('nama', 'LIKE', '%'.$search_term.'%')->count()
             ];
         }
     }
@@ -64,7 +73,7 @@ class User_Controller extends Controller
         DB::beginTransaction();
         try
         {
-            $file_name = ((string)Uuid::generate()).'.xls';
+            $file_name = ((string)Str::uuid()).'.xls';
 
             Storage::disk('local')->putFileAs(
                 '/data_upload/',
@@ -121,44 +130,22 @@ class User_Controller extends Controller
         }
     }
 
-    public function lihat(Request $request)
-    {
-        $this->load_pertama($request);
-        if(!$this->user){
-            abort(404, 'Id tidak ditemukan');
-        }
-        return $this->user;
-    }
-
-    public function ubah(Request $request)
-    {
-        DB::beginTransaction();
-        try
-        {
-            $this->load_pertama($request);
-            if(!$this->user){
-                abort(404, 'Id tidak ditemukan');
-            }
-            $this->user->helper_ubah($request);
-            DB::commit();
-            return 1;
-        }catch(Exception $ex){
-            DB::rollBack();
-            Log::error($ex);
-            return abort(500, $ex->getMessage());
-        }
-    }
 
     public function hapus(Request $request)
     {
         DB::beginTransaction();
         try
         {
-            $this->load_pertama($request);
-            if(!$this->user){
+            $username = $request->route('username');
+            $user = null;
+            if($username){
+                $user = User::helper_getBy_Username($username)->first();
+            }
+
+            if(!$user){
                 abort(404, 'Id tidak ditemukan');
             }
-            $this->user->helper_hapus($request);
+            $user->helper_hapus($request);
             DB::commit();
             return 1;
         }catch(Exception $ex){
@@ -168,15 +155,17 @@ class User_Controller extends Controller
         }
     }
 
-    public function set_super_admin(Request $request, $username)
+    public function set_super_admin(Request $request)
     {
         DB::beginTransaction();
         try
         {
-            if(!$this->user){
+            $user = User::where('username', $request->route('username'))->first();
+            if(!$user){
                 abort(404, 'Id tidak ditemukan');
             }
-            Peran::set_super_admin($this->user);
+
+            Peran::set_super_admin($user);
             DB::commit();
             return 1;
         }catch(Exception $ex){
@@ -191,10 +180,12 @@ class User_Controller extends Controller
         DB::beginTransaction();
         try
         {
-            if(!$this->user){
+            $user = User::where('username', $request->route('username'))->first();
+            if(!$user){
                 abort(404, 'Id tidak ditemukan');
             }
-            Peran::release_super_admin($this->user);
+
+            Peran::release_super_admin($user);
             DB::commit();
             return 1;
         }catch(Exception $ex){

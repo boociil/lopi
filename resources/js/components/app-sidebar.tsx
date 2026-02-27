@@ -2,9 +2,9 @@ import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
-import type { Peran, NavGeneral, NavItem, SharedData } from '@/types';
+import type { NavGeneral, SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { LayoutGrid, CalendarDays, LockKeyholeOpen, Car, SmilePlus, Archive, Hospital, Video } from 'lucide-react';
+import { LayoutGrid, CalendarDays, LockKeyholeOpen, Car, SmilePlus, Hospital, Video, UserRoundCog } from 'lucide-react';
 import AppLogo from './app-logo';
 import { useEffect, useState } from 'react';
 import { useApi } from '@/lib/API/useApi';
@@ -41,12 +41,6 @@ export function AppSidebar() {
             icon: Car,
         }
     ];
-
-    let find_arsip = peran.find(item => {
-        if(item.peran == 'arsip'){
-            return true
-        }
-    })
 
      mainNavItems.push( {
         type: 'item',
@@ -125,34 +119,20 @@ export function AppSidebar() {
         })
     }
 
-    const tahun_active = usePage<SharedData>().props.tahun_active;
-    // const footerNavItems: NavGeneral[] = [
-    //     {
+    let find_global_admin = peran.find(item => {
+        if(item.tipe_peran == 'global' && item.peran == 'admin'){
+            return true
+        }
+    })
 
-    //         type: 'group',
-    //         title: 'Tahun Aktif : '+tahun_active,
-    //         href: '/lopi/tahun',
-    //         icon: LinkIcon,
-    //         subItems: [
-    //             {
-    //                 title: 'Tahun 2022',
-    //                 href: '/lopi/tahun/2022/ubah',
-    //             },
-    //             {
-    //                 title: 'Tahun 2023',
-    //                 href: '/lopi/tahun/2023/ubah',
-    //             },
-    //             {
-    //                 title: 'Tahun 2024',
-    //                 href: '/lopi/tahun/2024/ubah',
-    //             },
-    //             {
-    //                 title: 'Tahun 2025',
-    //                 href: '/lopi/tahun/2025/ubah',
-    //             },
-    //         ]
-    //     }
-    // ];
+    if(find_global_admin){
+        mainNavItems.push({
+            type: 'item',
+            title: 'Pengguna',
+            href: '/lopi/admin/pengguna',
+            icon: UserRoundCog,
+        })
+    }
 
     const footerNavItems: NavGeneral[] = []
 

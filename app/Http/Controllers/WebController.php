@@ -9,7 +9,6 @@ use App\Model\Umum\Peran;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Log;
 
 class WebController extends Controller
 {
@@ -28,7 +27,6 @@ class WebController extends Controller
 
     public function webshow(Request $request)
     {
-        Log::alert('ajkhsas');
         $satuan_kerja_tahun_prov_id  = Satuan_Kerja_Tahun::where('type', 'prov')->get()->pluck('id')->toArray();
         return view('main',
             ['user' => User::where('username', Auth::user()->username)->first() ,

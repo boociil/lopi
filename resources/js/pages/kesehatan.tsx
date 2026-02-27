@@ -195,7 +195,7 @@ export default function Index({
                         />
                              <div className="flex justify-end mt-2 mb-4 gap-x-1.5">
                                     <Button
-                                        className="flex items-center gap-1 bg-primary text-primary-foreground"
+                                        className="focus-visible:ring-ring bg-primary text-primary-foreground hover:bg-primary/90"
                                         onClick={() =>
                                             setIsModalOpen(true)
                                         }
