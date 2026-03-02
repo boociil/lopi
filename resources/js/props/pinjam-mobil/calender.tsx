@@ -17,6 +17,7 @@ import { usePage } from "@inertiajs/react";
 import { formatDate, formatTime } from "@/components/calender_modules/helpers";
 import { useApi } from "@/lib/API/useApi";
 import { progress } from '@inertiajs/react'
+import { useLoading } from "../LoadingContext";
 
 export function PinjamMobilCalender({
         pinjam_mobil_data,
@@ -27,6 +28,7 @@ export function PinjamMobilCalender({
         user: User[];
         havePinjamMobilPeran: boolean;
 }) {
+    const {setIsLoading} = useLoading();
 
     const axiosClient = useApi();
     const auth = usePage<SharedData>().props.auth;
@@ -38,6 +40,7 @@ export function PinjamMobilCalender({
 
     /////////////////////
     function reload_data(selectedDate: Date, currentView: TCalendarView, setAllEventsOri: (_allEvents: IEvent[]) => void){
+        setIsLoading(true)
         toast.info('Meload data baru')
         progress.start()
         axiosClient.post(route("pinjam-mobil-index"), {'selectedDate': selectedDate.toISOString(), view: currentView})
@@ -47,16 +50,19 @@ export function PinjamMobilCalender({
                     pairIEventDenganUser(_allEvents_ as PinjamMobilIEvent[], _user as CalenderUser[])
                     setAllEventsOri(_allEvents_)
                     progress.finish()
+                    setIsLoading(false)
                     toast.success('Berhasil mendapatkan data baru')
                 } catch (error) {
                     console.log(error)
                     progress.finish()
+                    setIsLoading(false)
                     toast.error('Gagal mendapatkan data baru')
                 }
             })
             .catch(function (error: any) {
                 console.log(error)
                 progress.finish()
+                setIsLoading(false)
                 toast.error('Gagal mendapatkan data baru!')
             });
     }
@@ -73,7 +79,7 @@ export function PinjamMobilCalender({
             waktu_akhir:  formatTime(event.endDate, use24HourFormat),
             status: 'menunggu',
         }
-
+        setIsLoading(true)
         toast.info('Mencoba mengubah data')
         progress.start()
         axiosClient.post(route("pinjam-mobil-ubah", { pinjamMobil: event.id }), data)
@@ -83,10 +89,12 @@ export function PinjamMobilCalender({
                     pairIEventDenganUser(return_data  as PinjamMobilIEvent[], _user as CalenderUser[])
                     updateEvent(return_data[0])
                     progress.finish()
+                    setIsLoading(false)
                     toast.success('Berhasil mengubah data')
                 } catch (error) {
                     console.log(error)
                     progress.finish()
+                    setIsLoading(false)
                     toast.error('Gagal mengubah data')
                     cancel()
                 }
@@ -94,6 +102,7 @@ export function PinjamMobilCalender({
             .catch(function (error: any) {
                 console.log(error)
                 progress.finish()
+                setIsLoading(false)
                 toast.error('Gagal mengubah data')
             });
     }

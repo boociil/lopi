@@ -221,83 +221,62 @@ export function AddEditEventDialog({
                 </ModalHeader>
 
                 <form className="flex flex-col gap-6 mt-5 mb-5" onSubmit={submit}>
-                    <div className="grid gap-4">
-                        <div className="grid gap-3">
-                            <Label className="text-secondary" htmlFor="title-1">
-                                Kegiatan
-                            </Label>
-                            <Input
-                                id="title-1"
-                                name="title"
-                                required
-                                value={data.kegiatan}
-                                onChange={(e) =>
-                                    setData("kegiatan", e.target.value)
-                                }
-                                className="text-secondary"
-                            />
-                            <InputError message={errors.kegiatan} />
+                 <div className="p-0 space-y-3">
+
+                    <div>
+                        <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Nama Kegiatan</label>
+                        <Input
+                            required name="kegiatan"
+                            value={data.kegiatan}
+                            onChange={(e) =>
+                                setData("kegiatan", e.target.value)
+                            }
+                            className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none text-sm font-medium"
+                            placeholder="Contoh: Perjalanan Dinas ke Kantor Wilayah"
+                        />
+                        <InputError message={errors.kegiatan} />
+                    </div>
+
+                    <div>
+                        <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Tipe Peminjaman</label>
+                        <div className="grid grid-cols-2 gap-3">
+                        <button type="button" onClick={() => setData('tipe',  'sekali' )} className={`py-2 rounded-xl text-xs font-bold border transition-all ${data.tipe === 'sekali' ? 'bg-slate-900 border-slate-900 text-white' : 'bg-white border-slate-200 text-slate-500'}`}>Sekali</button>
+                        <button type="button" onClick={() => setData('tipe',  'berulang' )} className={`py-2 rounded-xl text-xs font-bold border transition-all ${data.tipe === 'berulang' ? 'bg-slate-900 border-slate-900 text-white' : 'bg-white border-slate-200 text-slate-500'}`}>Berulang</button>
                         </div>
-                        <div className="grid gap-3">
-                            <Label
-                                className="text-secondary"
-                                htmlFor="tipe-1"
-                            >
-                                Tipe
-                            </Label>
-                            <Select
-                                name="tipe"
-                                required
-                                value={data.tipe}
-                                onValueChange={(value) => {
-                                    setData("tipe", value)
-                                }}
-                            >
-                                <SelectTrigger
-                                    name="zoom_status"
-                                    className="text-secondary"
-                                >
-                                    <SelectValue placeholder="Pilih Tipe" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectGroup>
-                                        <SelectItem value="sekali">
-                                            Sekali
-                                        </SelectItem>
-                                        <SelectItem value="berulang">
-                                            Berulang
-                                        </SelectItem>
-                                    </SelectGroup>
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        <div className="grid gap-3">
-                            <Label
-                                className="text-secondary"
-                                htmlFor="starttime-1"
-                            >
-                                {data.tipe == 'sekali' ? <>Tanggal</> : <>Tanggal Awal</>}
-                            </Label>
-                            <DatePicker22
-                                value={initialDates.startDate}
-                                setValue={(value) => {
-                                    setData("tanggal", formatDate(value.toISOString()));
-                                    setData("tanggal_awal", formatDate(value.toISOString()));
-                                }}
-                                modal={true}
-                            />
-                            <InputError message={errors.tanggal} />
-                            <InputError message={errors.tanggal_awal} />
-                        </div>
-                        {data.tipe == 'berulang' ? <>
-                            <div className="grid gap-3">
-                                <Label
-                                    className="text-secondary"
-                                    htmlFor="starttime-1"
-                                >
-                                    Tanggal Akhir
-                                </Label>
-                                <DatePicker22
+                    </div>
+
+                    {data.tipe === 'sekali' ? (
+                        <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1.5">Tanggal</label>
+                        <DatePicker22 className="w-full px-4 py-2.5 rounded-xl border border-slate-200 outline-none text-sm"
+                            value={initialDates.startDate}
+                            setValue={(value) => {
+                                setData("tanggal", formatDate(value.toISOString()));
+                                setData("tanggal_awal", formatDate(value.toISOString()));
+                            }}
+                            modal={true}
+                        />
+                        <InputError message={errors.tanggal} />
+                        <InputError message={errors.tanggal_awal} />
+                    </div>
+                    ) : (
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-xs font-bold text-slate-700 mb-1.5">Tanggal Awal</label>
+                                <DatePicker22 className="w-full px-4 py-2.5 rounded-xl border border-slate-200 outline-none text-sm"
+                                    value={initialDates.startDate}
+                                    setValue={(value) => {
+                                        setData("tanggal", formatDate(value.toISOString()));
+                                        setData("tanggal_awal", formatDate(value.toISOString()));
+                                    }}
+                                    modal={true}
+                                />
+                                <InputError message={errors.tanggal} />
+                                <InputError message={errors.tanggal_awal} />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-bold text-slate-700 mb-1.5">Tanggal Akhir</label>
+                                <DatePicker22 className="w-full px-4 py-2.5 rounded-xl border border-slate-200 outline-none text-sm"
                                     value={initialDates.endDate}
                                     setValue={(value) => {
                                         setData("tanggal_akhir", formatDate(value.toISOString()));
@@ -306,16 +285,13 @@ export function AddEditEventDialog({
                                 />
                                 <InputError message={errors.tanggal_akhir} />
                             </div>
-                        </> : <></>}
+                        </div>
+                    )}
 
-                        <div className="grid gap-3">
-                            <Label
-                                className="text-secondary"
-                                htmlFor="duration-1"
-                            >
-                                Waktu Awal
-                            </Label>
-                            <Time24Picker
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-xs font-bold text-slate-700 mb-1.5">Mulai</label>
+                            <Time24Picker className="w-full px-4 py-2.5 rounded-xl border border-slate-200 outline-none text-sm"
                                 value={new Date(`${data.tanggal}T${data.waktu_awal}`)}
                                 setValue={(value) => {
                                     setData("waktu_awal", value);
@@ -324,14 +300,9 @@ export function AddEditEventDialog({
                             />
                             <InputError message={errors.waktu_awal} />
                         </div>
-                        <div className="grid gap-3">
-                            <Label
-                                className="text-secondary"
-                                htmlFor="duration-1"
-                            >
-                                Waktu Akhir
-                            </Label>
-                             <Time24Picker
+                        <div>
+                            <label className="block text-xs font-bold text-slate-700 mb-1.5">Selesai</label>
+                            <Time24Picker className="w-full px-4 py-2.5 rounded-xl border border-slate-200 outline-none text-sm"
                                 value={new Date(`${data.tanggal}T${data.waktu_akhir}`)}
                                 setValue={(value) => {
                                     setData("waktu_akhir", value);
@@ -341,6 +312,8 @@ export function AddEditEventDialog({
                             <InputError message={errors.waktu_akhir} />
                         </div>
                     </div>
+                </div>
+
                     <ModalFooter className="flex justify-end gap-2">
                         <ModalClose asChild>
                             <Button type="button" variant="outline" className="text-accent-foreground">

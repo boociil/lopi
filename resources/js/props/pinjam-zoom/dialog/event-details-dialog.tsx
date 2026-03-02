@@ -306,7 +306,7 @@ export function EventDetailsDialog({ _event, children }: Event_Details_Dialog_IP
                             <Calendar size={16} />
                         </div>
                         { (event._startDate == event._endDate)
-                            ? event._startDate
+                            ? formatDate(event._startDate)
                             : <><>{formatDate(event._startDate)} s/d </>
                                 <>{formatDate(event._endDate)}</></>
                         }
@@ -468,9 +468,6 @@ export function EventDetailsDialog({ _event, children }: Event_Details_Dialog_IP
               </div>
             </div>
 
-
-
-				<DialogClose />
 			</DialogContent>
 		</Dialog>
 	);

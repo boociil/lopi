@@ -33,7 +33,7 @@ export function PinjamZoomCalender({
         zoom_sp2020: zoom_app[];
 }) {
 
-    const {isLoading, setIsLoading} = useLoading();
+    const {setIsLoading} = useLoading();
 
     const axiosClient = useApi();
     const auth = usePage<SharedData>().props.auth;

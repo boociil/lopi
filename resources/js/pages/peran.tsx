@@ -1,11 +1,9 @@
 import AppLayout from "@/layouts/app-layout";
 import {
-    type Auth,
     type User,
     type BreadcrumbItem,
-    type SharedData,
 } from "@/types";
-import { Head, router, usePage } from "@inertiajs/react";
+import { Head} from "@inertiajs/react";
 
 import * as React from "react";
 import { Plus } from "lucide-react";

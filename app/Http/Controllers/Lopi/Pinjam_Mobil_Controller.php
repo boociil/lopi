@@ -113,7 +113,7 @@ class Pinjam_Mobil_Controller extends Controller
             'waktu_akhir'       => 'required|date_format:H:i|after:waktu_awal',
         ]);
 
-        if(!is_null($request->input('tanggal')) || (!is_null($request->input('tanggal_awal')) && !is_null($request->input('tanggal_akhir')))){
+        if(!$request->input('tanggal') || (!$request->input('tanggal_awal') && !$request->input('tanggal_akhir'))){
             throw ValidationException::withMessages([
                 '_status' => 'Peran tidak dapat dibuat',
             ]);
@@ -195,7 +195,7 @@ class Pinjam_Mobil_Controller extends Controller
             'waktu_akhir'       => 'required|date_format:H:i|after:waktu_awal',
         ]);
 
-        if(!is_null($request->input('tanggal')) || (!is_null($request->input('tanggal_awal')) && !is_null($request->input('tanggal_akhir')))){
+        if(!$request->input('tanggal') || (!$request->input('tanggal_awal') && !$request->input('tanggal_akhir'))){
             throw ValidationException::withMessages([
                 '_status' => 'Peran tidak dapat dibuat',
             ]);

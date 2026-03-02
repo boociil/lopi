@@ -430,7 +430,7 @@ export default function Index({
                                 <CardContent className="grid gap-4 py-4 mb-2">
                                     <div className="grid gap-2">
                                         <Label>Tanggal</Label>
-                                        <DatePicker22
+                                        <DatePicker22 className=""
                                             value={new Date(formData.tanggal)}
                                             setValue={(value) => {
                                                 setFormData(prev => ({ ...prev, ['tanggal']: formatDate(value.toISOString()) }))

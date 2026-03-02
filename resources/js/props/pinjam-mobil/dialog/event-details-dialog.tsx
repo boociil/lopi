@@ -1,16 +1,25 @@
 "use client";
 
 import { format, parseISO } from "date-fns";
-import { Calendar, Clock, Text, Type, User } from "lucide-react";
+import {
+    Calendar,
+    CalendarDays,
+    Clock,
+    History,
+    Text,
+    Type,
+    User,
+    UserCheck,
+} from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
-	Dialog,
-	DialogClose,
-	DialogContent,
-	DialogHeader,
-	DialogTitle,
-	DialogTrigger,
+    Dialog,
+    DialogClose,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
 } from "@/components/ui/dialog";
 import {
     AlertDialog,
@@ -22,202 +31,468 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
     AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
+} from "@/components/ui/alert-dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useCalendar } from "@/components/calender_modules/contexts/calendar-context";
-import { capitalizeWords, formatTime } from "@/components/calender_modules/helpers";
+import {
+    capitalizeWords,
+    formatDate,
+    formatTime,
+} from "@/components/calender_modules/helpers";
 import { Event_Details_Dialog_IProps } from "@/components/calender_modules/dialogs/props-dialog";
-import { progress as progressIndikator } from '@inertiajs/react'
+import { progress as progressIndikator } from "@inertiajs/react";
 import { CalenderUser, IEvent } from "@/components/calender_modules/interfaces";
-import { pairIEventDenganUser, pinjam_mobil, PinjamMobilIEvent, producePinjamMobilIEvent } from "../types";
+import {
+    pairIEventDenganUser,
+    pinjam_mobil,
+    PinjamMobilIEvent,
+    producePinjamMobilIEvent,
+} from "../types";
 import { useState } from "react";
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipTrigger,
+} from "@/components/ui/tooltip";
 
-export function EventDetailsDialog({ _event, children }: Event_Details_Dialog_IProps) {
-    const [event, setEvent] = useState(_event)
-	const startDate = parseISO(event.startDate);
-	const endDate = parseISO(event.endDate);
-	const { settingCalender, use24HourFormat, updateEvent, removeEvent, AddEditEventDialog, canChange, canApprove, axiosClient, users } = useCalendar();
-
+export function EventDetailsDialog({
+    _event,
+    children,
+}: Event_Details_Dialog_IProps) {
+    const [event, setEvent] = useState(_event);
+    const startDate = parseISO(event.startDate);
+    const endDate = parseISO(event.endDate);
+    const {
+        settingCalender,
+        use24HourFormat,
+        updateEvent,
+        removeEvent,
+        AddEditEventDialog,
+        canChange,
+        canApprove,
+        axiosClient,
+        users,
+    } = useCalendar();
 
     const deleteEvent = (event_id: string) => {
-        progressIndikator.start()
-        axiosClient.post(route("pinjam-mobil-hapus", {pinjamMobil: event_id}))
+        progressIndikator.start();
+        axiosClient
+            .post(route("pinjam-mobil-hapus", { pinjamMobil: event_id }))
             .then(function (response) {
                 removeEvent(event_id);
-                progressIndikator.finish()
-                toast.success(capitalizeWords(settingCalender.name_event)+" telah dihapus dengan sukses.");
+                progressIndikator.finish();
+                toast.success(
+                    capitalizeWords(settingCalender.name_event) +
+                        " telah dihapus dengan sukses.",
+                );
             })
             .catch(function (error) {
-                progressIndikator.finish()
-                toast.error("Kesalahan saat menghapus "+capitalizeWords(settingCalender.name_event)+".");
+                progressIndikator.finish();
+                toast.error(
+                    "Kesalahan saat menghapus " +
+                        capitalizeWords(settingCalender.name_event) +
+                        ".",
+                );
             });
     };
 
-    const onUpdateOpenChange = (event: IEvent) => {
+    const onUpdateOpenChange = (event: IEvent) => {};
 
-    }
-
-    const approvalEvent = (event_id: string, status: 'disetujui'|'ditolak') => {
-        progressIndikator.start()
-        axiosClient.post(route("pinjam-mobil-approval", {pinjamMobil: event_id}), {status: status})
+    const approvalEvent = (
+        event_id: string,
+        status: "disetujui" | "ditolak",
+    ) => {
+        progressIndikator.start();
+        axiosClient
+            .post(route("pinjam-mobil-approval", { pinjamMobil: event_id }), {
+                status: status,
+            })
             .then(function (response) {
-                 try {
-                    const return_data: IEvent[] = producePinjamMobilIEvent([response.data.data] as pinjam_mobil[]);
-                    pairIEventDenganUser(return_data as PinjamMobilIEvent[], users  as CalenderUser[])
-                    updateEvent(return_data[0])
+                try {
+                    const return_data: IEvent[] = producePinjamMobilIEvent([
+                        response.data.data,
+                    ] as pinjam_mobil[]);
+                    pairIEventDenganUser(
+                        return_data as PinjamMobilIEvent[],
+                        users as CalenderUser[],
+                    );
+                    updateEvent(return_data[0]);
 
-                    progressIndikator.finish()
-                    toast.success('Berhasil mengubah data')
+                    progressIndikator.finish();
+                    toast.success("Berhasil mengubah data");
                 } catch (error) {
-                    console.log(error)
-                    progressIndikator.finish()
-                    toast.error('Gagal mengubah data')
+                    console.log(error);
+                    progressIndikator.finish();
+                    toast.error("Gagal mengubah data");
                 }
             })
             .catch(function (error) {
-                progressIndikator.finish()
-                toast.error("Kesalahan saat menghapus "+capitalizeWords(settingCalender.name_event)+".");
+                progressIndikator.finish();
+                toast.error(
+                    "Kesalahan saat menghapus " +
+                        capitalizeWords(settingCalender.name_event) +
+                        ".",
+                );
             });
     };
 
-	return (
-		<Dialog>
-			<DialogTrigger asChild>{children}</DialogTrigger>
-			<DialogContent>
-				<DialogHeader>
-					<DialogTitle className="text-secondary">{event.title}</DialogTitle>
-				</DialogHeader>
+      const getStatusStyle = (status : 'menunggu'|'disetujui'|'ditolak') => {
+        switch (status) {
+        case 'disetujui': return 'bg-emerald-100 text-emerald-700 border-emerald-200';
+        case 'ditolak': return 'bg-rose-100 text-rose-700 border-rose-200';
+        default: return 'bg-amber-100 text-amber-700 border-amber-200';
+        }
+    };
 
-				<ScrollArea className="max-h-[80vh]">
-					<div className="space-y-4 p-4">
-						<div className="flex items-start gap-2">
-							<User className="mt-1 size-4 shrink-0 text-muted-foreground" />
-							<div>
-								<p className="text-sm font-medium text-secondary">Yang bertanggung jawab</p>
-								<p className="text-sm text-muted-foreground">
-									{event.user?.name}
-								</p>
-							</div>
-						</div>
+    return (
+        <Dialog>
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    <DialogTrigger asChild>{children}</DialogTrigger>
+                </TooltipTrigger>
+                <TooltipContent className="bg-background p-1 m-1 shadow-2xl rounded-2xl">
+                    <div className="p-5">
+                        <div className="mb-8">
+                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] block mb-2">
+                                Nama Kegiatan
+                            </label>
+                            <h3 className="text-2xl font-bold text-slate-900 leading-tight">
+                                {event.title}
+                            </h3>
+                        </div>
 
-                        <div className="flex items-start gap-2">
-							<Type className="mt-1 size-4 shrink-0 text-muted-foreground" />
-							<div>
-								<p className="text-sm font-medium text-secondary">Tipe</p>
-								<p className="text-sm text-muted-foreground">
-                                    {event._startDate != event._endDate ? 'Berulang' : 'Sekali'}
-								</p>
-							</div>
-						</div>
-                        {event._startDate != event._endDate ?
-                        <>
-                            <div className="flex items-start gap-2">
-                                <Calendar className="mt-1 size-4 shrink-0 text-muted-foreground" />
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                            <div className="space-y-6">
                                 <div>
-                                    <p className="text-sm font-medium text-secondary">Tanggal Awal</p>
-                                    <p className="text-sm text-muted-foreground">
-                                        {format(startDate, "EEEE dd MMMM")}
-                                    </p>
+                                    <div className="flex items-center gap-2 text-slate-400 mb-2">
+                                        <CalendarDays size={16} />
+                                        <span className="text-[10px] font-bold uppercase tracking-wider">
+                                            Waktu Pelaksanaan
+                                        </span>
+                                    </div>
+                                    <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                                        <p className="text-sm font-bold text-slate-800">
+                                            {event._startDate == event._endDate
+                                                ? formatDate(event._startDate)
+                                                : `${formatDate(event._startDate)} s/d ${event._endDate}`}
+                                        </p>
+                                        <p className="text-xs text-slate-500 mt-1">
+                                            {formatTime(event.startDate, true)}{" "}
+                                            sampai{" "}
+                                            {formatTime(event.endDate, true)}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <div className="flex items-center gap-2 text-slate-400 mb-2">
+                                        <History size={16} />
+                                        <span className="text-[10px] font-bold uppercase tracking-wider">
+                                            Data Identitas
+                                        </span>
+                                    </div>
+                                    <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                                        <p className="text-xs text-slate-500 uppercase font-mono">
+                                            ID: {event.id}
+                                        </p>
+                                        <p className="text-xs text-slate-500 mt-1 uppercase font-mono">
+                                            Tipe:{" "}
+                                            {event._startDate == event._endDate
+                                                ? "Sekali"
+                                                : "Berulang"}
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
 
-                             <div className="flex items-start gap-2">
-                                <Calendar className="mt-1 size-4 shrink-0 text-muted-foreground" />
+                            <div className="space-y-6">
                                 <div>
-                                    <p className="text-sm font-medium text-secondary">Tanggal Akhir</p>
-                                    <p className="text-sm text-muted-foreground">
-                                        {format(endDate, "EEEE dd MMMM")}
-                                    </p>
+                                    <div className="flex items-center gap-2 text-slate-400 mb-2">
+                                        <User size={16} />
+                                        <span className="text-[10px] font-bold uppercase tracking-wider">
+                                            Pemohon / Driver
+                                        </span>
+                                    </div>
+                                    <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 flex items-center gap-3">
+                                        <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold uppercase border border-blue-200">
+                                            {(event as PinjamMobilIEvent)
+                                                .pinjam_mobil_ori
+                                                ? (
+                                                      event as PinjamMobilIEvent
+                                                  ).pinjam_mobil_ori.pembuat_username.charAt(
+                                                      0,
+                                                  )
+                                                : "-"}
+                                        </div>
+                                        <div>
+                                            <p className="text-sm font-bold text-slate-800">
+                                                {
+                                                    (event as PinjamMobilIEvent)
+                                                        .pinjam_mobil_ori
+                                                        .pembuat_username
+                                                }
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {(event as PinjamMobilIEvent).pinjam_mobil_ori
+                                    .status == "disetujui" && (
+                                    <div>
+                                        <div className="flex items-center gap-2 text-slate-400 mb-2">
+                                            <UserCheck size={16} />
+                                            <span className="text-[10px] font-bold uppercase tracking-wider">
+                                                Disetujui Oleh
+                                            </span>
+                                        </div>
+                                        <div className="bg-emerald-50 p-4 rounded-2xl border border-emerald-100 flex items-center gap-3">
+                                            <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 font-bold uppercase border border-emerald-200">
+                                                {(event as PinjamMobilIEvent)
+                                                    .pinjam_mobil_ori
+                                                    ? (
+                                                          event as PinjamMobilIEvent
+                                                      ).pinjam_mobil_ori.confirm_username?.charAt(
+                                                          0,
+                                                      )
+                                                    : "-"}
+                                            </div>
+                                            <div>
+                                                <p className="text-sm font-bold text-emerald-800">
+                                                    {
+                                                        (
+                                                            event as PinjamMobilIEvent
+                                                        ).pinjam_mobil_ori
+                                                            .confirm_username
+                                                    }
+                                                </p>
+                                                <p className="text-[10px] text-emerald-400 uppercase tracking-tighter">
+                                                    Verified Official
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </TooltipContent>
+            </Tooltip>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle className="text-secondary flex mt-5">
+                        <p className="flex grow">Rincian Peminjaman</p>
+
+                        <div className={`flex px-4 py-1.5 rounded-full text-xs font-bold border justify-end ${getStatusStyle((event as PinjamMobilIEvent).pinjam_mobil_ori.status)} uppercase tracking-wider`}>
+                            {(event as PinjamMobilIEvent).pinjam_mobil_ori.status}
+                        </div>
+                    </DialogTitle>
+                </DialogHeader>
+
+                <div className="w-full max-w-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
+                    <div className="p-2">
+                        <div className="mb-8">
+                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] block mb-2">
+                                Nama Kegiatan
+                            </label>
+                            <h3 className="text-2xl font-bold text-slate-900 leading-tight">
+                                {event.title}
+                            </h3>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                            <div className="space-y-6">
+                                <div>
+                                    <div className="flex items-center gap-2 text-slate-400 mb-2">
+                                        <CalendarDays size={16} />
+                                        <span className="text-[10px] font-bold uppercase tracking-wider">
+                                            Waktu Pelaksanaan
+                                        </span>
+                                    </div>
+                                    <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                                        <p className="text-sm font-bold text-slate-800">
+                                            {event._startDate == event._endDate
+                                                ? formatDate(event._startDate)
+                                                : `${formatDate(event._startDate)} s/d ${event._endDate}`}
+                                        </p>
+                                        <p className="text-xs text-slate-500 mt-1">
+                                            {formatTime(event.startDate, true)}{" "}
+                                            sampai{" "}
+                                            {formatTime(event.endDate, true)}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <div className="flex items-center gap-2 text-slate-400 mb-2">
+                                        <History size={16} />
+                                        <span className="text-[10px] font-bold uppercase tracking-wider">
+                                            Data Identitas
+                                        </span>
+                                    </div>
+                                    <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                                        <p className="text-xs text-slate-500 uppercase font-mono">
+                                            ID: {event.id}
+                                        </p>
+                                        <p className="text-xs text-slate-500 mt-1 uppercase font-mono">
+                                            Tipe:{" "}
+                                            {event._startDate == event._endDate
+                                                ? "Sekali"
+                                                : "Berulang"}
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
 
-                            <div className="flex items-start gap-2">
-                                <Clock className="mt-1 size-4 shrink-0 text-muted-foreground" />
+                            <div className="space-y-6">
                                 <div>
-                                    <p className="text-sm font-medium text-secondary">Waktu Mulai</p>
-                                    <p className="text-sm text-muted-foreground">
-                                        {formatTime(parseISO(event.startDate), use24HourFormat)}
-                                    </p>
+                                    <div className="flex items-center gap-2 text-slate-400 mb-2">
+                                        <User size={16} />
+                                        <span className="text-[10px] font-bold uppercase tracking-wider">
+                                            Pemohon / Driver
+                                        </span>
+                                    </div>
+                                    <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 flex items-center gap-3">
+                                        <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold uppercase border border-blue-200">
+                                            {(event as PinjamMobilIEvent)
+                                                .pinjam_mobil_ori
+                                                ? (
+                                                      event as PinjamMobilIEvent
+                                                  ).pinjam_mobil_ori.pembuat_username.charAt(
+                                                      0,
+                                                  )
+                                                : "-"}
+                                        </div>
+                                        <div>
+                                            <p className="text-sm font-bold text-slate-800">
+                                                {
+                                                    (event as PinjamMobilIEvent)
+                                                        .pinjam_mobil_ori
+                                                        .pembuat_username
+                                                }
+                                            </p>
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-                            <div className="flex items-start gap-2">
-                                <Clock className="mt-1 size-4 shrink-0 text-muted-foreground" />
-                                <div>
-                                    <p className="text-sm font-medium text-secondary">Waktu Akhir</p>
-                                    <p className="text-sm text-muted-foreground">
-                                        {formatTime(parseISO(event.endDate), use24HourFormat)}
-                                    </p>
-                                </div>
-                            </div>
-                        </>
-                        :
-                        <>
-                            <div className="flex items-start gap-2">
-                                <Calendar className="mt-1 size-4 shrink-0 text-muted-foreground" />
-                                <div>
-                                    <p className="text-sm font-medium text-secondary">Mulai</p>
-                                    <p className="text-sm text-muted-foreground">
-                                        {format(startDate, "EEEE dd MMMM")}
-                                        <span className="mx-1">at</span>
-                                        {formatTime(parseISO(event.startDate), use24HourFormat)}
-                                    </p>
-                                </div>
-                            </div>
 
-                            <div className="flex items-start gap-2">
-                                <Clock className="mt-1 size-4 shrink-0 text-muted-foreground" />
-                                <div>
-                                    <p className="text-sm font-medium text-secondary">Berakhir</p>
-                                    <p className="text-sm text-muted-foreground">
-                                        {format(endDate, "EEEE dd MMMM")}
-                                        <span className="mx-1">at</span>
-                                        {formatTime(parseISO(event.endDate), use24HourFormat)}
-                                    </p>
-                                </div>
+                                {(event as PinjamMobilIEvent).pinjam_mobil_ori
+                                    .status == "disetujui" && (
+                                    <div>
+                                        <div className="flex items-center gap-2 text-slate-400 mb-2">
+                                            <UserCheck size={16} />
+                                            <span className="text-[10px] font-bold uppercase tracking-wider">
+                                                Disetujui Oleh
+                                            </span>
+                                        </div>
+                                        <div className="bg-emerald-50 p-4 rounded-2xl border border-emerald-100 flex items-center gap-3">
+                                            <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 font-bold uppercase border border-emerald-200">
+                                                {(event as PinjamMobilIEvent)
+                                                    .pinjam_mobil_ori
+                                                    ? (
+                                                          event as PinjamMobilIEvent
+                                                      ).pinjam_mobil_ori.confirm_username?.charAt(
+                                                          0,
+                                                      )
+                                                    : "-"}
+                                            </div>
+                                            <div>
+                                                <p className="text-sm font-bold text-emerald-800">
+                                                    {
+                                                        (
+                                                            event as PinjamMobilIEvent
+                                                        ).pinjam_mobil_ori
+                                                            .confirm_username
+                                                    }
+                                                </p>
+                                                <p className="text-[10px] text-emerald-400 uppercase tracking-tighter">
+                                                    Verified Official
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
-                        </>
-                        }
+                        </div>
+                    </div>
+                </div>
 
-					</div>
-				</ScrollArea>
-				<div className="flex justify-end gap-2">
-                    {canApprove(event) &&
+                <div className="flex justify-end gap-2">
+                    {canApprove(event) && (
                         <AlertDialog>
                             <AlertDialogTrigger asChild>
-                                <Button variant="outline" className="text-secondary">Approval</Button>
+                                <Button
+                                    variant="outline"
+                                    className="text-secondary"
+                                >
+                                    Approval
+                                </Button>
                             </AlertDialogTrigger>
                             <AlertDialogContent>
                                 <AlertDialogHeader>
-                                    <AlertDialogTitle className="text-secondary">Konfirmasi tindakan</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                    Apakah Anda ingin menyetujui atau menolak permintaan ini?
-                                </AlertDialogDescription>
+                                    <AlertDialogTitle className="text-secondary">
+                                        Konfirmasi tindakan
+                                    </AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                        Apakah Anda ingin menyetujui atau
+                                        menolak permintaan ini?
+                                    </AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
-                                <AlertDialogCancel className="text-secondary">Tutup</AlertDialogCancel>
-                                <AlertDialogAction onClick={() => approvalEvent(event.id, 'ditolak')}>Tolak</AlertDialogAction>
-                                <AlertDialogAction onClick={() => approvalEvent(event.id, 'disetujui')}>Setujui</AlertDialogAction>
+                                    <AlertDialogCancel className="text-secondary">
+                                        Tutup
+                                    </AlertDialogCancel>
+                                    <AlertDialogAction
+                                        onClick={() =>
+                                            approvalEvent(event.id, "ditolak")
+                                        }
+                                    >
+                                        Tolak
+                                    </AlertDialogAction>
+                                    <AlertDialogAction
+                                        onClick={() =>
+                                            approvalEvent(event.id, "disetujui")
+                                        }
+                                    >
+                                        Setujui
+                                    </AlertDialogAction>
                                 </AlertDialogFooter>
                             </AlertDialogContent>
                         </AlertDialog>
-                    }
-                    {canChange(event) &&
-                        <AddEditEventDialog event={event} onUpdateOpenChange={(_event: IEvent) => setEvent(_event)}>
-                            <Button variant="outline" className="text-accent-foreground">Ubah</Button>
+                    )}
+                    {canChange(event) && (
+                        <AddEditEventDialog
+                            event={event}
+                            onUpdateOpenChange={(_event: IEvent) =>
+                                setEvent(_event)
+                            }
+                        >
+                            <Button
+                                variant="outline"
+                                className="text-accent-foreground"
+                            >
+                                Ubah
+                            </Button>
                         </AddEditEventDialog>
-                    }
-
-					<Button
-						variant="destructive"
-						onClick={() => {
-							deleteEvent(event.id);
-						}}
-					>
-						Hapus
-					</Button>
-				</div>
-				<DialogClose />
-			</DialogContent>
-		</Dialog>
-	);
+                    )}
+                    {canChange(event) && (
+                        <Button
+                            variant="destructive"
+                            onClick={() => {
+                                deleteEvent(event.id);
+                            }}
+                        >
+                            Batalkan
+                        </Button>
+                    )}
+                    <DialogClose asChild>
+                        <Button
+                            variant="outline"
+                            className="px-6 py-2 text-sm font-bold text-slate-500 hover:text-slate-800 transition-colors uppercase tracking-widest"
+                        >
+                            Tutup
+                        </Button>
+                    </DialogClose>
+                </div>
+            </DialogContent>
+        </Dialog>
+    );
 }
