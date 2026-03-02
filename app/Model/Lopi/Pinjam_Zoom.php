@@ -112,6 +112,7 @@ class Pinjam_Zoom extends Model
         $zoom_akun,
     )
     {
+        $this->define_config();
         $this->kegiatan = $kegiatah;
         $this->tipe = $tipe;
         $this->password = $password;
@@ -151,6 +152,7 @@ class Pinjam_Zoom extends Model
     }
 
     public function helper_hapus($have_zoom_peran){
+        $this->define_config();
         if(! ($have_zoom_peran || $this->pembuat_username == Auth::user()->username) ){
             throw new Exception('Gagal menghapus peminjaman zoom!');
         }
@@ -163,6 +165,7 @@ class Pinjam_Zoom extends Model
     }
 
     public function helper_approval($status, $zoom_akun){
+        $this->define_config();
         if($status == 'ditolak'){
             if($this->zoom_meeting_id){
                 $this->zoom_meta_deleteMeeting($this->zoom_akun, $this);

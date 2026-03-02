@@ -37,6 +37,7 @@ import { pairIEventDenganUser, pinjam_zoom_req, PinjamZoomIEvent, producePinjamZ
 import { CalenderUser, IEvent } from "@/components/calender_modules/interfaces";
 import { Add_Edit_Event_IProps } from "@/components/calender_modules/dialogs/props-dialog";
 import { progress as progressIndikator } from '@inertiajs/react'
+import { Clock } from "lucide-react";
 
 export function AddEditEventDialog({
     children,
@@ -79,7 +80,7 @@ export function AddEditEventDialog({
         Required<pinjam_zoom_req>
     >({
         id: "12345",
-        topic:  "Peminjaman Zoom",
+        kegiatan:  "Peminjaman Zoom",
         tipe: 'string',
         password: 'zoom',
         tanggal: formatDate(new Date().toISOString()),
@@ -169,7 +170,7 @@ export function AddEditEventDialog({
 		if(event && (event as PinjamZoomIEvent).pinjam_zoom_ori != null){
             const event_: PinjamZoomIEvent = event as PinjamZoomIEvent
             setData("id", event.id);
-            setData("topic", event.title);
+            setData("kegiatan", event.title);
             setData('tipe', 'sekali')
             if(event._startDate != event._endDate){
                 setData('tipe', 'berulang')
@@ -193,7 +194,7 @@ export function AddEditEventDialog({
             }
         }else{
             setData("id", 'xxxx-xxxx-xxxx');
-            setData("topic", "Zoom");
+            setData("kegiatan", "Zoom");
             setData('tipe', 'sekali')
             setData("tanggal_awal",  formatDate(initialDates.startDate));
             setData("tanggal_akhir",  formatDate(initialDates.endDate));
@@ -222,58 +223,44 @@ export function AddEditEventDialog({
                             <>Tambah {capitalizeWords(settingCalender.name_event)}</>
                         )}
                     </ModalTitle>
-                    <ModalDescription>
-                        {isEditing ? (
-                            <>
-                                Ubah {capitalizeWords(settingCalender.name_event)} yang sudah ada.
-                            </>
-                        ) : (
-                            <>Buat {capitalizeWords(settingCalender.name_event)} baru untuk kalender Anda.</>
-                        )}
-                    </ModalDescription>
                 </ModalHeader>
 
-                <form className="flex flex-col gap-6 mt-5 mb-5" onSubmit={submit}>
-                    <div className="grid gap-4">
-                        <div className="grid gap-3">
-                            <Label className="text-secondary" htmlFor="title-1">
-                                Kegiatan
-                            </Label>
-                            <Input
-                                id="title-1"
-                                name="title"
-                                required
-                                value={data.topic}
-                                onChange={(e) =>
-                                    setData("topic", e.target.value)
-                                }
-                                className="text-secondary"
-                            />
-                            <InputError message={errors.topic} />
+                    <form onSubmit={submit} className="p-0 space-y-3">
+                    <div className="space-y-4">
+                        <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest border-b pb-1">Detail Kegiatan</h3>
+
+                        <div>
+                        <label className="block text-sm font-medium text-slate-700 mb-1">Nama Kegiatan</label>
+                        <textarea
+                            name="kegiatan"
+                            required
+                            rows={3}
+                            className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none"
+                            placeholder="Contoh: Rapat Koordinasi Progress Project X"
+                            value={data.kegiatan}
+                            onChange={(e) =>
+                                setData("kegiatan", e.target.value)
+                            }
+                        ></textarea>
                         </div>
-                        <div className="grid gap-3">
-                            <Label className="text-secondary" htmlFor="password-1">
-                                Password
-                            </Label>
-                            <Input
-                                id="password-1"
-                                name="password"
-                                required
-                                value={data.password}
-                                onChange={(e) =>
-                                    setData("password", e.target.value)
-                                }
-                                className="text-secondary"
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-sm font-medium text-slate-700 mb-1">Password Meeting</label>
+                            <input
+                            type="text"
+                            name="password"
+                            maxLength={10}
+                            required
+                            className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+                            value={data.password}
+                            onChange={(e) =>
+                                setData("password", e.target.value)
+                            }
                             />
-                            <InputError message={errors.password} />
                         </div>
-                        <div className="grid gap-3">
-                            <Label
-                                className="text-secondary"
-                                htmlFor="tipe-1"
-                            >
-                                Tipe
-                            </Label>
+                        <div>
+                            <label className="block text-sm font-medium text-slate-700 mb-1">Tipe Peminjaman</label>
                             <Select
                                 name="tipe"
                                 required
@@ -284,7 +271,7 @@ export function AddEditEventDialog({
                             >
                                 <SelectTrigger
                                     name="zoom_status"
-                                    className="text-secondary"
+                                    className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
                                 >
                                     <SelectValue placeholder="Pilih Tipe" />
                                 </SelectTrigger>
@@ -300,84 +287,92 @@ export function AddEditEventDialog({
                                 </SelectContent>
                             </Select>
                         </div>
-                        <div className="grid gap-3">
-                            <Label
-                                className="text-secondary"
-                                htmlFor="starttime-1"
-                            >
-                                {data.tipe == 'sekali' ? <>Tanggal</> : <>Tanggal Awal</>}
-                            </Label>
+                        </div>
+                    </div>
+
+                    {/* Seksi Waktu */}
+                    <div className="space-y-4 pt-2">
+                        <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest border-b pb-1">Jadwal & Waktu</h3>
+
+                        {data.tipe === 'sekali' ? (
+                        <div>
+                            <label className="block text-sm font-medium text-slate-700 mb-1">Tanggal Pelaksanaan</label>
                             <DatePicker22
+                                className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
                                 value={initialDates.startDate}
                                 setValue={(value) => {
                                     setData("tanggal", formatDate(value.toISOString()));
-                                    if(data.tipe == 'sekali'){
-                                        setData("tanggal_awal", formatDate(value.toISOString()));
-                                        setData("tanggal_akhir", formatDate(value.toISOString()));
-                                    }else if(data.tipe == 'berulang'){
-                                         setData("tanggal_awal", formatDate(value.toISOString()));
-                                    }
+                                    setData("tanggal_awal", formatDate(value.toISOString()));
+                                    setData("tanggal_akhir", formatDate(value.toISOString()));
                                 }}
                                 modal={true}
                             />
                             <InputError message={errors.tanggal} />
                             <InputError message={errors.tanggal_awal} />
                         </div>
-                        {data.tipe == 'berulang' ? <>
-                            <div className="grid gap-3">
-                                <Label
-                                    className="text-secondary"
-                                    htmlFor="starttime-1"
-                                >
-                                    Tanggal Akhir
-                                </Label>
+                        ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 mb-1">Tanggal Awal</label>
                                 <DatePicker22
+                                    className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+                                    value={initialDates.startDate}
+                                    setValue={(value) => {
+                                        setData("tanggal", formatDate(value.toISOString()));
+                                        setData("tanggal_awal", formatDate(value.toISOString()));
+
+                                    }}
+                                    modal={true}
+                                />
+                                <InputError message={errors.tanggal_awal} />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 mb-1">Tanggal Akhir</label>
+                                <DatePicker22
+                                    className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
                                     value={initialDates.endDate}
                                     setValue={(value) => {
                                         setData("tanggal_akhir", formatDate(value.toISOString()));
                                     }}
                                     modal={true}
                                 />
-                                <InputError message={errors.tanggal_akhir} />
+                                <InputError message={errors.tanggal_awal} />
                             </div>
-                        </> : <></>}
+                        </div>
+                        )}
 
-                        <div className="grid gap-3">
-                            <Label
-                                className="text-secondary"
-                                htmlFor="duration-1"
-                            >
-                                Waktu Awal
-                            </Label>
-                            <Time24Picker
-                                value={new Date(`${data.tanggal}T${data.waktu_awal}`)}
-                                setValue={(value) => {
-                                    setData("waktu_awal", value);
-                                }}
-                                modal={true}
-                            />
-                            <InputError message={errors.waktu_awal} />
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 mb-1 flex items-center gap-1">
+                                <Clock size={14} /> Jam Mulai
+                                </label>
+                                <Time24Picker className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+                                    value={new Date(`${data.tanggal}T${data.waktu_awal}`)}
+                                    setValue={(value) => {
+                                        setData("waktu_awal", value);
+                                    }}
+                                    modal={true}
+                                />
+                                <InputError message={errors.waktu_awal} />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 mb-1 flex items-center gap-1">
+                                <Clock size={14} /> Jam Selesai
+                                </label>
+                                <Time24Picker className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+                                    value={new Date(`${data.tanggal}T${data.waktu_akhir}`)}
+                                    setValue={(value) => {
+                                        setData("waktu_akhir", value);
+                                    }}
+                                    modal={true}
+                                />
+                                <InputError message={errors.waktu_akhir} />
+                            </div>
                         </div>
-                        <div className="grid gap-3">
-                            <Label
-                                className="text-secondary"
-                                htmlFor="duration-1"
-                            >
-                                Waktu Akhir
-                            </Label>
-                             <Time24Picker
-                                value={new Date(`${data.tanggal}T${data.waktu_akhir}`)}
-                                setValue={(value) => {
-                                    setData("waktu_akhir", value);
-                                }}
-                                modal={true}
-                            />
-                            <InputError message={errors.waktu_akhir} />
-                        </div>
-                        {havePeran() &&
+                         {havePeran() &&
                             <div className="grid gap-3">
                                 <Label
-                                    className="text-secondary"
+                                    className="block text-sm font-medium text-slate-700 mb-1 flex items-center gap-1"
                                     htmlFor="tipe-1"
                                 >
                                     Zoom Akun
@@ -392,7 +387,7 @@ export function AddEditEventDialog({
                                 >
                                     <SelectTrigger
                                         name="zoom_status"
-                                        className="text-secondary"
+                                        className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-no"
                                     >
                                         <SelectValue placeholder="Pilih Zoom Akun" />
                                     </SelectTrigger>
@@ -410,6 +405,11 @@ export function AddEditEventDialog({
                             </div>
                         }
                     </div>
+
+
+
+
+
                     <ModalFooter className="flex justify-end gap-2">
                         <ModalClose asChild>
                             <Button type="button" variant="outline" className="text-accent-foreground">

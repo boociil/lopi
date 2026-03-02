@@ -1,7 +1,6 @@
 import { CalendarBody } from "@/components/calender_modules/calendar-body";
 import { CalendarProvider } from "@/components/calender_modules/contexts/calendar-context";
 import { DndProvider } from "@/components/calender_modules/contexts/dnd-context";
-import { CalendarHeader } from "@/components/calender_modules/header/calendar-header";
 import { pairIEventDenganUser, pinjam_zoom, pinjam_zoom_req, PinjamZoomIEvent, producePinjamZoomIEvent, producePinjamZoomIEventFromZoomApp, zoom_app } from "./types";
 import { type SharedData, type User } from "@/types";
 import { CalenderUser, produceCalenderUser, SettingCalender, type IEvent, type IUser } from "@/components/calender_modules/interfaces";
@@ -17,6 +16,8 @@ import { usePage } from "@inertiajs/react";
 import { formatDate, formatTime } from "@/components/calender_modules/helpers";
 import { useApi } from "@/lib/API/useApi";
 import { progress } from '@inertiajs/react'
+import { CalendarHeader } from "@/components/calender_modules/header/calendar-header";
+import { useLoading } from "../LoadingContext";
 
 export function PinjamZoomCalender({
         pinjam_zoom_data,
@@ -31,6 +32,8 @@ export function PinjamZoomCalender({
         zoom_statsulbar: zoom_app[];
         zoom_sp2020: zoom_app[];
 }) {
+
+    const {isLoading, setIsLoading} = useLoading();
 
     const axiosClient = useApi();
     const auth = usePage<SharedData>().props.auth;
@@ -48,6 +51,7 @@ export function PinjamZoomCalender({
     /////////////////////
     function reload_data(selectedDate: Date, currentView: TCalendarView, setAllEventsOri: (_allEvents: IEvent[]) => void){
         toast.info('Meload data baru')
+        setIsLoading(true)
         progress.start()
         axiosClient.post(route("pinjam-zoom-index"), {'selectedDate': selectedDate.toISOString(), view: currentView})
             .then(function (response: any) {
@@ -61,16 +65,19 @@ export function PinjamZoomCalender({
 
                     setAllEventsOri(_allEvents_)
                     progress.finish()
+                    setIsLoading(false)
                     toast.success('Berhasil mendapatkan data baru')
                 } catch (error) {
                     console.log(error)
                     progress.finish()
+                    setIsLoading(false)
                     toast.error('Gagal mendapatkan data baru')
                 }
             })
             .catch(function (error: any) {
                 console.log(error)
                 progress.finish()
+                setIsLoading(false)
                 toast.error('Gagal mendapatkan data baru!')
             });
     }
@@ -87,7 +94,7 @@ export function PinjamZoomCalender({
             waktu_akhir:  formatTime(event.endDate, use24HourFormat),
             status: 'menunggu',
         }
-
+        setIsLoading(true)
         toast.info('Mencoba mengubah data')
         progress.start()
         axiosClient.post(route("pinjam-zoom-ubah", { pinjamZoom: event.id }), data)
@@ -97,10 +104,12 @@ export function PinjamZoomCalender({
                     pairIEventDenganUser(return_data  as PinjamZoomIEvent[], _user as CalenderUser[])
                     updateEvent(return_data[0])
                     progress.finish()
+                    setIsLoading(false)
                     toast.success('Berhasil mengubah data')
                 } catch (error) {
                     console.log(error)
                     progress.finish()
+                    setIsLoading(false)
                     toast.error('Gagal mengubah data')
                     cancel()
                 }
@@ -108,6 +117,7 @@ export function PinjamZoomCalender({
             .catch(function (error: any) {
                 console.log(error)
                 progress.finish()
+                setIsLoading(false)
                 toast.error('Gagal mengubah data')
             });
     }

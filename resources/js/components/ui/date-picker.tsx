@@ -6,6 +6,7 @@ import { ChevronDownIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Label } from "@/components/ui/label";
+import { cn } from "@/lib/utils";
 import {
     Popover,
     PopoverContent,
@@ -15,10 +16,12 @@ import {
 export function DatePicker22({
     value,
     setValue,
+    className,
     modal = false,
 }: {
     value: Date;
     setValue: (date: Date) => void;
+    className: string,
     modal: boolean
 }) {
     const [date, setDate] = React.useState<Date>(value ?? new Date());
@@ -30,7 +33,7 @@ export function DatePicker22({
                 <Button
                     variant="outline"
                     id="date"
-                    className="justify-between font-normal text-secondary"
+                    className={cn("justify-between font-normal text-secondary", className)}
                 >
                     {date ? date.toLocaleDateString() : "Pilih Tanggal"}
                     <ChevronDownIcon />

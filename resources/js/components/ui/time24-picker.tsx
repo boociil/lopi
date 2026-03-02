@@ -15,10 +15,12 @@ import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 export function Time24Picker({
     value,
     setValue,
+    className,
     modal = false,
 }: {
     value: Date;
     setValue: (time: string) => void;
+    className: string,
     modal: boolean;
 }) {
     const [date, setDate] = React.useState<Date>(value);
@@ -45,7 +47,7 @@ export function Time24Picker({
                 <Button
                     variant="outline"
                     id="date"
-                    className="justify-between font-normal text-secondary"
+                    className={cn("justify-between font-normal text-secondary", className)}
                 >
                     {date ? (
                         format(date, "HH:mm")

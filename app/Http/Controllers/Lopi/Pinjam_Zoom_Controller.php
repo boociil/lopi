@@ -142,12 +142,13 @@ class Pinjam_Zoom_Controller extends Controller
             'tanggal_akhir'     => 'date|after_or_equal:tanggal_awal',
             'waktu_awal'        => 'required|date_format:H:i',
             'waktu_akhir'       => 'required|date_format:H:i|after:waktu_awal',
-            'zoom_akun'         => 'in:statsulbar,sp2020'
+            'zoom_akun'         => 'nullable|in:statsulbar,sp2020'
         ]);
 
-        if(!is_null($request->input('tanggal')) || (!is_null($request->input('tanggal_awal')) && !is_null($request->input('tanggal_akhir')))){
+
+        if(!$request->input('tanggal') || (!$request->input('tanggal_awal') && !$request->input('tanggal_akhir'))){
             throw ValidationException::withMessages([
-                '_status' => 'Peran tidak dapat dibuat',
+                '_status' => 'Zoom tidak dapat dibuat',
             ]);
         }
 
@@ -196,12 +197,12 @@ class Pinjam_Zoom_Controller extends Controller
             'tanggal_akhir'     => 'date|after_or_equal:tanggal_awal',
             'waktu_awal'        => 'required|date_format:H:i',
             'waktu_akhir'       => 'required|date_format:H:i|after:waktu_awal',
-            'zoom_akun'         => 'in:statsulbar,sp2020'
+            'zoom_akun'         => 'nullable|in:statsulbar,sp2020'
         ]);
 
-        if(!is_null($request->input('tanggal')) || (!is_null($request->input('tanggal_awal')) && !is_null($request->input('tanggal_akhir')))){
+        if(!$request->input('tanggal') || (!$request->input('tanggal_awal') && !$request->input('tanggal_akhir'))){
             throw ValidationException::withMessages([
-                '_status' => 'Peran tidak dapat dibuat',
+                '_status' => 'Zoom tidak dapat dibuat',
             ]);
         }
 
@@ -294,6 +295,8 @@ class Pinjam_Zoom_Controller extends Controller
         DB::beginTransaction();
         try
         {
+            $pinjamZoom->status = $request->input('status');
+            $pinjamZoom->zoom_akun = $request->input('zoom_akun');
             $pinjamZoom->helper_approval($request->input('status'), $request->input('zoom_akun'));
             DB::commit();
             return [

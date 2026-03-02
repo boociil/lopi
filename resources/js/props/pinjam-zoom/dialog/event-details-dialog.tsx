@@ -1,7 +1,7 @@
 "use client";
 
 import { format, parseISO } from "date-fns";
-import { Calendar, Clock, Copy, Link, Text, Type, User, Video } from "lucide-react";
+import { AlertCircle, Calendar, Check, CheckCircle, Clock, Copy, ExternalLink, Link, Play, Text, Type, User, Video, X, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -25,7 +25,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useCalendar } from "@/components/calender_modules/contexts/calendar-context";
-import { capitalizeWords, formatTime } from "@/components/calender_modules/helpers";
+import { capitalizeWords, formatDate, formatTime } from "@/components/calender_modules/helpers";
 import { Event_Details_Dialog_IProps } from "@/components/calender_modules/dialogs/props-dialog";
 import { progress as progressIndikator } from '@inertiajs/react'
 import { CalenderUser, IEvent } from "@/components/calender_modules/interfaces";
@@ -33,6 +33,7 @@ import { pairIEventDenganUser, pinjam_zoom, PinjamZoomIEvent, producePinjamZoomI
 import { useEffect, useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface Approval_Event {
     event: PinjamZoomIEvent;
@@ -48,6 +49,8 @@ export function EventDetailsDialog({ _event, children }: Event_Details_Dialog_IP
 	const { settingCalender, use24HourFormat, updateEvent, removeEvent, AddEditEventDialog, canChange, canApprove, axiosClient, users } = useCalendar();
 
     const [approval, setApproval] = useState<'statsulbar' | 'sp2020' | undefined>(undefined)
+
+    console.log(event)
 
     useEffect(() => {
         if(event){
@@ -81,6 +84,39 @@ export function EventDetailsDialog({ _event, children }: Event_Details_Dialog_IP
 
     }
 
+    const [copied, setCopied] = useState(false);
+
+    const copyInvitation = async () => {
+        if (!event) return;
+
+       const tanggal =
+            event._startDate === event._endDate
+            ? formatDate(event._startDate)
+            : `${formatDate(event._startDate)} s/d ${formatDate(event._endDate)}`;
+
+        const meetingId =
+            event.pinjam_zoom_ori && event.pinjam_zoom_ori.zoom_meeting_id
+            ? event.pinjam_zoom_ori.zoom_meeting_id
+            : '-';
+
+        const passcode =
+            event.pinjam_zoom_ori && event.pinjam_zoom_ori.password
+            ? event.pinjam_zoom_ori.password
+            : '-';
+
+        const text =
+        `UNDANGAN ZOOM MEETING\n\nKegiatan: ${event.title}\nTanggal: ${tanggal}\nWaktu: ${formatTime(event.startDate, true)} - ${formatTime(event.endDate, true)} WITA\n\nJoin Zoom Meeting:\n${event.join_url || '-'}\nMeeting ID: ${meetingId}\nPasscode: ${passcode}\n\nTerima kasih.`;
+
+         try {
+            // Attempt to copy the text to the clipboard
+            await navigator.clipboard.writeText(text);
+            setCopied(true)
+        } catch (err) {
+            // Handle potential errors
+            console.error('Failed to copy text: ', err);
+        }
+    };
+
     const approvalEvent = (event_id: string, status: 'disetujui'|'ditolak') => {
         if(approval == undefined){
             toast('Pilih akun zoom terlebih dahulu')
@@ -110,156 +146,253 @@ export function EventDetailsDialog({ _event, children }: Event_Details_Dialog_IP
 
 	return (
 		<Dialog>
-			<DialogTrigger asChild>{children}</DialogTrigger>
+             <Tooltip>
+                <TooltipTrigger asChild>
+                    <DialogTrigger asChild>{children}</DialogTrigger>
+                </TooltipTrigger>
+                <TooltipContent className="bg-background p-1 m-1 shadow-2xl rounded-2xl">
+                     <div className="m-3">
+                                <div>
+                                    <div className="text-secondary flex-1">
+                                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">
+                                            Nama Kegiatan
+                                        </label>
+                                        <h2 className="font-bold text-lg text-slate-800 leading-tight">
+                                            {event.title}
+                                        </h2>
+                                    </div>
+                                </div>
+
+                                <div className="max-h-[80vh]">
+
+                                        <div className="p-0 space-y-6">
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div>
+                                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">
+                                                        Jadwal Tanggal
+                                                    </label>
+                                                    <div className="flex items-center gap-2 text-sm text-slate-700 font-medium">
+                                                        <div className="bg-blue-100 p-1.5 rounded-lg text-blue-600">
+                                                            <Calendar size={16} />
+                                                        </div>
+                                                        {event._startDate == event._endDate ? (
+                                                            event._startDate
+                                                        ) : (
+                                                            <>
+                                                                <>
+                                                                    {formatDate(event._startDate)}{" "}
+                                                                    s/d{" "}
+                                                                </>
+                                                                <>{formatDate(event._endDate)}</>
+                                                            </>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">
+                                                        Status Persetujuan
+                                                    </label>
+                                                    <StatusBadge
+                                                        status={
+                                                            event.pinjam_zoom_ori
+                                                                ? event.pinjam_zoom_ori.status
+                                                                : "disetujui"
+                                                        }
+                                                    />
+                                                </div>
+                                            </div>
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div>
+                                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">
+                                                        Waktu Pelaksanaan
+                                                    </label>
+                                                    <div className="flex items-center gap-2 text-sm text-slate-700 font-bold bg-slate-50 p-2.5 rounded-xl border border-slate-100 w-fit">
+                                                        <Clock
+                                                            size={16}
+                                                            className="text-blue-500"
+                                                        />
+                                                        {formatTime(event.startDate, true)} -{" "}
+                                                        {formatTime(event.endDate, true)}
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">
+                                                        Zoom Akun
+                                                    </label>
+                                                    <div className="flex items-center gap-2 text-sm text-slate-700 font-bold bg-slate-50 p-2.5 rounded-xl border border-slate-100 w-fit">
+                                                        {event.zoom_akun || "-"}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            {event.join_url && (
+                                                <>
+                                                    <div className="space-y-2">
+                                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4 pt-3 border-t border-blue-200">
+                                                            <a
+                                                                href={
+                                                                    event.pinjam_zoom_ori
+                                                                        ? event.pinjam_zoom_ori
+                                                                              .zoom_start_url
+                                                                            ? event.pinjam_zoom_ori
+                                                                                  .zoom_start_url
+                                                                            : "#"
+                                                                        : "#"
+                                                                }
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                                className={`flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-bold transition-all shadow-md active:scale-95 ${
+                                                                    event.pinjam_zoom_ori &&
+                                                                    event.pinjam_zoom_ori
+                                                                        .zoom_start_url
+                                                                        ? "bg-green-600 text-white hover:bg-green-700 hover:shadow-green-200"
+                                                                        : "bg-slate-200 text-slate-400 cursor-not-allowed"
+                                                                }`}
+                                                            >
+                                                                <Play
+                                                                    size={18}
+                                                                    fill="currentColor"
+                                                                />{" "}
+                                                                Mulai Rapat
+                                                            </a>
+
+                                                            <a
+                                                                href={
+                                                                    event.pinjam_zoom_ori &&
+                                                                    event.pinjam_zoom_ori
+                                                                        .zoom_join_url
+                                                                        ? event.pinjam_zoom_ori
+                                                                              .zoom_join_url
+                                                                        : "#"
+                                                                }
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                                className={`flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-bold transition-all border-2 shadow-sm active:scale-95 ${
+                                                                    event.pinjam_zoom_ori
+                                                                        ? "bg-white border-blue-600 text-blue-600 hover:bg-blue-50"
+                                                                        : "bg-slate-50 border-slate-200 text-slate-300 cursor-not-allowed"
+                                                                }`}
+                                                            >
+                                                                <ExternalLink size={18} /> Gabung
+                                                                Peserta
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                </>
+                                            )}
+                                        </div>
+
+                                </div>
+                            </div>
+                </TooltipContent>
+            </Tooltip>
+
 			<DialogContent>
 				<DialogHeader>
-					<DialogTitle className="text-secondary">{event.title}</DialogTitle>
+					<DialogTitle className="text-secondary flex-1">
+                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">Nama Kegiatan</label>
+                        <h2 className="font-bold text-lg text-slate-800 leading-tight">{event.title}</h2>
+                    </DialogTitle>
 				</DialogHeader>
 
-				<ScrollArea className="max-h-[80vh]">
-					<div className="space-y-4 p-4">
-                        {event.pinjam_zoom_ori &&
-                            <div className="flex items-start gap-2">
-                                <User className="mt-1 size-4 shrink-0 text-muted-foreground" />
-                                <div>
-                                    <p className="text-sm font-medium text-secondary">Yang bertanggung jawab</p>
-                                    <p className="text-sm text-muted-foreground">
-                                        {event.user?.name}
-                                    </p>
-                                </div>
-                            </div>
+				<div className="max-h-[80vh]">
+
+              <ScrollArea className="h-86">
+                <div className="p-0 space-y-6">
+                    <div className="grid grid-cols-2 gap-4">
+                    <div>
+                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">Jadwal Tanggal</label>
+                        <div className="flex items-center gap-2 text-sm text-slate-700 font-medium">
+                        <div className="bg-blue-100 p-1.5 rounded-lg text-blue-600">
+                            <Calendar size={16} />
+                        </div>
+                        { (event._startDate == event._endDate)
+                            ? event._startDate
+                            : <><>{formatDate(event._startDate)} s/d </>
+                                <>{formatDate(event._endDate)}</></>
                         }
-
-
-                        <div className="flex items-start gap-2">
-							<Type className="mt-1 size-4 shrink-0 text-muted-foreground" />
-							<div>
-								<p className="text-sm font-medium text-secondary">Tipe</p>
-								<p className="text-sm text-muted-foreground">
-                                    {event._startDate != event._endDate ? 'Berulang' : 'Sekali'}
-								</p>
-							</div>
-						</div>
-
-                        { (event as PinjamZoomIEvent).zoom_akun != null ? <>
-
-                            <div className="flex items-start gap-2">
-                                <Video className="mt-1 size-4 shrink-0 text-muted-foreground" />
-                                <div>
-                                    <p className="text-sm font-medium text-secondary">Zoom Akun</p>
-                                    <p className="text-sm text-muted-foreground">
-                                        {(event as PinjamZoomIEvent).zoom_akun}
-                                    </p>
-                                </div>
+                        </div>
+                    </div>
+                    <div>
+                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">Status Persetujuan</label>
+                        <StatusBadge status={event.pinjam_zoom_ori? event.pinjam_zoom_ori.status : 'disetujui'} />
+                    </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                    <div>
+                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">Waktu Pelaksanaan</label>
+                        <div className="flex items-center gap-2 text-sm text-slate-700 font-bold bg-slate-50 p-2.5 rounded-xl border border-slate-100 w-fit">
+                            <Clock size={16} className="text-blue-500" />
+                            {formatTime(event.startDate, true)} - {formatTime(event.endDate, true)}
+                        </div>
+                    </div>
+                        <div>
+                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">Zoom Akun</label>
+                            <div className="flex items-center gap-2 text-sm text-slate-700 font-bold bg-slate-50 p-2.5 rounded-xl border border-slate-100 w-fit">
+                                {event.zoom_akun || '-'}
                             </div>
-                        </> : <></>}
+                        </div>
+                    </div>
+                    {event.join_url &&
+                    <>
+                        <div className="bg-blue-50 rounded-2xl p-4 border border-blue-100 space-y-4 shadow-sm">
 
-                         { (event as PinjamZoomIEvent).join_url != null ? <>
-
-                            <div className="flex items-start gap-2">
-                                <Link className="mt-1 size-4 shrink-0 text-muted-foreground" />
-                                <div>
-                                    <p className="text-sm font-medium text-secondary">Join Zoom
-                                        <button onClick={() => {navigator.clipboard.writeText((event as PinjamZoomIEvent).join_url); toast('Copy Link')}} className="text-sm text-muted-foreground">
-                                           <Copy className="ml-3 size-4 shrink-0 text-muted-foreground" />
-                                        </button>
-                                    </p>
-                                    <a prefetch target="_blank" href={(event as PinjamZoomIEvent).join_url} className="text-sm text-muted-foreground">
-                                        <span>Buka Join Link</span>
-                                    </a>
-                                </div>
+                            <div className="flex items-center justify-between">
+                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Teks Undangan Rapat</label>
+                                <button
+                                onClick={copyInvitation}
+                                className={`flex items-center gap-1.5 px-3 py-1 rounded-md text-[10px] font-bold transition-all ${
+                                    copied ? "bg-green-100 text-green-700" : "bg-blue-600 text-white hover:bg-blue-700 shadow-sm"
+                                }`}
+                                >
+                                {copied ? <Check size={12} /> : <Copy size={12} />}
+                                {copied ? "TERSALIN" : "SALIN UNDANGAN"}
+                                </button>
                             </div>
-                        </> : <></>}
-
-                         { (event as PinjamZoomIEvent).start_url != null ? <>
-
-                            <div className="flex items-start gap-2">
-                                <Link className="mt-1 size-4 shrink-0 text-muted-foreground" />
-                                <div>
-                                    <p className="text-sm font-medium text-secondary">Start Zoom
-                                        <button onClick={() => {navigator.clipboard.writeText((event as PinjamZoomIEvent).start_url); toast('Copy Link')}} className="text-sm text-muted-foreground">
-                                           <Copy className="ml-3 size-4 shrink-0 text-muted-foreground" />
-                                        </button>
-                                    </p>
-                                    <a prefetch target="_blank" href={(event as PinjamZoomIEvent).start_url} className="text-sm text-muted-foreground">
-                                        <span>Buka Start Link</span>
-                                    </a>
-                                </div>
+                            <div className="bg-slate-50 rounded-xl p-4 border border-slate-200 relative group">
+                                <pre className="text-[11px] text-slate-600 font-sans leading-relaxed whitespace-pre-wrap">
+                                {`UNDANGAN ZOOM MEETING\n\nKegiatan: ${event.title}\nTanggal: ${ event._startDate == event._endDate
+                ? formatDate(event._startDate)
+                : `${formatDate(event._startDate)} s/d ${formatDate(event._endDate)}`}\nWaktu: ${formatTime(event.startDate, true)} - ${formatTime(event.endDate, true)} WITA\n\nJoin Zoom Meeting:\n${event.join_url || '-'}\nMeeting ID: ${event.pinjam_zoom_ori && event.pinjam_zoom_ori.zoom_meeting_id ? event.pinjam_zoom_ori.zoom_meeting_id : '-'}\nPasscode:${event.pinjam_zoom_ori && event.pinjam_zoom_ori.password ? event.pinjam_zoom_ori.password : '-'}\n\nTerima kasih.`}
+                                </pre>
                             </div>
-                        </> : <></>}
+                        </div>
+                        <div className="space-y-2">
 
-                        {event._startDate != event._endDate ?
-                        <>
-                            <div className="flex items-start gap-2">
-                                <Calendar className="mt-1 size-4 shrink-0 text-muted-foreground" />
-                                <div>
-                                    <p className="text-sm font-medium text-secondary">Tanggal Awal</p>
-                                    <p className="text-sm text-muted-foreground">
-                                        {format(startDate, "EEEE dd MMMM")}
-                                    </p>
-                                </div>
-                            </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4 pt-3 border-t border-blue-200">
+                        <a
+                        href={event.pinjam_zoom_ori? event.pinjam_zoom_ori.zoom_start_url? event.pinjam_zoom_ori.zoom_start_url : '#' : '#'}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={`flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-bold transition-all shadow-md active:scale-95 ${
+                            (event.pinjam_zoom_ori && event.pinjam_zoom_ori.zoom_start_url)
+                            ? "bg-green-600 text-white hover:bg-green-700 hover:shadow-green-200"
+                            : "bg-slate-200 text-slate-400 cursor-not-allowed"
+                        }`}
+                        >
+                        <Play size={18} fill="currentColor" /> Mulai Rapat
+                        </a>
 
-                             <div className="flex items-start gap-2">
-                                <Calendar className="mt-1 size-4 shrink-0 text-muted-foreground" />
-                                <div>
-                                    <p className="text-sm font-medium text-secondary">Tanggal Akhir</p>
-                                    <p className="text-sm text-muted-foreground">
-                                        {format(endDate, "EEEE dd MMMM")}
-                                    </p>
-                                </div>
-                            </div>
+                        <a
+                        href={event.pinjam_zoom_ori && event.pinjam_zoom_ori.zoom_join_url ? event.pinjam_zoom_ori.zoom_join_url : '#'}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={`flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-bold transition-all border-2 shadow-sm active:scale-95 ${
+                            event.pinjam_zoom_ori
+                            ? "bg-white border-blue-600 text-blue-600 hover:bg-blue-50"
+                            : "bg-slate-50 border-slate-200 text-slate-300 cursor-not-allowed"
+                        }`}
+                        >
+                        <ExternalLink size={18} /> Gabung Peserta
+                        </a>
+                    </div>
+                    </div>
 
-                            <div className="flex items-start gap-2">
-                                <Clock className="mt-1 size-4 shrink-0 text-muted-foreground" />
-                                <div>
-                                    <p className="text-sm font-medium text-secondary">Waktu Mulai</p>
-                                    <p className="text-sm text-muted-foreground">
-                                        {formatTime(parseISO(event.startDate), use24HourFormat)}
-                                    </p>
-                                </div>
-                            </div>
-                            <div className="flex items-start gap-2">
-                                <Clock className="mt-1 size-4 shrink-0 text-muted-foreground" />
-                                <div>
-                                    <p className="text-sm font-medium text-secondary">Waktu Akhir</p>
-                                    <p className="text-sm text-muted-foreground">
-                                        {formatTime(parseISO(event.endDate), use24HourFormat)}
-                                    </p>
-                                </div>
-                            </div>
-                        </>
-                        :
-                        <>
-                            <div className="flex items-start gap-2">
-                                <Calendar className="mt-1 size-4 shrink-0 text-muted-foreground" />
-                                <div>
-                                    <p className="text-sm font-medium text-secondary">Mulai</p>
-                                    <p className="text-sm text-muted-foreground">
-                                        {format(startDate, "EEEE dd MMMM")}
-                                        <span className="mx-1">at</span>
-                                        {formatTime(parseISO(event.startDate), use24HourFormat)}
-                                    </p>
-                                </div>
-                            </div>
+                    </>
+                    }
+                </div>
+              </ScrollArea>
 
-                            <div className="flex items-start gap-2">
-                                <Clock className="mt-1 size-4 shrink-0 text-muted-foreground" />
-                                <div>
-                                    <p className="text-sm font-medium text-secondary">Berakhir</p>
-                                    <p className="text-sm text-muted-foreground">
-                                        {format(endDate, "EEEE dd MMMM")}
-                                        <span className="mx-1">at</span>
-                                        {formatTime(parseISO(event.endDate), use24HourFormat)}
-                                    </p>
-                                </div>
-                            </div>
-                        </>
-                        }
-
-					</div>
-				</ScrollArea>
-				<div className="flex justify-end gap-2">
+              <div className="p-0 border-t border-slate-100 flex justify-end mt-2 pt-2 gap-x-1">
                     {canApprove(event) &&
                         <AlertDialog>
                             <AlertDialogTrigger asChild>
@@ -319,18 +452,47 @@ export function EventDetailsDialog({ _event, children }: Event_Details_Dialog_IP
                             <Button variant="outline" className="text-accent-foreground">Ubah</Button>
                         </AddEditEventDialog>
                     }
+                    {canChange(event) &&
+                        <Button
+                            variant="destructive"
+                            onClick={() => {
+                                deleteEvent(event.id);
+                            }}
+                        >
+                            Hapus
+                        </Button>
+                    }
+                 <DialogClose asChild>
+                    <Button variant="outline" className="px-6 py-2 text-sm font-bold text-slate-500 hover:text-slate-800 transition-colors uppercase tracking-widest">Tutup</Button>
+                </DialogClose>
+              </div>
+            </div>
 
-					<Button
-						variant="destructive"
-						onClick={() => {
-							deleteEvent(event.id);
-						}}
-					>
-						Hapus
-					</Button>
-				</div>
+
+
 				<DialogClose />
 			</DialogContent>
 		</Dialog>
 	);
 }
+
+ const StatusBadge = ({ status }: {status: 'menunggu'| 'disetujui' | 'ditolak'| 'diapp'}) => {
+    const styles = {
+      menunggu: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+      disetujui: 'bg-green-100 text-green-800 border-green-200',
+      ditolak: 'bg-red-100 text-red-800 border-red-200',
+      diapp: 'bg-green-100 text-green-800 border-green-200',
+    };
+    const icons = {
+      menunggu: <AlertCircle size={14} className="mr-1" />,
+      disetujui: <CheckCircle size={14} className="mr-1" />,
+      ditolak: <XCircle size={14} className="mr-1" />,
+      diapp: <CheckCircle size={14} className="mr-1" />,
+    };
+    return (
+      <span className={`flex items-center w-fit px-2.5 py-0.5 rounded-full text-xs font-medium border ${styles[status]}`}>
+        {icons[status]}
+        {status.toUpperCase()}
+      </span>
+    );
+  };

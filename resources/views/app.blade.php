@@ -34,8 +34,8 @@
 
         <title inertia>Lopi</title>
 
-        <link rel="icon" href="/favicon.ico" sizes="any">
-        <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+        <link rel="icon" href="/lopi/favicon.ico" sizes="any">
+        <link rel="icon" href="/lopi/favicon.svg" type="image/svg+xml">
 
         @routes
         @viteReactRefresh
