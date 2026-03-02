@@ -40,7 +40,7 @@ class Pinjam_Mobil_Controller extends Controller
             $view = session('pinjam_mobil_index')['view'];
         }else{
             $selectedDate = Carbon::today()->format('Y-m-d');
-            $view = 'week';
+            $view = 'month';
         }
 
         session()->put('pinjam_mobil_index', ['view' => $view]);

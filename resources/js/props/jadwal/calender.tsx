@@ -2,7 +2,7 @@ import { CalendarBody } from "@/components/calender_modules/calendar-body";
 import { CalendarProvider } from "@/components/calender_modules/contexts/calendar-context";
 import { DndProvider } from "@/components/calender_modules/contexts/dnd-context";
 import { CalendarHeader } from "@/components/calender_modules/header/calendar-header";
-import { jadwal, pairIEventDenganUser, JadwalIEvent, produceJadwalIEvent, zoom_app, produceJadwalIEventFromZoomApp } from "./types";
+import { jadwal, pairIEventDenganUser, JadwalIEvent, produceJadwalIEvent, zoom_app } from "./types";
 import { type SharedData, type User } from "@/types";
 import { CalenderUser, produceCalenderUser, SettingCalender, type IEvent, type IUser } from "@/components/calender_modules/interfaces";
 import { AddEditEventDialog } from "./dialog/add-edit-event-dialog";
@@ -22,14 +22,14 @@ export function JadwalCalender({
         jadwal_data,
         user,
         have_zoom_peran,
-        zoom_statsulbar,
-        zoom_sp2020,
+        have_ruang_peran,
+        ruang,
     }: {
         jadwal_data: jadwal[];
         user: User[];
         have_zoom_peran: boolean;
-        zoom_statsulbar: zoom_app[];
-        zoom_sp2020: zoom_app[];
+        have_ruang_peran: boolean;
+        ruang: string[],
 }) {
 
     const axiosClient = useApi();
@@ -38,10 +38,6 @@ export function JadwalCalender({
     const settingCalender: SettingCalender = {name_event: 'kegiatan', calender_show: ["week", "month","agenda"], show_filter: true, filter_name: [['green', 'statsulbar'], ['yellow', 'sp2020']], show_filter_user: false}
     const _user: IUser[] = produceCalenderUser(user);
     const _allEvents: JadwalIEvent[] = produceJadwalIEvent(jadwal_data);
-
-
-    produceJadwalIEventFromZoomApp(_allEvents, zoom_statsulbar, 'statsulbar');
-    produceJadwalIEventFromZoomApp(_allEvents, zoom_sp2020, 'sp2020');
 
     pairIEventDenganUser(_allEvents as JadwalIEvent[], _user as CalenderUser[])
 
@@ -55,8 +51,6 @@ export function JadwalCalender({
 
                     const _allEvents_: JadwalIEvent[] = produceJadwalIEvent(response.data.pinjam_zoom_data as jadwal[]);
 
-                    produceJadwalIEventFromZoomApp(_allEvents_, response.data.zoom_statsulbar.data as zoom_app[], 'statsulbar');
-                    produceJadwalIEventFromZoomApp(_allEvents_, response.data.zoom_sp2020.data as zoom_app[], 'sp2020');
                     pairIEventDenganUser(_allEvents_ as JadwalIEvent[], _user as CalenderUser[])
 
                     setAllEventsOri(_allEvents_)

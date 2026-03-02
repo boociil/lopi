@@ -50,8 +50,6 @@ export function EventDetailsDialog({ _event, children }: Event_Details_Dialog_IP
 
     const [approval, setApproval] = useState<'statsulbar' | 'sp2020' | undefined>(undefined)
 
-    console.log(event)
-
     useEffect(() => {
         if(event){
            if(event.zoom_akun == 'statsulbar'){

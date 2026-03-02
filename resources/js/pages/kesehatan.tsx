@@ -1,5 +1,6 @@
 import AppLayout from "@/layouts/app-layout";
 import {
+    SharedData,
     type BreadcrumbItem,
 } from "@/types";
 import React, { useState } from 'react';
@@ -22,7 +23,7 @@ import { toast } from "sonner";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Head } from "@inertiajs/react";
+import { Head, usePage } from "@inertiajs/react";
 import { DatePicker22 } from "@/components/ui/date-picker";
 import { formatDate } from "@/components/calender_modules/helpers";
 import { Badge } from "@/components/ui/badge";
@@ -57,6 +58,22 @@ export default function Index({
 
       const [isModalOpen, setIsModalOpen] = useState(false);
       const [healthData, setHealthData] = useState<kesehatan[]>(kesehatan_);
+
+      const { auth } = usePage<SharedData>().props;
+
+        let gender: null | "1" | "2"  = null
+
+        if (!auth.user.nip_baru || auth.user.nip_baru.length !== 18) {
+           gender = null
+        }
+        if (auth.user.nip_baru.charAt(14) === "1") {
+            gender = "1"
+        } else if (auth.user.nip_baru.charAt(14) === "2") {
+            gender = "2"
+        } else {
+            gender = null
+        }
+
 
 
       const latestData: kesehatan = healthData.length > 0 ? healthData[healthData.length-1] :
@@ -218,7 +235,7 @@ export default function Index({
                                             <span className="text-xs  mb-1">mmHg</span>
                                         </div>
                                         <span className="inline-block px-0 py-1 text-xs font-semibold rounded-full uppercase mt-4 mb-0">
-                                            <StatusNilai latestData={latestData} type="tekanan_darah" ></StatusNilai>
+                                            <StatusNilai latestData={latestData} type="tekanan_darah"  gender={gender} ></StatusNilai>
                                         </span>
                                     </CardContent>
                                 </Card>
@@ -235,7 +252,7 @@ export default function Index({
                                          {latestData.gula_darah_tipe == 'gdp' &&   <p className="text-xs mt-1">Gula Darah Puasa</p>}
                                         {latestData.gula_darah_tipe == 'gds' &&   <p className="text-xs mt-1">Gula Darah Sewaktu</p>}
                                         <span className="inline-block mt-3 px-0 py-1 text-xs font-semibold rounded-full uppercase">
-                                            <StatusNilai latestData={latestData} type="gula_darah" ></StatusNilai>
+                                            <StatusNilai latestData={latestData} type="gula_darah"  gender={gender} ></StatusNilai>
                                         </span>
                                     </CardContent>
                                 </Card>
@@ -250,7 +267,7 @@ export default function Index({
                                             <span className="text-xs  mb-1">mg/dl</span>
                                         </div>
                                         <span className="inline-block mt-3 px-0 py-1 text-xs font-semibold rounded-full uppercase">
-                                            <StatusNilai latestData={latestData} type="asam_urat" ></StatusNilai>
+                                            <StatusNilai latestData={latestData} type="asam_urat" gender={gender} ></StatusNilai>
                                         </span>
                                     </CardContent>
                                 </Card>
@@ -266,7 +283,7 @@ export default function Index({
                                             <span className="text-xs  mb-1">mg/dl</span>
                                         </div>
                                         <span className="inline-block mt-3 px-0 py-1 text-xs font-semibold rounded-full uppercase">
-                                             <StatusNilai latestData={latestData} type="kolestrol" ></StatusNilai>
+                                             <StatusNilai latestData={latestData} type="kolestrol"  gender={gender} ></StatusNilai>
                                         </span>
                                     </CardContent>
                                 </Card>
@@ -282,7 +299,7 @@ export default function Index({
 
                                         </div>
                                         <span className="inline-block mt-3 px-0 py-1 text-xs font-semibold rounded-full uppercase">
-                                             <StatusNilai latestData={latestData} type="bmi" ></StatusNilai>
+                                             <StatusNilai latestData={latestData} type="bmi" gender={gender} ></StatusNilai>
                                         </span>
                                     </CardContent>
                                 </Card>
@@ -535,7 +552,7 @@ export default function Index({
       );
 }
 
-const StatusNilai = ({ latestData, type } : { latestData: kesehatan, type: string }) => {
+const StatusNilai = ({ latestData, type, gender = null } : { latestData: kesehatan, type: string, gender : null | '1'| '2'   }) => {
         if(type == 'bmi'){
             if (!latestData.berat_badan || !latestData.tinggi_badan) return (<></>);
             const heightInMeters = latestData.tinggi_badan / 100;
@@ -611,6 +628,21 @@ const StatusNilai = ({ latestData, type } : { latestData: kesehatan, type: strin
             if (nilai < 200) return (<Badge variant="success_">Normal</Badge>)
             if (nilai <= 239) return (<Badge variant="warning_">Borderline Tinggi</Badge>)
             return (<Badge variant="destructive_">Tinggi</Badge>)
+        }else if(type == 'asam_urat'){
+            const nilai = latestData.asam_urat
+            if (!nilai || gender==null) return "-";
+
+            if (gender === "1") {
+                if (nilai < 3.4) return (<Badge variant="warning_">Rendah</Badge>);
+                if (nilai <= 7.0) return (<Badge variant="success_">Normal</Badge>);
+                return (<Badge variant="destructive_">Tinggi (Hiperurisemia)</Badge>);
+            }
+
+            if (gender === "2") {
+                if (nilai < 2.4) return (<Badge variant="warning_">Rendah</Badge>);
+                if (nilai <= 6.0) (<Badge variant="success_">Normal</Badge>);
+                return (<Badge variant="destructive_">Tinggi (Hiperurisemia)</Badge>);
+            }
         }
 
       }

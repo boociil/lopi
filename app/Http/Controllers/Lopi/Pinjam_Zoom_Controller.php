@@ -50,7 +50,7 @@ class Pinjam_Zoom_Controller extends Controller
             $view = session('pinjam_zoom_index')['view'];
         }else{
             $selectedDate = Carbon::today()->format('Y-m-d');
-            $view = 'week';
+            $view = 'month';
         }
 
         session()->put('pinjam_zoom_index', ['view' => $view]);

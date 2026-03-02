@@ -51,7 +51,7 @@ class Jadwal_Controller extends Controller
             $view = session('jadwal_index')['view'];
         }else{
             $selectedDate = Carbon::today()->format('Y-m-d');
-            $view = 'week';
+            $view = 'month';
         }
 
         session()->put('jadwal_index', ['view' => $view]);
@@ -356,20 +356,62 @@ class Jadwal_Controller extends Controller
                     //     $this->zoom_meta_updateMeeting($request->input('zoom_akun'), $jadwal);
                     // }else
                     if(!$jadwal->zoom_meeting_id){
-                        $this->zoom_meta_createMeeting($request->input('zoom_akun'), $jadwal);
+                        $pinjam_zoom = Pinjam_Zoom::helper_tambah(
+                            $request->input('kegiatan'),
+                            $request->input('tipe'),
+                            $request->input('password'),
+                            $request->input('tanggal'),
+                            $request->input('tanggal_awal'),
+                            $request->input('tanggal_akhir'),
+                            $request->input('waktu_awal'),
+                            $request->input('waktu_akhir'),
+                            $have_zoom_peran,
+                            $request->input('zoom_akun')
+                        );
+                        $jadwal->zoom_pinjam_id = $pinjam_zoom->zoom_meeting_id;
                     }else if($jadwal->zoom_meeting_id && $jadwal->zoom_akun != $request->input('zoom_akun')){
-                        $this->zoom_deleteMeeting($request->input('zoom_akun'), $jadwal->zoom_meeting_id);
-                        $this->zoom_meta_createMeeting($request->input('zoom_akun'), $jadwal);
+                        if($jadwal->zoom_pinjam){
+                            $jadwal->zoom_pinjam->zoom_deleteMeeting($request->input('zoom_akun'), $jadwal->zoom_meeting_id);
+                        }
+                        $pinjam_zoom = Pinjam_Zoom::helper_tambah(
+                            $request->input('kegiatan'),
+                            $request->input('tipe'),
+                            $request->input('password'),
+                            $request->input('tanggal'),
+                            $request->input('tanggal_awal'),
+                            $request->input('tanggal_akhir'),
+                            $request->input('waktu_awal'),
+                            $request->input('waktu_akhir'),
+                            $have_zoom_peran,
+                            $request->input('zoom_akun')
+                        );
+                        $jadwal->zoom_pinjam_id = $pinjam_zoom->zoom_meeting_id;
                     }else if($jadwal->zoom_meeting_id && $jadwal->zoom_akun == $request->input('zoom_akun')){
-                        $this->zoom_meta_updateMeeting($request->input('zoom_akun'), $jadwal);
+                         if($jadwal->zoom_pinjam){
+                            $jadwal->zoom_pinjam->zoom_deleteMeeting($request->input('zoom_akun'), $jadwal->zoom_meeting_id);
+                        }
+                        $pinjam_zoom = Pinjam_Zoom::helper_tambah(
+                            $request->input('kegiatan'),
+                            $request->input('tipe'),
+                            $request->input('password'),
+                            $request->input('tanggal'),
+                            $request->input('tanggal_awal'),
+                            $request->input('tanggal_akhir'),
+                            $request->input('waktu_awal'),
+                            $request->input('waktu_akhir'),
+                            $have_zoom_peran,
+                            $request->input('zoom_akun')
+                        );
+                        $jadwal->zoom_pinjam_id = $pinjam_zoom->zoom_meeting_id;
+                        // $this->zoom_meta_updateMeeting($request->input('zoom_akun'), $jadwal);
                     }
                 }else{
                     $jadwal->zoom_status = 'menunggu';
                     if($jadwal->zoom_meeting_id){
-                        $this->zoom_deleteMeeting($jadwal->zoom_akun, "".$jadwal->zoom_meeting_id);
-                        throw ValidationException::withMessages([
-                            'status' => 'Zoom gagal diubah',
-                        ]);
+                        // $this->zoom_deleteMeeting($jadwal->zoom_akun, "".$jadwal->zoom_meeting_id);
+                        // throw ValidationException::withMessages([
+                        //     'status' => 'Zoom gagal diubah',
+                        // ]);
 
                         $jadwal->zoom_akun = null;
                         $jadwal->zoom_meeting_id = null;

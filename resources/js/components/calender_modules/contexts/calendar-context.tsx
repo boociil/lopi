@@ -103,7 +103,7 @@ export function CalendarProvider({
             badgeVariant: "colored",
             use24HourFormat: true,
             agendaModeGroupBy: "date",
-            view: "week",
+            view: "month",
         },
     );
 

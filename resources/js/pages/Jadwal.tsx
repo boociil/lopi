@@ -23,14 +23,12 @@ export default function Index({
     have_zoom_peran,
     user,
     jadwal_daftar,
-    zoom_statsulbar,
-    zoom_sp2020
+    have_ruang_peran,
+    ruang,
 }: React.PropsWithChildren<{
     have_zoom_peran: boolean;
     user: User[];
     jadwal_daftar: jadwal[];
-    zoom_statsulbar: zoom_app_with_status;
-    zoom_sp2020: zoom_app_with_status;
     have_ruang_peran: boolean;
     ruang: string[],
 }>) {
@@ -48,8 +46,8 @@ export default function Index({
                             have_zoom_peran={have_zoom_peran}
                             user={user}
                             jadwal_data={jadwal_daftar}
-                            zoom_statsulbar={zoom_statsulbar.data}
-                            zoom_sp2020={zoom_sp2020.data}>
+                            have_ruang_peran={have_ruang_peran}
+                            ruang={ruang}>
                         </JadwalCalender>
                     </div>
                 </div>
