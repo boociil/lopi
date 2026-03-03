@@ -1,9 +1,6 @@
-import { format, parseISO } from "date-fns";
-import { formatDate, formatTime } from "@/components/calender_modules/helpers";
 import { CalenderUser, IEvent } from "@/components/calender_modules/interfaces";
 import { User } from "@/types";
-import { v4 as uuidv4 } from "uuid";
-import { TEventColor } from "@/components/calender_modules/types";
+import { pinjam_zoom } from "../pinjam-zoom/types";
 
 
 export type JadwalProps = {
@@ -18,19 +15,6 @@ export type JadwalContextType = JadwalProps & {
 };
 
 
-export interface zoom_app {
-    id: number;
-    type: number;
-    topic: string;
-    start_time: string;
-    duration: number;
-    join_url: string;
-}
-
-export interface zoom_app_with_status {
-    status: boolean;
-    data: zoom_app[];
-}
 
 export interface jadwal {
     id: string;
@@ -57,17 +41,16 @@ export interface jadwal {
     ruang_confirm_username: string | null;
 
     zoom_status: 'tidak' | 'langsung' | 'menunggu' | 'disetujui' | 'ditolak';
-    zoom_password: string | null;
-    zoom_confirm_username: string | null;
-    zoom_akun: 'statsulbar' | 'sp2020' | null;
-    zoom_meeting_id: number | null;
-    zoom_start_url: string | null;
-    zoom_join_url: string | null;
+    zoom_pinjam_id :  null | string;
+    zoom_langsung_join_url: null | string;
+
+    zoom_pinjam: pinjam_zoom | null;
 }
 
 export interface jadwal_req {
     id: string;
     kegiatan: string;
+    deskripsi: string;
 
     tipe: string;
     tanggal: string | null;
@@ -77,20 +60,18 @@ export interface jadwal_req {
     waktu_akhir: string;
     status: "menunggu" | "disetujui" | "ditolak";
 
-    ruang_menggunakan: 0 | 1;
+    ruang_status: 'tidak' | 'menunggu' | 'disetujui' | 'ditolak';
     ruang: string | null;
 
-    zoom_menggunakan:  0 | 1;
-    zoom_password: string | null;
+    zoom_status: 'tidak' | 'langsung' | 'menunggu' | 'disetujui' | 'ditolak';
+    zoom_langsung_join_url: null | string;
+    zoom_password:  null | string;
     zoom_akun: 'statsulbar' | 'sp2020' | null;
-    zoom_join_url_langsung: string | null;
+    peserta: string [],
 }
 
 export interface JadwalIEvent extends IEvent {
-    jadwal_ori: jadwal | null;
-    zoom_akun: 'statsulbar' | 'sp2020' | null;
-    join_url: string | null;
-    start_url: string | null;
+    jadwal_ori: jadwal;
 }
 
 export interface jadwal_dialog_event {
@@ -136,10 +117,7 @@ export function produceJadwalIEvent(
                 color: element.status == "disetujui" ? "green" : "blue",
                 description: "Peminjaman Zoom",
                 user: null,
-                zoom_akun: element.zoom_akun as 'statsulbar' | 'sp2020' | null,
                 jadwal_ori: element,
-                join_url: element.zoom_join_url,
-                start_url: element.zoom_start_url,
                 oriKey: 'jadwal_ori',
             });
         }
@@ -149,17 +127,17 @@ export function produceJadwalIEvent(
 
 
 export function pairIEventDenganUser(
-    pinjam_zoom_event: JadwalIEvent[],
+    jadwal_event: JadwalIEvent[],
     users: CalenderUser[],
 ) {
-    for (let i = 0; i < pinjam_zoom_event.length; i++) {
+    for (let i = 0; i < jadwal_event.length; i++) {
         const user = users.find(
             (e) =>
                 e.username ==
-                pinjam_zoom_event[i].jadwal_ori?.pembuat_username,
+                jadwal_event[i].jadwal_ori?.pembuat_username,
         );
         if (user) {
-            pinjam_zoom_event[i].user = user;
+            jadwal_event[i].user = user;
         }
     }
 }

@@ -205,9 +205,9 @@ Route::group(
     Route::get('/', [Jadwal_Controller::class, 'index'])->name('jadwal-index');
     Route::post('/', [Jadwal_Controller::class, 'index'])->name('jadwal-index');
     Route::post('/tambah', [Jadwal_Controller::class, 'tambah'])->name('jadwal-tambah');
-    Route::post('/{ruang}/ubah', [Jadwal_Controller::class, 'ubah'])->name('jadwal-ubah');
-    Route::post('/{ruang}/hapus', [Jadwal_Controller::class, 'hapus'])->name('jadwal-hapus');
-    Route::post('/{ruang}/approval', [Jadwal_Controller::class, 'approval'])->name('jadwal-approval');
+    Route::post('/{jadwal}/ubah', [Jadwal_Controller::class, 'ubah'])->name('jadwal-ubah');
+    Route::post('/{jadwal}/hapus', [Jadwal_Controller::class, 'hapus'])->name('jadwal-hapus');
+    Route::post('/{jadwal}/approval', [Jadwal_Controller::class, 'approval'])->name('jadwal-approval');
 });
 
 Route::group(

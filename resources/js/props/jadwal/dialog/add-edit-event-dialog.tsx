@@ -1,14 +1,12 @@
 import { addMinutes, set } from "date-fns";
-import { useEffect, useMemo, Fragment } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useForm } from "@inertiajs/react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
     Modal,
     ModalClose,
     ModalContent,
-    ModalDescription,
     ModalFooter,
     ModalHeader,
     ModalTitle,
@@ -17,6 +15,7 @@ import {
 import {
     Select,
     SelectContent,
+    SelectGroup,
     SelectItem,
     SelectTrigger,
     SelectValue,
@@ -25,7 +24,6 @@ import { useCalendar } from "@/components/calender_modules/contexts/calendar-con
 import { useDisclosure } from "@/components/calender_modules/hooks";
 import { Label } from "@/components/ui/label";
 import InputError from "@/components/input-error";
-import { SelectGroup } from "@radix-ui/react-select";
 import { DatePicker22 } from "@/components/ui/date-picker";
 import {
     capitalizeWords,
@@ -45,12 +43,18 @@ import { Add_Edit_Event_IProps } from "@/components/calender_modules/dialogs/pro
 import { progress as progressIndikator } from "@inertiajs/react";
 import { defineStepper } from "@stepperize/react";
 import { Separator } from "@/components/ui/separator";
-
-const { useStepper, steps, utils } = defineStepper(
-    { id: "info", title: "Informasi" },
-    { id: "ruang_zoom", title: "Ruang dan Zoom" },
-    { id: "peserta", title: "Peserta" },
-);
+import {
+    CheckCircle,
+    ChevronLeft,
+    ChevronRight,
+    FileText,
+    MapPin,
+    Trash2,
+    Users,
+    Video,
+} from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 
 export function AddEditEventDialog({
     children,
@@ -72,10 +76,6 @@ export function AddEditEventDialog({
     } = useCalendar();
     const isEditing = !!event;
 
-    const stepper = useStepper();
-    const currentIndex = utils.getIndex(stepper.current.id);
-    stepper.reset;
-
     // const [tipe, setTipe] = useState<string>("sekali");
 
     const initialDates = useMemo(() => {
@@ -95,6 +95,8 @@ export function AddEditEventDialog({
             return { startDate: start, endDate: end };
         }
 
+        setStep(1);
+
         return {
             startDate: new Date(event.startDate),
             endDate: new Date(event.endDate),
@@ -105,7 +107,8 @@ export function AddEditEventDialog({
         useForm<Required<jadwal_req>>({
             id: "12345",
             kegiatan: "",
-            tipe: "string",
+            deskripsi: "",
+            tipe: "sekali",
 
             tanggal: formatDate(new Date().toISOString()),
             tanggal_awal: formatDate(new Date().toISOString()),
@@ -120,6 +123,8 @@ export function AddEditEventDialog({
             zoom_status: "tidak",
             zoom_password: null,
             zoom_akun: null,
+            zoom_langsung_join_url: null,
+            peserta: [],
         });
 
     const submit: React.FormEventHandler = (e) => {
@@ -128,7 +133,7 @@ export function AddEditEventDialog({
             toast.info("Mencoba menambahkan data baru");
             progressIndikator.start();
             axiosClient
-                .post(route("pinjam-zoom-tambah"), data)
+                .post(route("jadwal-tambah"), data)
                 .then(function (response: any) {
                     try {
                         const return_data: IEvent[] = produceJadwalIEvent([
@@ -170,7 +175,7 @@ export function AddEditEventDialog({
             toast.info("Mencoba mengubah data");
             progressIndikator.start();
             axiosClient
-                .post(route("pinjam-zoom-ubah", { pinjamZoom: event.id }), data)
+                .post(route("jadwal-ubah", { jadwal: event.id }), data)
                 .then(function (response: any) {
                     try {
                         const return_data: IEvent[] = produceJadwalIEvent([
@@ -229,14 +234,34 @@ export function AddEditEventDialog({
             setData("tanggal", event.date);
             setData("waktu_awal", formatTime(event.startDate, use24HourFormat));
             setData("waktu_akhir", formatTime(event.endDate, use24HourFormat));
-            setData("zoom_akun", (event as JadwalIEvent).zoom_akun);
-            if (event_.jadwal_ori) {
-                setData("zoom_status", event_.jadwal_ori!.zoom_status);
-                setData("zoom_password", event_.jadwal_ori!.zoom_password);
-                setData("zoom_akun", event_.jadwal_ori!.zoom_akun);
 
-                setData("ruang_status", event_.jadwal_ori!.ruang_status);
-                setData("ruang", event_.jadwal_ori!.ruang);
+            if ((event as JadwalIEvent).jadwal_ori) {
+                setData("zoom_status", event_.jadwal_ori.zoom_status);
+                setData(
+                    "zoom_langsung_join_url",
+                    event_.jadwal_ori.zoom_langsung_join_url,
+                );
+
+                if ((event as JadwalIEvent).jadwal_ori.zoom_pinjam) {
+                    setData(
+                        "zoom_akun",
+                        event_.jadwal_ori.zoom_pinjam?.zoom_akun as
+                            | "statsulbar"
+                            | "sp2020",
+                    );
+                    setData(
+                        "zoom_password",
+                        event_.jadwal_ori.zoom_pinjam?.password as
+                            | string
+                            | null,
+                    );
+                } else {
+                    setData("zoom_password", null);
+                    setData("zoom_akun", null);
+                }
+
+                setData("ruang_status", event_.jadwal_ori.ruang_status);
+                setData("ruang", event_.jadwal_ori.ruang);
             } else {
                 setData("zoom_status", "tidak");
                 setData("zoom_password", null);
@@ -268,7 +293,397 @@ export function AddEditEventDialog({
             setData("zoom_password", null);
             setData("zoom_akun", null);
         }
+        setStep(1);
     }, [event, initialDates]);
+
+    const [step, setStep] = useState(1);
+    const steps = [
+        { id: 1, title: "Info", icon: <FileText size={18} /> },
+        { id: 2, title: "Ruang", icon: <MapPin size={18} /> },
+        { id: 3, title: "Zoom", icon: <Video size={18} /> },
+        { id: 4, title: "Peserta", icon: <Users size={18} /> },
+    ];
+
+    const nextStep = () => setStep((s) => Math.min(s + 1, 4));
+    const prevStep = () => setStep((s) => Math.max(s - 1, 1));
+
+    const renderStepContent = () => {
+        switch (step) {
+            case 1:
+                return (
+                    <div className="space-y-2 animate-in fade-in slide-in-from-right-4 duration-300">
+                        <div>
+                            <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                                Nama Kegiatan
+                            </label>
+                            <Input
+                                type="text"
+                                className="w-full px-3 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none"
+                                value={data.kegiatan}
+                                onChange={(e) =>
+                                    setData("kegiatan", e.target.value)
+                                }
+                                placeholder="Masukkan nama kegiatan"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-xs font-bold text-slate-700 mb-1">
+                                Deskripsi
+                            </label>
+                            <Textarea
+                                className="w-full px-3 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none"
+                                rows={2}
+                                value={data.deskripsi}
+                                onChange={(e) =>
+                                    setData("deskripsi", e.target.value)
+                                }
+                                placeholder="Detail kegiatan..."
+                            ></Textarea>
+                        </div>
+                        <div>
+                            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">
+                                Tipe
+                            </label>
+                            <div className="grid grid-cols-2 gap-3">
+                                <button
+                                    type="button"
+                                    onClick={() => setData("tipe", "sekali")}
+                                    className={`py-2 rounded-xl text-xs font-bold border transition-all ${data.tipe === "sekali" ? "bg-slate-900 border-slate-900 text-white" : "bg-white border-slate-200 text-slate-500"}`}
+                                >
+                                    Sekali
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setData("tipe", "berulang")}
+                                    className={`py-2 rounded-xl text-xs font-bold border transition-all ${data.tipe === "berulang" ? "bg-slate-900 border-slate-900 text-white" : "bg-white border-slate-200 text-slate-500"}`}
+                                >
+                                    Berulang
+                                </button>
+                            </div>
+                        </div>
+
+                        {data.tipe === "sekali" ? (
+                            <div>
+                                <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                                    Tanggal
+                                </label>
+                                <DatePicker22
+                                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 outline-none text-sm"
+                                    value={initialDates.startDate}
+                                    setValue={(value) => {
+                                        setData(
+                                            "tanggal",
+                                            formatDate(value.toISOString()),
+                                        );
+                                        setData(
+                                            "tanggal_awal",
+                                            formatDate(value.toISOString()),
+                                        );
+                                    }}
+                                    modal={true}
+                                />
+                                <InputError message={errors.tanggal} />
+                                <InputError message={errors.tanggal_awal} />
+                            </div>
+                        ) : (
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                                        Tanggal Awal
+                                    </label>
+                                    <DatePicker22
+                                        className="w-full px-4 py-2.5 rounded-xl border border-slate-200 outline-none text-sm"
+                                        value={initialDates.startDate}
+                                        setValue={(value) => {
+                                            setData(
+                                                "tanggal",
+                                                formatDate(value.toISOString()),
+                                            );
+                                            setData(
+                                                "tanggal_awal",
+                                                formatDate(value.toISOString()),
+                                            );
+                                        }}
+                                        modal={true}
+                                    />
+                                    <InputError message={errors.tanggal} />
+                                    <InputError message={errors.tanggal_awal} />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                                        Tanggal Akhir
+                                    </label>
+                                    <DatePicker22
+                                        className="w-full px-4 py-2.5 rounded-xl border border-slate-200 outline-none text-sm"
+                                        value={initialDates.endDate}
+                                        setValue={(value) => {
+                                            setData(
+                                                "tanggal_akhir",
+                                                formatDate(value.toISOString()),
+                                            );
+                                        }}
+                                        modal={true}
+                                    />
+                                    <InputError
+                                        message={errors.tanggal_akhir}
+                                    />
+                                </div>
+                            </div>
+                        )}
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                                    Mulai
+                                </label>
+                                <Time24Picker
+                                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 outline-none text-sm"
+                                    value={
+                                        new Date(
+                                            `${data.tanggal}T${data.waktu_awal}`,
+                                        )
+                                    }
+                                    setValue={(value) => {
+                                        setData("waktu_awal", value);
+                                    }}
+                                    modal={true}
+                                />
+                                <InputError message={errors.waktu_awal} />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                                    Selesai
+                                </label>
+                                <Time24Picker
+                                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 outline-none text-sm"
+                                    value={
+                                        new Date(
+                                            `${data.tanggal}T${data.waktu_akhir}`,
+                                        )
+                                    }
+                                    setValue={(value) => {
+                                        setData("waktu_akhir", value);
+                                    }}
+                                    modal={true}
+                                />
+                                <InputError message={errors.waktu_akhir} />
+                            </div>
+                        </div>
+                    </div>
+                );
+            case 2:
+                return (
+                    <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+                        <div className="grid grid-cols-1 gap-3">
+                            {["tidak", "menunggu"].map((status) => (
+                                <Label
+                                    key={status}
+                                    className={`flex items-center p-4 border rounded-2xl cursor-pointer transition-all ${data.ruang_status === status ? "border-blue-500 bg-blue-50 ring-2 ring-blue-200" : "border-slate-200 hover:bg-slate-50"}`}
+                                >
+                                    <input
+                                        type="radio"
+                                        className="hidden"
+                                        name="ruang_status"
+                                        value={status}
+                                        checked={data.ruang_status === status}
+                                        onChange={(e) =>
+                                            setData(
+                                                "ruang_status",
+                                                e.target.value as
+                                                    | "tidak"
+                                                    | "menunggu",
+                                            )
+                                        }
+                                    />
+                                    <div className="flex-1">
+                                        <p className="font-black text-slate-800">
+                                            {status === "tidak"
+                                                ? "Tanpa Ruangan"
+                                                : "Pinjam Ruangan"}
+                                        </p>
+                                        <p className="text-xs text-slate-500">
+                                            {status === "tidak"
+                                                ? "Kegiatan dilaksanakan daring atau diluar kantor"
+                                                : "Memerlukan persetujuan admin ruangan"}
+                                        </p>
+                                    </div>
+                                    {data.ruang_status === status && (
+                                        <CheckCircle
+                                            className="text-blue-600"
+                                            size={20}
+                                        />
+                                    )}
+                                </Label>
+                            ))}
+                        </div>
+                        {(data.ruang_status === "menunggu" ||
+                            data.ruang_status === "disetujui") && (
+                            <div className="animate-in slide-in-from-top-2">
+                                <label className="block text-sm font-bold text-slate-700 mb-1">
+                                    Pilih Ruangan
+                                </label>
+                                <Select
+                                    name="ruang"
+                                    required
+                                    value={data.ruang as string | undefined}
+                                    onValueChange={(value) => {
+                                        setData("ruang", value);
+                                    }}
+                                >
+                                    <SelectTrigger
+                                        name="ruang"
+                                        className="w-full px-3 py-2.5 border border-slate-300 rounded-xl outline-none"
+                                    >
+                                        <SelectValue placeholder="Pilih Tipe" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectGroup>
+                                            <SelectItem value="sekali">
+                                                Sekali
+                                            </SelectItem>
+                                            <SelectItem value="berulang">
+                                                Berulang
+                                            </SelectItem>
+                                        </SelectGroup>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        )}
+                    </div>
+                );
+            case 3:
+                return (
+                    <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+                        <div className="grid grid-cols-1 gap-3">
+                            {[
+                                {
+                                    id: "tidak",
+                                    title: "Tidak Ada Zoom",
+                                    desc: "Rapat offline murni",
+                                },
+                                {
+                                    id: "langsung",
+                                    title: "Link Zoom Langsung",
+                                    desc: "Masukkan link zoom yang sudah Anda miliki",
+                                },
+                                {
+                                    id: "menunggu",
+                                    title: "Pinjam Akun Zoom",
+                                    desc: "Request peminjaman akun zoom kantor",
+                                },
+                            ].map((opt) => (
+                                <Label
+                                    key={opt.id}
+                                    className={`flex items-center p-4 border rounded-2xl cursor-pointer transition-all ${data.zoom_status === opt.id ? "border-blue-500 bg-blue-50 ring-2 ring-blue-200" : "border-slate-200 hover:bg-slate-50"}`}
+                                >
+                                    <input
+                                        type="radio"
+                                        className="hidden"
+                                        name="zoom_status"
+                                        value={opt.id}
+                                        checked={data.zoom_status === opt.id}
+                                        onChange={(e) =>
+                                            setData(
+                                                "zoom_status",
+                                                e.target.value as
+                                                    | "tidak"
+                                                    | "langsung"
+                                                    | "menunggu"
+                                                    | "disetujui"
+                                                    | "ditolak",
+                                            )
+                                        }
+                                    />
+                                    <div className="flex-1">
+                                        <p className="font-black text-slate-800">
+                                            {opt.title}
+                                        </p>
+                                        <p className="text-xs text-slate-500">
+                                            {opt.desc}
+                                        </p>
+                                    </div>
+                                    {data.zoom_status === opt.id && (
+                                        <CheckCircle
+                                            className="text-blue-600"
+                                            size={20}
+                                        />
+                                    )}
+                                </Label>
+                            ))}
+                        </div>
+                        {data.zoom_status === "langsung" && (
+                            <div className="animate-in slide-in-from-top-2">
+                                <label className="block text-sm font-bold text-slate-700 mb-1">
+                                    Link Zoom Meeting
+                                </label>
+                                <input
+                                    type="url"
+                                    className="w-full px-3 py-2.5 border border-slate-300 rounded-xl outline-none text-sm"
+                                    placeholder="https://zoom.us/j/..."
+                                    value={data.zoom_langsung_join_url || ""}
+                                    onChange={(e) =>
+                                        setData(
+                                            "zoom_langsung_join_url",
+                                            e.target.value,
+                                        )
+                                    }
+                                />
+                            </div>
+                        )}
+                    </div>
+                );
+            case 4:
+                return (
+                    <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+                        <div>
+                            <label className="block text-sm font-bold text-slate-700 mb-2">
+                                Tambah Peserta
+                            </label>
+                            <div className="flex gap-2">
+                                <input
+                                    type="text"
+                                    className="flex-1 px-3 py-2 border border-slate-300 rounded-xl text-sm"
+                                    placeholder="Ketik nama peserta..."
+                                />
+                                <button
+                                    type="button"
+                                    className="px-4 py-2 bg-slate-800 text-white rounded-xl text-sm font-bold"
+                                >
+                                    Tambah
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="border border-slate-200 rounded-2xl overflow-hidden bg-slate-50/30">
+                            <table className="w-full text-sm text-left">
+                                <thead className="bg-slate-50 text-slate-500 font-bold uppercase text-[10px] tracking-widest">
+                                    <tr>
+                                        <th className="px-4 py-3">
+                                            Nama Peserta
+                                        </th>
+                                        <th className="px-4 py-3 text-center w-10"></th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-slate-100">
+                                    <tr>
+                                        <td className="px-4 py-3 font-semibold text-slate-700">
+                                            Ahmad Subarjo
+                                        </td>
+                                        <td className="px-4 py-3 text-center">
+                                            <Trash2
+                                                size={16}
+                                                className="text-red-400 cursor-pointer mx-auto"
+                                            />
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                );
+            default:
+                return null;
+        }
+    };
 
     return (
         <Modal open={isOpen} onOpenChange={onToggle} modal={false}>
@@ -284,286 +699,88 @@ export function AddEditEventDialog({
                         ) : (
                             <>
                                 Tambah{" "}
-                                {capitalizeWords(settingCalender.name_event)}
+                                {capitalizeWords(settingCalender.name_event)}{" "}
+                                Baru
                             </>
                         )}
-                    </ModalTitle>
-
-                    <ModalDescription>
-                        <div className="flex justify-between">
-                            <h2 className="">
-                                {isEditing ? (
-                                    <>
-                                        Ubah{" "}
-                                        {capitalizeWords(
-                                            settingCalender.name_event,
-                                        )}{" "}
-                                        yang sudah ada.
-                                    </>
-                                ) : (
-                                    <>
-                                        Buat{" "}
-                                        {capitalizeWords(
-                                            settingCalender.name_event,
-                                        )}{" "}
-                                        baru untuk kalender Anda.
-                                    </>
-                                )}
-                            </h2>
-                            <div className="flex justify-between">
-                                <div className="flex items-center gap-2">
-                                    <span className=" text-muted-foreground">
-                                        Step {currentIndex + 1} of{" "}
-                                        {steps.length}
+                        <div className="flex justify-between relative px-2 mt-3 mb-3">
+                            {steps.map((s) => (
+                                <div
+                                    key={s.id}
+                                    className="relative z-10 flex flex-col items-center gap-2 group"
+                                >
+                                    <div
+                                        className={`w-10 h-10 rounded-full flex items-center justify-center transition-all border-2
+                                        ${
+                                            step === s.id
+                                                ? "bg-blue-600 border-blue-600 text-white ring-4 ring-blue-50 shadow-lg shadow-blue-200"
+                                                : step > s.id
+                                                  ? "bg-green-500 border-green-500 text-white shadow-lg shadow-green-100"
+                                                  : "bg-white border-slate-200 text-slate-400"
+                                        }`}
+                                    >
+                                        {step > s.id ? (
+                                            <CheckCircle size={20} />
+                                        ) : (
+                                            s.icon
+                                        )}
+                                    </div>
+                                    <span
+                                        className={`text-[10px] uppercase font-black tracking-tighter ${step >= s.id ? "text-slate-800" : "text-slate-400"}`}
+                                    >
+                                        {s.title}
                                     </span>
-                                    <div />
                                 </div>
-                            </div>
+                            ))}
                         </div>
-                    </ModalDescription>
+
+                        <div className=" mt-2 w-full h-0.5 bg-slate-100 -translate-y-1/2 z-0"></div>
+                    </ModalTitle>
                 </ModalHeader>
 
                 <form
-                    className="flex flex-col gap-6 mt-5 mb-5"
+                    className="flex flex-col gap-0 mt-5"
                     onSubmit={submit}
                 >
-                    <div className="grid gap-4">
-                        <nav aria-label="Checkout Steps" className="group my-4">
-                            <ol
-                                className="flex items-center justify-between gap-2"
-                                aria-orientation="horizontal"
-                            >
-                                {stepper.all.map((step, index, array) => (
-                                    <Fragment key={step.id}>
-                                        <li className="flex items-center gap-4 flex-shrink-0">
-                                            <Button
-                                                type="button"
-                                                role="tab"
-                                                variant={
-                                                    index <= currentIndex
-                                                        ? "default"
-                                                        : "outline"
-                                                }
-                                                aria-current={
-                                                    stepper.current.id ===
-                                                    step.id
-                                                        ? "step"
-                                                        : undefined
-                                                }
-                                                aria-posinset={index + 1}
-                                                aria-setsize={steps.length}
-                                                aria-selected={
-                                                    stepper.current.id ===
-                                                    step.id
-                                                }
-                                                className="flex size-10 items-center justify-center rounded-full"
-                                                onClick={() =>
-                                                    stepper.goTo(step.id)
-                                                }
-                                            >
-                                                {index + 1}
-                                            </Button>
-                                            <span className="text-sm font-medium">
-                                                {step.title}
-                                            </span>
-                                        </li>
-                                        {index < array.length - 1 && (
-                                            <Separator
-                                                className={`flex-1 ${
-                                                    index < currentIndex
-                                                        ? "bg-primary"
-                                                        : "bg-muted"
-                                                }`}
-                                            />
-                                        )}
-                                    </Fragment>
-                                ))}
-                            </ol>
-                        </nav>
-                        <div className="space-y-4">
-                            {stepper.switch({
-                                info: () =>
-                                <>
-                                    <div className="grid gap-3">
-                                        <Label className="text-secondary" htmlFor="title-1">
-                                            Kegiatan
-                                        </Label>
-                                        <Input
-                                            id="title-1"
-                                            name="title"
-                                            required
-                                            value={data.kegiatan}
-                                            onChange={(e) =>
-                                                setData("kegiatan", e.target.value)
-                                            }
-                                            className="text-secondary"
-                                        />
-                                        <InputError message={errors.kegiatan} />
-                                    </div>
-                                    <div className="grid gap-3">
-                                        <Label
-                                            className="text-secondary"
-                                            htmlFor="tipe-1"
-                                        >
-                                            Tipe
-                                        </Label>
-                                        <Select
-                                            name="tipe"
-                                            required
-                                            value={data.tipe}
-                                            onValueChange={(value) => {
-                                                setData("tipe", value)
-                                            }}
-                                        >
-                                            <SelectTrigger
-                                                name="zoom_status"
-                                                className="text-secondary"
-                                            >
-                                                <SelectValue placeholder="Pilih Tipe" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectGroup>
-                                                    <SelectItem value="sekali">
-                                                        Sekali
-                                                    </SelectItem>
-                                                    <SelectItem value="berulang">
-                                                        Berulang
-                                                    </SelectItem>
-                                                </SelectGroup>
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-                                    <div className="grid gap-3">
-                                        <Label
-                                            className="text-secondary"
-                                            htmlFor="starttime-1"
-                                        >
-                                            {data.tipe == 'sekali' ? <>Tanggal</> : <>Tanggal Awal</>}
-                                        </Label>
-                                        <DatePicker22
-                                            value={initialDates.startDate}
-                                            setValue={(value) => {
-                                                setData("tanggal", formatDate(value.toISOString()));
-                                                if(data.tipe == 'sekali'){
-                                                    setData("tanggal_awal", formatDate(value.toISOString()));
-                                                    setData("tanggal_akhir", formatDate(value.toISOString()));
-                                                }else if(data.tipe == 'berulang'){
-                                                    setData("tanggal_awal", formatDate(value.toISOString()));
-                                                }
-                                            }}
-                                            modal={true}
-                                        />
-                                        <InputError message={errors.tanggal} />
-                                        <InputError message={errors.tanggal_awal} />
-                                    </div>
-                                    {data.tipe == 'berulang' ? <>
-                                        <div className="grid gap-3">
-                                            <Label
-                                                className="text-secondary"
-                                                htmlFor="starttime-1"
-                                            >
-                                                Tanggal Akhir
-                                            </Label>
-                                            <DatePicker22
-                                                value={initialDates.endDate}
-                                                setValue={(value) => {
-                                                    setData("tanggal_akhir", formatDate(value.toISOString()));
-                                                }}
-                                                modal={true}
-                                            />
-                                            <InputError message={errors.tanggal_akhir} />
-                                        </div>
-                                    </> : <></>}
-
-                                    <div className="grid gap-3">
-                                        <Label
-                                            className="text-secondary"
-                                            htmlFor="duration-1"
-                                        >
-                                            Waktu Awal
-                                        </Label>
-                                        <Time24Picker
-                                            value={new Date(`${data.tanggal}T${data.waktu_awal}`)}
-                                            setValue={(value) => {
-                                                setData("waktu_awal", value);
-                                            }}
-                                            modal={true}
-                                        />
-                                        <InputError message={errors.waktu_awal} />
-                                    </div>
-                                    <div className="grid gap-3">
-                                        <Label
-                                            className="text-secondary"
-                                            htmlFor="duration-1"
-                                        >
-                                            Waktu Akhir
-                                        </Label>
-                                        <Time24Picker
-                                            value={new Date(`${data.tanggal}T${data.waktu_akhir}`)}
-                                            setValue={(value) => {
-                                                setData("waktu_akhir", value);
-                                            }}
-                                            modal={true}
-                                        />
-                                        <InputError message={errors.waktu_akhir} />
-                                    </div>
-                                </>,
-                                ruang_zoom: () =>
-                                <>
-                                <div className="grid gap-3">
-                                        <Label className="text-secondary" htmlFor="password-1">
-                                            Password
-                                        </Label>
-                                        <Input
-                                            id="password-1"
-                                            name="password"
-                                            required
-                                            value={data.zoom_password!}
-                                            onChange={(e) =>
-                                                setData("zoom_password", e.target.value)
-                                            }
-                                            className="text-secondary"
-                                        />
-                                        <InputError message={errors.zoom_password} />
-                                    </div>
-                                </>,
-                                peserta: () => <p>peserta</p>,
-                            })}
+                    <div className="">
+                        <div className="p-2">
+                            {renderStepContent()}
                         </div>
                     </div>
-                    <ModalFooter className="flex justify-end gap-2">
-                        <ModalClose asChild>
+                    <div className="">
+                        <ModalFooter className="flex justify-end gap-2 m-0">
+                            <ModalClose asChild>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    className="text-accent-foreground"
+                                >
+                                    Cancel
+                                </Button>
+                            </ModalClose>
                             <Button
                                 type="button"
                                 variant="outline"
+                                onClick={prevStep}
+                                disabled={step == 1}
                                 className="text-accent-foreground"
                             >
-                                Cancel
+                                Kembali
                             </Button>
-                        </ModalClose>
-                        <Button
-                            type="button"
-                            variant="outline"
-                            onClick={stepper.prev}
-                            disabled={stepper.isFirst}
-                            className="text-accent-foreground"
-                        >
-                            Kembali
-                        </Button>
 
-                        {!stepper.isLast ? (
-                            <>
-
-                                <Button type="button" onClick={stepper.next}>
-                                    Next
+                            {step != 4 ? (
+                                <>
+                                    <Button type="button" onClick={nextStep}>
+                                        Next
+                                    </Button>
+                                </>
+                            ) : (
+                                <Button type="submit">
+                                    {isEditing ? "Simpan Perubahan" : "Buat"}
                                 </Button>
-                            </>
-                        ) : (
-                            <Button type="submit">
-                                {isEditing ? "Simpan Perubahan" : "Buat"}
-                            </Button>
-                        )}
-                    </ModalFooter>
+                            )}
+                        </ModalFooter>
+                    </div>
                 </form>
             </ModalContent>
         </Modal>

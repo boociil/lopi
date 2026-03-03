@@ -86,7 +86,7 @@ class Jadwal_Controller extends Controller
 
         $tanggal_carbon = Carbon::today();
 
-        $jadwal_daftar = Jadwal::with(['peserta', 'zoom'])-> orWhere(function (Builder $query) use ($tanggal_awal, $tanggal_akhir){
+        $jadwal_daftar = Jadwal::with(['peserta', 'zoom_pinjam'])-> orWhere(function (Builder $query) use ($tanggal_awal, $tanggal_akhir){
                     $query->where('tipe', 'sekali')
                         ->whereBetween('tanggal', [$tanggal_awal->format('Y-m-d'), $tanggal_akhir->format('Y-m-d')]);
                 })
@@ -137,21 +137,22 @@ class Jadwal_Controller extends Controller
         $validated = $request->validate([
             'kegiatan'          => 'required|string|max:255',
             'deskripsi'         => 'string',
-            'password'          => 'required|string',
             'tipe'              => 'required|in:sekali,berulang',
             'tanggal'           => 'date',
             'tanggal_awal'      => 'date',
             'tanggal_akhir'     => 'date|after_or_equal:tanggal_awal',
             'waktu_awal'        => 'required|date_format:H:i',
             'waktu_akhir'       => 'required|date_format:H:i|after:waktu_awal',
-            'zoom_akun'         => 'in:statsulbar,sp2020',
-            'zoom_join_url_langsung'     => 'string',
-            'ruang'             => Rule::in($this->ruang),
-            'ruang_menggunakan' => Rule::in([0, 1]),
-            'zoom_menggunakan'  => Rule::in([0, 1]),
+
+            'ruang_status' => 'in:tidak|menunggu|disetujui|ditolak',
+
+            'zoom_status'  => 'in:tidak|langsung|menunggu|disetujui|ditolak',
+            'zoom_langsung_join_url'     => 'nullable|string',
+            'zoom_password'          => 'nullable|string',
+            'zoom_akun'         => 'nullable|in:statsulbar,sp2020',
         ]);
 
-        if(!is_null($request->input('tanggal')) || (!is_null($request->input('tanggal_awal')) && !is_null($request->input('tanggal_akhir')))){
+        if(!$request->input('tanggal') || (!$request->input('tanggal_awal') && !$request->input('tanggal_akhir'))){
             throw ValidationException::withMessages([
                 '_status' => 'Peran tidak dapat dibuat',
             ]);
@@ -209,7 +210,7 @@ class Jadwal_Controller extends Controller
                     $pinjam_zoom = Pinjam_Zoom::helper_tambah(
                         $request->input('kegiatan'),
                         $request->input('tipe'),
-                        $request->input('password'),
+                        $request->input('zoom_password'),
                         $request->input('tanggal'),
                         $request->input('tanggal_awal'),
                         $request->input('tanggal_akhir'),
@@ -282,7 +283,7 @@ class Jadwal_Controller extends Controller
             'zoom_menggunakan'  => Rule::in([0, 1]),
         ]);
 
-        if(!is_null($request->input('tanggal')) || (!is_null($request->input('tanggal_awal')) && !is_null($request->input('tanggal_akhir')))){
+        if(!$request->input('tanggal') || (!$request->input('tanggal_awal') && !$request->input('tanggal_akhir'))){
             throw ValidationException::withMessages([
                 '_status' => 'Peran tidak dapat dibuat',
             ]);
