@@ -31,6 +31,6 @@ class Jadwal extends Model
 
     public function zoom_pinjam(): HasOne
     {
-        return $this->hasOne(Pinjam_Zoom::class, 'zoom_pinjam_id', 'id');
+        return $this->hasOne(Pinjam_Zoom::class, 'id', 'zoom_pinjam_id');
     }
 }
