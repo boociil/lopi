@@ -200,9 +200,9 @@ class Jadwal_Controller extends Controller
 
             $jadwal->zoom_status = 'tidak';
             if($request->input('zoom_status') != 'tidak'){
-                if($request->input('zoom_status') == 'langsung' && $request->input('zoom_join_url_langsung')){
+                if($request->input('zoom_status') == 'langsung' && $request->input('zoom_langsung_join_url')){
                     $jadwal->zoom_status = 'langsung';
-                    $jadwal->zoom_join_url = $request->input('zoom_join_url_langsung');
+                    $jadwal->zoom_langsung_join_url = $request->input('zoom_langsung_join_url');
                 }else{
                     $pinjam_zoom = Pinjam_Zoom::helper_tambah(
                         $request->input('kegiatan'),
@@ -223,6 +223,16 @@ class Jadwal_Controller extends Controller
                 }
             }
 
+            if($jadwal->ruang_status == 'disetujui' && in_array($jadwal->zoom_status, ['langsung', 'disetujui'])){
+                $jadwal->status = 'disetujui';
+            }else if($jadwal->ruang_status == 'tidak' && $jadwal->zoom_status == 'tidak'){
+                $jadwal->status = 'disetujui';
+            }else{
+                $jadwal->status = 'menunggu';
+            }
+
+            $jadwal->save();
+
             Jadwal_Peserta::where('jadwal_id', $jadwal->id)->delete();
             if($request->input('peserta')){
                 foreach($request->input('peserta') as $item){
@@ -234,20 +244,10 @@ class Jadwal_Controller extends Controller
                 }
             }
 
-            if($jadwal->ruang_status == 'disetujui' && in_array($jadwal->zoom_status, ['langsung', 'disetujui'])){
-                $jadwal->status = 'disetujui';
-            }else if($jadwal->ruang_status == 'tidak' && $jadwal->zoom_status == 'tidak'){
-                $jadwal->status = 'disetujui';
-            }else{
-                $jadwal->status = 'menunggu';
-            }
-
-            $jadwal->save();
-
             DB::commit();
             return [
                 "_status" => 'Berhasil membuat peminjaman zoom!',
-                "data" => $jadwal
+                "data" => Jadwal::with(['peserta', 'zoom_pinjam'])->where('id', $jadwal->id)->get(),
             ];
         }catch(Exception $ex){
             DB::rollBack();
@@ -346,9 +346,9 @@ class Jadwal_Controller extends Controller
                 }
                 $jadwal->zoom_status = 'tidak';
                 if($request->input('zoom_status') != 'tidak'){
-                    if($request->input('zoom_status') == 'langsung' && $request->input('zoom_join_url_langsung')){
+                    if($request->input('zoom_status') == 'langsung' && $request->input('zoom_langsung_join_url')){
                         $jadwal->zoom_status = 'langsung';
-                        $jadwal->zoom_join_url = $request->input('zoom_join_url_langsung');
+                        $jadwal->zoom_langsung_join_url = $request->input('zoom_langsung_join_url');
                     }else{
                         $pinjam_zoom = Pinjam_Zoom::helper_tambah(
                             $request->input('kegiatan'),
@@ -381,7 +381,7 @@ class Jadwal_Controller extends Controller
 
                     $jadwal->zoom_pinjam_id = null;
                     $jadwal->zoom_status = $request->input('zoom_status');
-                    $jadwal->zoom_join_url = $request->input('zoom_join_url_langsung');
+                    $jadwal->zoom_langsung_join_url = $request->input('zoom_langsung_join_url');
                 }else if(in_array($request->input('zoom_status'), ['menunggu']) ){
                     $pinjam_zoom = $jadwal->zoom_pinjam;
                     $pinjam_zoom->helper_ubah(
@@ -421,12 +421,11 @@ class Jadwal_Controller extends Controller
             }else{
                 $jadwal->status = 'menunggu';
             }
-
             $jadwal->save();
             DB::commit();
             return [
                 "_status" => 'Berhasil mengubah peminjaman zoom!',
-                "data" => $jadwal
+                "data" => Jadwal::with(['peserta', 'zoom_pinjam'])->where('id', $jadwal->id)->get(),
             ];
         }catch(Exception $ex){
             DB::rollBack();

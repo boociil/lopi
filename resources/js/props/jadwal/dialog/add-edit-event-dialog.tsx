@@ -146,13 +146,9 @@ export function AddEditEventDialog({
                 .post(route("jadwal-tambah"), data)
                 .then(function (response: any) {
                     try {
-                        const return_data: IEvent[] = produceJadwalIEvent([
-                            response.data.data,
-                        ] as jadwal[]);
-                        pairIEventDenganUser(
-                            return_data as JadwalIEvent[],
-                            users as CalenderUser[],
-                        );
+                        const return_data: JadwalIEvent[] = produceJadwalIEvent(response.data.data as jadwal[]);
+                        pairIEventDenganUser(return_data as JadwalIEvent[], users as CalenderUser[])
+
                         addEvent(return_data[0]);
                         progressIndikator.finish();
                         toast.success("Berhasil menambahkan data baru");
@@ -188,13 +184,8 @@ export function AddEditEventDialog({
                 .post(route("jadwal-ubah", { jadwal: event.id }), data)
                 .then(function (response: any) {
                     try {
-                        const return_data: IEvent[] = produceJadwalIEvent([
-                            response.data.data,
-                        ] as jadwal[]);
-                        pairIEventDenganUser(
-                            return_data as JadwalIEvent[],
-                            users as CalenderUser[],
-                        );
+                        const return_data: JadwalIEvent[] = produceJadwalIEvent(response.data.data as jadwal[]);
+                        pairIEventDenganUser(return_data as JadwalIEvent[], users as CalenderUser[])
                         updateEvent(return_data[0]);
 
                         progressIndikator.finish();
@@ -245,6 +236,11 @@ export function AddEditEventDialog({
             setData("tanggal", event.date);
             setData("waktu_awal", formatTime(event.startDate, use24HourFormat));
             setData("waktu_akhir", formatTime(event.endDate, use24HourFormat));
+
+            setData("peserta", []);
+            (event as JadwalIEvent).jadwal_ori.peserta.forEach(element => {
+                setData("peserta", [...data.peserta, element.username]);
+            });
 
             if ((event as JadwalIEvent).jadwal_ori) {
                 setData("zoom_status", event_.jadwal_ori.zoom_status);
@@ -736,12 +732,6 @@ export function AddEditEventDialog({
                                 Tambah Peserta
                             </label>
                             <div className="flex gap-2">
-                                <Label
-                                    className="text-secondary"
-                                    htmlFor="user-1"
-                                >
-                                    Pengguna
-                                </Label>
                                 <Popover
                                     open={openPengguna}
                                     onOpenChange={setOpenPengguna}
@@ -751,13 +741,13 @@ export function AddEditEventDialog({
                                         <Button
                                             variant="outline"
                                             role="combobox"
-                                            className="justify-between text-secondary"
+                                            className="justify-between text-secondary w-full"
                                         >
                                             Pilih Target...
                                             <ChevronsUpDown className="opacity-50" />
                                         </Button>
                                     </PopoverTrigger>
-                                    <PopoverContent className="p-0 w-full">
+                                    <PopoverContent className="p-0 w-full shadow-2xl">
                                         <Command>
                                             <CommandInput
                                                 placeholder="Cari Pengguna..."
@@ -770,7 +760,7 @@ export function AddEditEventDialog({
                                                 <CommandGroup>
                                                     {users.map((item) => (
                                                         <CommandItem
-                                                            key={item.username}
+                                                            key={item.username+' '+item.name}
                                                             value={
                                                                 item.username
                                                             }

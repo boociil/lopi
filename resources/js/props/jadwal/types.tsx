@@ -1,4 +1,4 @@
-import { CalenderUser, IEvent, SettingCalender } from "@/components/calender_modules/interfaces";
+import { CalenderUser, IEvent, IUser, SettingCalender } from "@/components/calender_modules/interfaces";
 import { User } from "@/types";
 import { pinjam_zoom } from "../pinjam-zoom/types";
 
@@ -14,7 +14,11 @@ export type JadwalContextType = JadwalProps & {
     setEventDialog: (eventDialog: jadwal_dialog_event) => void;
 };
 
-
+export interface jadwal_peserta {
+    id: string;
+    jadwal_id: string;
+    username: string;
+}
 
 export interface jadwal {
     id: string;
@@ -45,6 +49,7 @@ export interface jadwal {
     zoom_langsung_join_url: null | string;
 
     zoom_pinjam: pinjam_zoom | null;
+    peserta: jadwal_peserta [],
 }
 
 export interface jadwal_req {

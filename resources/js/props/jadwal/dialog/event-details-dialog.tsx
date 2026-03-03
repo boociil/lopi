@@ -1,7 +1,7 @@
 "use client";
 
-import { format, parseISO } from "date-fns";
-import { Calendar, Clock, Copy, Link, Text, Type, User, Video } from "lucide-react";
+import { parseISO } from "date-fns";
+import { Calendar, CheckCircle, Clock, ClockIcon, LogIn, MapPin, PlayCircle, Users, Video, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -25,7 +25,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useCalendar } from "@/components/calender_modules/contexts/calendar-context";
-import { capitalizeWords, formatTime } from "@/components/calender_modules/helpers";
+import { capitalizeWords, formatDate, formatTime } from "@/components/calender_modules/helpers";
 import { Event_Details_Dialog_IProps } from "@/components/calender_modules/dialogs/props-dialog";
 import { progress as progressIndikator } from '@inertiajs/react'
 import { CalenderUser, IEvent } from "@/components/calender_modules/interfaces";
@@ -33,6 +33,7 @@ import { pairIEventDenganUser, jadwal, JadwalIEvent, produceJadwalIEvent } from 
 import { useEffect, useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface Approval_Event {
     event: JadwalIEvent;
@@ -45,23 +46,7 @@ export function EventDetailsDialog({ _event, children }: Event_Details_Dialog_IP
     const [event, setEvent] = useState<JadwalIEvent>(_event as JadwalIEvent)
 	const startDate = parseISO(event.startDate);
 	const endDate = parseISO(event.endDate);
-	const { settingCalender, use24HourFormat, updateEvent, removeEvent, AddEditEventDialog, canChange, canApprove, axiosClient, users } = useCalendar();
-
-    const [approval, setApproval] = useState<'statsulbar' | 'sp2020' | undefined>(undefined)
-
-    useEffect(() => {
-        if(event){
-           if(event.zoom_akun == 'statsulbar'){
-                setApproval('statsulbar')
-           }else if(event.zoom_akun == 'sp2020'){
-                setApproval('sp2020')
-           }else{
-                setApproval(undefined)
-           }
-        }else{
-            setApproval(undefined)
-        }
-    }, [event]);
+	const { settingCalender, use24HourFormat, updateEvent, removeEvent, AddEditEventDialog, canChange, canApprove, axiosClient, users, userDict } = useCalendar();
 
     const deleteEvent = (event_id: string) => {
         progressIndikator.start()
@@ -82,12 +67,8 @@ export function EventDetailsDialog({ _event, children }: Event_Details_Dialog_IP
     }
 
     const approvalEvent = (event_id: string, status: 'disetujui'|'ditolak') => {
-        if(approval == undefined){
-            toast('Pilih akun zoom terlebih dahulu')
-            return
-        }
         progressIndikator.start()
-        axiosClient.post(route("pinjam-zoom-approval", {pinjamZoom: event_id}), {status: status, zoom_akun: approval})
+        axiosClient.post(route("pinjam-zoom-approval", {pinjamZoom: event_id}), {status: status, zoom_akun: ""})
             .then(function (response) {
                  try {
                     const return_data: IEvent[] = produceJadwalIEvent([response.data.data] as jadwal[]);
@@ -108,156 +89,240 @@ export function EventDetailsDialog({ _event, children }: Event_Details_Dialog_IP
             });
     };
 
+      const StatusBadge = ({ status }: {status : "menunggu"|"disetujui"|"ditolak"|"langsung"}) => {
+        const config = {
+            menunggu: { color: 'bg-yellow-100 text-yellow-800 border-yellow-200', icon: <ClockIcon size={12} /> },
+            disetujui: { color: 'bg-green-100 text-green-800 border-green-200', icon: <CheckCircle size={12} /> },
+            ditolak: { color: 'bg-red-100 text-red-800 border-red-200', icon: <XCircle size={12} /> },
+            langsung: { color: 'bg-blue-100 text-blue-800 border-blue-200', icon: <Video size={12} /> }
+        };
+        const item = config[status] || config.menunggu;
+        return (
+        <span className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black border ${item.color}`}>
+            {item.icon}
+            {status.toUpperCase()}
+        </span>
+        );
+    };
+
+
 	return (
-		<Dialog>
-			<DialogTrigger asChild>{children}</DialogTrigger>
+        <Dialog>
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    <DialogTrigger asChild>{children}</DialogTrigger>
+                </TooltipTrigger>
+                <TooltipContent className="bg-background p-1 m-1 shadow-2xl rounded-2xl">
+
+                    <div className="max-h-[80vh]">
+                        <DialogTitle className="text-secondary p-4">{event.title}</DialogTitle>
+                        <div className="space-y-4 p-2">
+                            <div className="grid grid-cols-2 gap-2">
+                                <div className="p-5 bg-slate-50 rounded-3xl border border-slate-100 relative overflow-hidden">
+                                    <div className="flex justify-between items-start mb-2">
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Jadwal</p>
+                                    </div>
+                                    <div className="flex items-center gap-3"><Calendar className="text-blue-600" size={18} />
+                                        <span className="text-sm font-bold text-slate-700">
+                                            {event._startDate == event._endDate ? formatDate(event.startDate) : <>{formatDate(event.startDate)}-{formatDate(event.endDate)}</>}
+                                        </span>
+                                    </div>
+                                    <div className="flex items-center gap-3 mt-1"><Clock className="text-blue-600" size={18} /><span className="text-sm font-bold text-slate-700">{formatTime(event.startDate,true)} - {formatTime(event.endDate,true)}</span></div>
+                                </div>
+
+                                <div className="p-5 bg-slate-50 rounded-3xl border border-slate-100">
+                                    <div className="flex justify-between items-start mb-2">
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Lokasi Utama</p>
+                                        { event.jadwal_ori.ruang_status !== 'tidak' && <StatusBadge status={event.jadwal_ori.ruang_status || 'menunggu'} />}
+                                    </div>
+                                    <div className="flex items-center gap-3">
+                                    <MapPin className={`${ event.jadwal_ori.ruang_status !== 'tidak' ? 'text-amber-600' : 'text-slate-400'}`} size={18} />
+                                    <span className="text-sm font-bold text-slate-700">{ event.jadwal_ori.ruang_status !== 'tidak' ? capitalizeWords(event.jadwal_ori.ruang as string) : 'Hanya Online'}</span>
+                                    </div>
+                                    {!( event.jadwal_ori.ruang_status !== 'tidak') && <p className="text-[10px] text-slate-400 mt-1 font-bold italic">*Tidak menggunakan fasilitas gedung</p>}
+                                </div>
+                                </div>
+
+                                {(event.jadwal_ori.zoom_status !== 'tidak') && (
+                                <div className="p-6 bg-blue-50/50 border-2 border-dashed border-blue-200 rounded-[2rem]">
+                                    <div className="flex items-center justify-between mb-5">
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center text-white shadow-lg"><Video size={24} /></div>
+                                        <div>
+                                        <h4 className="font-black text-blue-900 leading-none">Akses Zoom Meeting</h4>
+                                        </div>
+                                    </div>
+                                    <StatusBadge status={event.jadwal_ori.zoom_status || 'langsung'} />
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <a
+                                            href={event.jadwal_ori.zoom_pinjam?.zoom_start_url ?? "#"}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            aria-disabled={!event.jadwal_ori.zoom_pinjam?.zoom_start_url}
+                                            className={`flex items-center justify-center gap-2 py-3.5 rounded-2xl text-xs font-black transition-all shadow-xl shadow-blue-100
+                                                ${event.jadwal_ori.zoom_pinjam?.zoom_start_url
+                                                ? "bg-blue-600 hover:bg-blue-700 text-white"
+                                                : "bg-gray-400 cursor-not-allowed text-white"
+                                                }`}
+                                            onClick={(e) => {
+                                                if (!event.jadwal_ori.zoom_pinjam?.zoom_start_url) e.preventDefault();
+                                            }}
+                                            >
+                                            <PlayCircle size={18} />
+                                            START ZOOM
+                                        </a>
+
+                                        <a
+                                            href={(event.jadwal_ori.zoom_pinjam?.zoom_join_url ||
+                                                event.jadwal_ori.zoom_langsung_join_url) ?? "#"}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            aria-disabled={!(event.jadwal_ori.zoom_pinjam?.zoom_join_url ||
+                                                event.jadwal_ori.zoom_langsung_join_url)}
+                                            onClick={(e) => {
+                                                if (!(event.jadwal_ori.zoom_pinjam?.zoom_join_url ||
+                                                    event.jadwal_ori.zoom_langsung_join_url)) e.preventDefault();
+                                            }}
+                                            className={`flex items-center justify-center gap-2 py-3.5 rounded-2xl text-xs font-black transition-all border-2
+                                                ${
+                                                (event.jadwal_ori.zoom_pinjam?.zoom_join_url ||
+                                                    event.jadwal_ori.zoom_langsung_join_url)
+                                                    ? "bg-white text-blue-600 border-blue-600 hover:bg-blue-50"
+                                                    : "bg-gray-100 text-gray-400 border-gray-300 cursor-not-allowed"
+                                                }`}
+                                            >
+                                            <LogIn size={18} />
+                                            JOIN ZOOM
+                                        </a>
+                                    </div>
+                                </div>
+                                )}
+
+                                <div>
+                                <div className="flex items-center justify-between mb-4">
+                                    <h4 className="text-sm font-black text-slate-800 flex items-center gap-2"><Users size={18} className="text-slate-400" /> DAFTAR PESERTA</h4>
+                                    <span className="px-3 py-1 bg-slate-100 text-slate-600 rounded-full text-[10px] font-black">{event.jadwal_ori.peserta?.length || 0} ORANG</span>
+                                </div>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    {event.jadwal_ori.peserta?.map((p, idx) => (
+                                        <div key={idx} className="flex items-center gap-3 p-3 bg-white border border-slate-100 rounded-2xl hover:border-blue-200 transition-all group">
+                                            <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-500 font-bold text-sm group-hover:bg-blue-500 group-hover:text-white transition-all">{p ? p.username.charAt(0) : '?'}</div>
+                                            <span className="text-sm font-bold text-slate-700">{userDict.get(p.username)?.name}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>``
+                </TooltipContent>
+            </Tooltip>
 			<DialogContent>
 				<DialogHeader>
-					<DialogTitle className="text-secondary">{event.title}</DialogTitle>
+					<DialogTitle className="text-secondary ">{event.title}</DialogTitle>
 				</DialogHeader>
 
 				<ScrollArea className="max-h-[80vh]">
-					<div className="space-y-4 p-4">
-                        {event.jadwal_ori &&
-                            <div className="flex items-start gap-2">
-                                <User className="mt-1 size-4 shrink-0 text-muted-foreground" />
-                                <div>
-                                    <p className="text-sm font-medium text-secondary">Yang bertanggung jawab</p>
-                                    <p className="text-sm text-muted-foreground">
-                                        {event.user?.name}
-                                    </p>
+					<div className="space-y-4 p-2">
+                        <div className="grid grid-cols-2 gap-2">
+                            <div className="p-5 bg-slate-50 rounded-3xl border border-slate-100 relative overflow-hidden">
+                                <div className="flex justify-between items-start mb-2">
+                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Jadwal</p>
                                 </div>
-                            </div>
-                        }
-
-
-                        <div className="flex items-start gap-2">
-							<Type className="mt-1 size-4 shrink-0 text-muted-foreground" />
-							<div>
-								<p className="text-sm font-medium text-secondary">Tipe</p>
-								<p className="text-sm text-muted-foreground">
-                                    {event._startDate != event._endDate ? 'Berulang' : 'Sekali'}
-								</p>
-							</div>
-						</div>
-
-                        { (event as JadwalIEvent).zoom_akun != null ? <>
-
-                            <div className="flex items-start gap-2">
-                                <Video className="mt-1 size-4 shrink-0 text-muted-foreground" />
-                                <div>
-                                    <p className="text-sm font-medium text-secondary">Zoom Akun</p>
-                                    <p className="text-sm text-muted-foreground">
-                                        {(event as JadwalIEvent).zoom_akun}
-                                    </p>
+                                <div className="flex items-center gap-3"><Calendar className="text-blue-600" size={18} />
+                                    <span className="text-sm font-bold text-slate-700">
+                                        {event._startDate == event._endDate ? formatDate(event.startDate) : <>{formatDate(event.startDate)}-{formatDate(event.endDate)}</>}
+                                    </span>
                                 </div>
+                                <div className="flex items-center gap-3 mt-1"><Clock className="text-blue-600" size={18} /><span className="text-sm font-bold text-slate-700">{formatTime(event.startDate,true)} - {formatTime(event.endDate,true)}</span></div>
                             </div>
-                        </> : <></>}
 
-                         { (event as JadwalIEvent).join_url != null ? <>
+                            <div className="p-5 bg-slate-50 rounded-3xl border border-slate-100">
+                                <div className="flex justify-between items-start mb-2">
+                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Lokasi Utama</p>
+                                    { event.jadwal_ori.ruang_status !== 'tidak' && <StatusBadge status={event.jadwal_ori.ruang_status || 'menunggu'} />}
+                                </div>
+                                <div className="flex items-center gap-3">
+                                <MapPin className={`${ event.jadwal_ori.ruang_status !== 'tidak' ? 'text-amber-600' : 'text-slate-400'}`} size={18} />
+                                <span className="text-sm font-bold text-slate-700">{ event.jadwal_ori.ruang_status !== 'tidak' ? capitalizeWords(event.jadwal_ori.ruang as string) : 'Hanya Online'}</span>
+                                </div>
+                                {!( event.jadwal_ori.ruang_status !== 'tidak') && <p className="text-[10px] text-slate-400 mt-1 font-bold italic">*Tidak menggunakan fasilitas gedung</p>}
+                            </div>
+                            </div>
 
-                            <div className="flex items-start gap-2">
-                                <Link className="mt-1 size-4 shrink-0 text-muted-foreground" />
-                                <div>
-                                    <p className="text-sm font-medium text-secondary">Join Zoom
-                                        <button onClick={() => {navigator.clipboard.writeText((event as JadwalIEvent).join_url!); toast('Copy Link')}} className="text-sm text-muted-foreground">
-                                           <Copy className="ml-3 size-4 shrink-0 text-muted-foreground" />
-                                        </button>
-                                    </p>
-                                    <a target="_blank" href={(event as JadwalIEvent).join_url!} className="text-sm text-muted-foreground">
-                                        <span>Buka Join Link</span>
+                            {(event.jadwal_ori.zoom_status !== 'tidak') && (
+                            <div className="p-6 bg-blue-50/50 border-2 border-dashed border-blue-200 rounded-[2rem]">
+                                <div className="flex items-center justify-between mb-5">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center text-white shadow-lg"><Video size={24} /></div>
+                                    <div>
+                                    <h4 className="font-black text-blue-900 leading-none">Akses Zoom Meeting</h4>
+                                    </div>
+                                </div>
+                                <StatusBadge status={event.jadwal_ori.zoom_status || 'langsung'} />
+                                </div>
+                                <div className="grid grid-cols-2 gap-3">
+                                   <a
+                                        href={event.jadwal_ori.zoom_pinjam?.zoom_start_url ?? "#"}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        aria-disabled={!event.jadwal_ori.zoom_pinjam?.zoom_start_url}
+                                        className={`flex items-center justify-center gap-2 py-3.5 rounded-2xl text-xs font-black transition-all shadow-xl shadow-blue-100
+                                            ${event.jadwal_ori.zoom_pinjam?.zoom_start_url
+                                            ? "bg-blue-600 hover:bg-blue-700 text-white"
+                                            : "bg-gray-400 cursor-not-allowed text-white"
+                                            }`}
+                                        onClick={(e) => {
+                                            if (!event.jadwal_ori.zoom_pinjam?.zoom_start_url) e.preventDefault();
+                                        }}
+                                        >
+                                        <PlayCircle size={18} />
+                                        START ZOOM
+                                    </a>
+
+                                    <a
+                                        href={(event.jadwal_ori.zoom_pinjam?.zoom_join_url ||
+                                            event.jadwal_ori.zoom_langsung_join_url) ?? "#"}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        aria-disabled={!(event.jadwal_ori.zoom_pinjam?.zoom_join_url ||
+                                            event.jadwal_ori.zoom_langsung_join_url)}
+                                        onClick={(e) => {
+                                            if (!(event.jadwal_ori.zoom_pinjam?.zoom_join_url ||
+                                                event.jadwal_ori.zoom_langsung_join_url)) e.preventDefault();
+                                        }}
+                                        className={`flex items-center justify-center gap-2 py-3.5 rounded-2xl text-xs font-black transition-all border-2
+                                            ${
+                                            (event.jadwal_ori.zoom_pinjam?.zoom_join_url ||
+                                                event.jadwal_ori.zoom_langsung_join_url)
+                                                ? "bg-white text-blue-600 border-blue-600 hover:bg-blue-50"
+                                                : "bg-gray-100 text-gray-400 border-gray-300 cursor-not-allowed"
+                                            }`}
+                                        >
+                                        <LogIn size={18} />
+                                        JOIN ZOOM
                                     </a>
                                 </div>
                             </div>
-                        </> : <></>}
+                            )}
 
-                         { (event as JadwalIEvent).start_url != null ? <>
+                            <div>
+                            <div className="flex items-center justify-between mb-4">
+                                <h4 className="text-sm font-black text-slate-800 flex items-center gap-2"><Users size={18} className="text-slate-400" /> DAFTAR PESERTA</h4>
+                                <span className="px-3 py-1 bg-slate-100 text-slate-600 rounded-full text-[10px] font-black">{event.jadwal_ori.peserta?.length || 0} ORANG</span>
+                            </div>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                {event.jadwal_ori.peserta?.map((p, idx) => (
+                                    <div key={idx} className="flex items-center gap-3 p-3 bg-white border border-slate-100 rounded-2xl hover:border-blue-200 transition-all group">
+                                        <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-500 font-bold text-sm group-hover:bg-blue-500 group-hover:text-white transition-all">{p ? p.username.charAt(0) : '?'}</div>
+                                        <span className="text-sm font-bold text-slate-700">{userDict.get(p.username)?.name}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
 
-                            <div className="flex items-start gap-2">
-                                <Link className="mt-1 size-4 shrink-0 text-muted-foreground" />
-                                <div>
-                                    <p className="text-sm font-medium text-secondary">Start Zoom
-                                        <button onClick={() => {navigator.clipboard.writeText((event as JadwalIEvent).start_url!); toast('Copy Link')}} className="text-sm text-muted-foreground">
-                                           <Copy className="ml-3 size-4 shrink-0 text-muted-foreground" />
-                                        </button>
-                                    </p>
-                                    <a target="_blank" href={(event as JadwalIEvent).start_url!} className="text-sm text-muted-foreground">
-                                        <span>Buka Start Link</span>
-                                    </a>
-                                </div>
-                            </div>
-                        </> : <></>}
-
-                        {event._startDate != event._endDate ?
-                        <>
-                            <div className="flex items-start gap-2">
-                                <Calendar className="mt-1 size-4 shrink-0 text-muted-foreground" />
-                                <div>
-                                    <p className="text-sm font-medium text-secondary">Tanggal Awal</p>
-                                    <p className="text-sm text-muted-foreground">
-                                        {format(startDate, "EEEE dd MMMM")}
-                                    </p>
-                                </div>
-                            </div>
-
-                             <div className="flex items-start gap-2">
-                                <Calendar className="mt-1 size-4 shrink-0 text-muted-foreground" />
-                                <div>
-                                    <p className="text-sm font-medium text-secondary">Tanggal Akhir</p>
-                                    <p className="text-sm text-muted-foreground">
-                                        {format(endDate, "EEEE dd MMMM")}
-                                    </p>
-                                </div>
-                            </div>
-
-                            <div className="flex items-start gap-2">
-                                <Clock className="mt-1 size-4 shrink-0 text-muted-foreground" />
-                                <div>
-                                    <p className="text-sm font-medium text-secondary">Waktu Mulai</p>
-                                    <p className="text-sm text-muted-foreground">
-                                        {formatTime(parseISO(event.startDate), use24HourFormat)}
-                                    </p>
-                                </div>
-                            </div>
-                            <div className="flex items-start gap-2">
-                                <Clock className="mt-1 size-4 shrink-0 text-muted-foreground" />
-                                <div>
-                                    <p className="text-sm font-medium text-secondary">Waktu Akhir</p>
-                                    <p className="text-sm text-muted-foreground">
-                                        {formatTime(parseISO(event.endDate), use24HourFormat)}
-                                    </p>
-                                </div>
-                            </div>
-                        </>
-                        :
-                        <>
-                            <div className="flex items-start gap-2">
-                                <Calendar className="mt-1 size-4 shrink-0 text-muted-foreground" />
-                                <div>
-                                    <p className="text-sm font-medium text-secondary">Mulai</p>
-                                    <p className="text-sm text-muted-foreground">
-                                        {format(startDate, "EEEE dd MMMM")}
-                                        <span className="mx-1">at</span>
-                                        {formatTime(parseISO(event.startDate), use24HourFormat)}
-                                    </p>
-                                </div>
-                            </div>
-
-                            <div className="flex items-start gap-2">
-                                <Clock className="mt-1 size-4 shrink-0 text-muted-foreground" />
-                                <div>
-                                    <p className="text-sm font-medium text-secondary">Berakhir</p>
-                                    <p className="text-sm text-muted-foreground">
-                                        {format(endDate, "EEEE dd MMMM")}
-                                        <span className="mx-1">at</span>
-                                        {formatTime(parseISO(event.endDate), use24HourFormat)}
-                                    </p>
-                                </div>
-                            </div>
-                        </>
-                        }
-
-					</div>
 				</ScrollArea>
 				<div className="flex justify-end gap-2">
                     {canApprove(event) &&
@@ -282,11 +347,11 @@ export function EventDetailsDialog({ _event, children }: Event_Details_Dialog_IP
                                     <Select
                                         name="tipe"
                                         required
-                                        value={approval}
-                                        onValueChange={(value) => {
-                                            console.log(value)
-                                            setApproval(value as 'statsulbar' | 'sp2020' | undefined)
-                                        }}
+                                        // value={approval}
+                                        // onValueChange={(value) => {
+                                        //     console.log(value)
+                                        //     setApproval(value as 'statsulbar' | 'sp2020' | undefined)
+                                        // }}
                                     >
                                         <SelectTrigger
                                             name="zoom_status"

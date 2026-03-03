@@ -100,7 +100,8 @@ return new class extends Migration
 
             $table->enum('zoom_status', ['tidak', 'langsung', 'menunggu', 'disetujui', 'ditolak'])->default('tidak');
             $table->string('zoom_pinjam_id', 36)->nullable();
-            $table->string('zoom_langsung_join_url', 36)->nullable();
+            $table->string('zoom_langsung_join_url', 1024)->nullable();
+            $table->string('zoom_confirm_username', 100)->nullable();
 
             $table->timestamps();
             $table->softDeletes();
@@ -109,6 +110,7 @@ return new class extends Migration
             $table->foreign('pembuat_username', 'jadwal_fk_pembuat_username')->references('username')->on('siakip2_users');
             $table->foreign('ruang_confirm_username', 'j_ruang_fk_confirm_username')->references('username')->on('siakip2_users');
             $table->foreign('zoom_pinjam_id', 'jadwal_fk_zoom_pinjam_id')->references('id')->on('siakip2_pinjam_zoom');
+            $table->foreign('zoom_confirm_username', 'j_zoom_fk_confirm_username')->references('username')->on('siakip2_users');
         });
 
 
