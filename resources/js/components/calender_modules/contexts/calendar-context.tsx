@@ -29,6 +29,7 @@ interface ICalendarContext {
 	filterEventsBySelectedColors: (colors: TEventColor) => void;
 	filterEventsBySelectedUser: (userId: IUser["id"] | "all") => void;
 	users: IUser[];
+    userDict: Map<string, IUser>
 	events: IEvent[];
 	addEvent: (event: IEvent) => void;
     updateEventDragRezise: (event: IEvent) => void;
@@ -46,7 +47,7 @@ interface ICalendarContext {
     EventDropConfirmationDialog: React.ComponentType<Event_Drop_Confirmation_Dialog_IProps>;
     EventListDialog: React.ComponentType<Event_List_Dialog_IProps>;
 
-    havePeran: () => boolean;
+    havePeran: (peran: string) => boolean;
     canAdd: () => boolean;
     canChange: (event: IEvent) => boolean;
     canApprove: (event: IEvent) => boolean;
@@ -86,7 +87,7 @@ export function CalendarProvider({
     reload_data: (selectedDate: Date, currentView: TCalendarView, setAllEventsOri: (_allEvents: IEvent[]) => void) => void;
     updateDataRequest: (event: IEvent, use24HourFormat: boolean, updateEvent: (newEvent: IEvent) => void, cancel: () => void) => void;
 
-    havePeran: () => boolean;
+    havePeran: (peran: string) => boolean;
     canAdd: () => boolean;
     canChange: (event: IEvent) => boolean;
     canApprove: (event: IEvent) => boolean;
@@ -94,6 +95,16 @@ export function CalendarProvider({
 }) {
 
     const [users, setUsers] = useState<IUser[]>(_user);
+    const [userDict, setUserDict] = useState<Map<string, IUser>>(new Map<string, IUser>);
+
+    useEffect(() => {
+        let dictUse = new Map<string, IUser>();
+        users.forEach(element => {
+            dictUse.set(element.username, element)
+        });
+        setUserDict(dictUse)
+    }, [users]);
+
     const [allEvents, setAllEvents] = useState<IEvent[]>(_allEvents || []);
     const [filteredEvents, setFilteredEvents] = useState<IEvent[]>(_allEvents || []);
 
@@ -262,6 +273,7 @@ export function CalendarProvider({
             badgeVariant,
             setBadgeVariant,
             users,
+            userDict,
             selectedColors,
             filterEventsBySelectedColors,
             filterEventsBySelectedUser,

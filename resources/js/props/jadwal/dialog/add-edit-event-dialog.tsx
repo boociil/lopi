@@ -37,6 +37,7 @@ import {
     JadwalIEvent,
     produceJadwalIEvent,
     type jadwal,
+    SettingCalenderJadwal,
 } from "../types";
 import { CalenderUser, IEvent } from "@/components/calender_modules/interfaces";
 import { Add_Edit_Event_IProps } from "@/components/calender_modules/dialogs/props-dialog";
@@ -47,6 +48,7 @@ import {
     CheckCircle,
     ChevronLeft,
     ChevronRight,
+    ChevronsUpDown,
     FileText,
     MapPin,
     Trash2,
@@ -55,6 +57,9 @@ import {
 } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
+import { Popover, PopoverTrigger } from "@/components/ui/popover";
+import { PopoverContent } from "@radix-ui/react-popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 
 export function AddEditEventDialog({
     children,
@@ -71,10 +76,11 @@ export function AddEditEventDialog({
         settingCalender,
         use24HourFormat,
         axiosClient,
-        canApprove,
         havePeran,
+        userDict,
     } = useCalendar();
     const isEditing = !!event;
+
 
     // const [tipe, setTipe] = useState<string>("sekali");
 
@@ -304,6 +310,12 @@ export function AddEditEventDialog({
         { id: 4, title: "Peserta", icon: <Users size={18} /> },
     ];
 
+    function deleteUser(username: string) {
+        setData('peserta', data.peserta.filter(item => item != username))
+    }
+
+    const [openPengguna, setOpenPengguna] = useState(false)
+
     const nextStep = () => setStep((s) => Math.min(s + 1, 4));
     const prevStep = () => setStep((s) => Math.max(s - 1, 1));
 
@@ -474,46 +486,54 @@ export function AddEditEventDialog({
                 return (
                     <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
                         <div className="grid grid-cols-1 gap-3">
-                            {["tidak", "menunggu"].map((status) => (
-                                <Label
-                                    key={status}
-                                    className={`flex items-center p-4 border rounded-2xl cursor-pointer transition-all ${data.ruang_status === status ? "border-blue-500 bg-blue-50 ring-2 ring-blue-200" : "border-slate-200 hover:bg-slate-50"}`}
-                                >
-                                    <input
-                                        type="radio"
-                                        className="hidden"
-                                        name="ruang_status"
-                                        value={status}
-                                        checked={data.ruang_status === status}
-                                        onChange={(e) =>
-                                            setData(
-                                                "ruang_status",
-                                                e.target.value as
-                                                    | "tidak"
-                                                    | "menunggu",
-                                            )
-                                        }
-                                    />
-                                    <div className="flex-1">
-                                        <p className="font-black text-slate-800">
-                                            {status === "tidak"
-                                                ? "Tanpa Ruangan"
-                                                : "Pinjam Ruangan"}
-                                        </p>
-                                        <p className="text-xs text-slate-500">
-                                            {status === "tidak"
-                                                ? "Kegiatan dilaksanakan daring atau diluar kantor"
-                                                : "Memerlukan persetujuan admin ruangan"}
-                                        </p>
-                                    </div>
-                                    {data.ruang_status === status && (
-                                        <CheckCircle
-                                            className="text-blue-600"
-                                            size={20}
+                            {!havePeran('ruang') &&
+                                <>
+                                    {["tidak", "menunggu"].map((status) => (
+                                    <Label
+                                        key={status}
+                                        className={`flex items-center p-4 border rounded-2xl cursor-pointer transition-all ${data.ruang_status === status ? "border-blue-500 bg-blue-50 ring-2 ring-blue-200" : "border-slate-200 hover:bg-slate-50"}`}
+                                    >
+                                        <Input
+                                            type="radio"
+                                            className="hidden"
+                                            name="ruang_status"
+                                            value={status}
+                                            checked={data.ruang_status === status}
+                                            onChange={(e) =>{
+                                                setData(
+                                                    "ruang_status",
+                                                    e.target.value as
+                                                        | "tidak"
+                                                        | "menunggu",
+                                                )
+                                                if(e.target.value == 'tidak'){
+                                                    setData("ruang", null);
+                                                }
+                                            }}
                                         />
-                                    )}
-                                </Label>
-                            ))}
+                                        <div className="flex-1">
+                                            <p className="font-black text-slate-800">
+                                                {status === "tidak"
+                                                    ? "Tanpa Ruangan"
+                                                    : "Pinjam Ruangan"}
+                                            </p>
+                                            <p className="text-xs text-slate-500">
+                                                {status === "tidak"
+                                                    ? "Kegiatan dilaksanakan daring atau diluar kantor"
+                                                    : "Memerlukan persetujuan admin ruangan"}
+                                            </p>
+                                        </div>
+                                        {data.ruang_status === status && (
+                                            <CheckCircle
+                                                className="text-blue-600"
+                                                size={20}
+                                            />
+                                        )}
+                                    </Label>
+                                ))}
+                            </>
+                            }
+
                         </div>
                         {(data.ruang_status === "menunggu" ||
                             data.ruang_status === "disetujui") && (
@@ -537,12 +557,12 @@ export function AddEditEventDialog({
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectGroup>
-                                            <SelectItem value="sekali">
-                                                Sekali
-                                            </SelectItem>
-                                            <SelectItem value="berulang">
-                                                Berulang
-                                            </SelectItem>
+                                            {(settingCalender as SettingCalenderJadwal).ruang.map((item, index) => (
+                                                // Each element in a list must have a unique 'key' prop
+                                                <SelectItem value={item}>
+                                                    {capitalizeWords(item)}
+                                                </SelectItem>
+                                            ))}
                                         </SelectGroup>
                                     </SelectContent>
                                 </Select>
@@ -575,7 +595,7 @@ export function AddEditEventDialog({
                                     key={opt.id}
                                     className={`flex items-center p-4 border rounded-2xl cursor-pointer transition-all ${data.zoom_status === opt.id ? "border-blue-500 bg-blue-50 ring-2 ring-blue-200" : "border-slate-200 hover:bg-slate-50"}`}
                                 >
-                                    <input
+                                    <Input
                                         type="radio"
                                         className="hidden"
                                         name="zoom_status"
@@ -629,6 +649,54 @@ export function AddEditEventDialog({
                                 />
                             </div>
                         )}
+                        {(havePeran('zoom') &&  data.zoom_status == 'menunggu') &&
+                            <>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700 mb-1">Password Meeting</label>
+                                    <input
+                                        type="text"
+                                        name="password"
+                                        maxLength={10}
+                                        required
+                                        className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+                                        value={data.zoom_password || ''}
+                                        onChange={(e) =>
+                                            setData("zoom_password", e.target.value)
+                                        }
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700 mb-1">Zoom Akun</label>
+                                    <Select
+                                        name="tipe"
+                                        required
+                                        value={data.zoom_akun as string}
+                                        onValueChange={(value) => {
+                                            setData("zoom_akun", value as 'statsulbar' | 'sp2020' | null)
+                                        }}
+                                    >
+                                        <SelectTrigger
+                                            name="zoom_status"
+                                            className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-no"
+                                        >
+                                            <SelectValue placeholder="Pilih Zoom Akun" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectGroup>
+                                                <SelectItem value="statsulbar">
+                                                    statsulbar
+                                                </SelectItem>
+                                                <SelectItem value="sp2020">
+                                                    sp2020
+                                                </SelectItem>
+                                            </SelectGroup>
+                                        </SelectContent>
+                                    </Select>
+                                    </div>
+                                </div>
+                            </>
+                        }
                     </div>
                 );
             case 4:
@@ -639,17 +707,49 @@ export function AddEditEventDialog({
                                 Tambah Peserta
                             </label>
                             <div className="flex gap-2">
-                                <input
-                                    type="text"
-                                    className="flex-1 px-3 py-2 border border-slate-300 rounded-xl text-sm"
-                                    placeholder="Ketik nama peserta..."
-                                />
-                                <button
-                                    type="button"
-                                    className="px-4 py-2 bg-slate-800 text-white rounded-xl text-sm font-bold"
-                                >
-                                    Tambah
-                                </button>
+                                <Label className="text-secondary" htmlFor="user-1">Pengguna</Label>
+                                <Popover open={openPengguna} onOpenChange={setOpenPengguna} modal={true}>
+                                    <PopoverTrigger asChild>
+                                        <Button
+                                            variant="outline"
+                                            role="combobox"
+                                            className="justify-between text-secondary"
+                                        >
+                                            Pilih Target...
+                                            <ChevronsUpDown className="opacity-50" />
+                                        </Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="p-0 w-full">
+                                        <Command>
+                                            <CommandInput placeholder="Cari Pengguna..." className="h-9" />
+                                            <CommandList>
+                                                <CommandEmpty>Tidak ditemukan.</CommandEmpty>
+                                                <CommandGroup>
+                                                {users.map((item) => (
+                                                    <CommandItem
+                                                        key={item.username}
+                                                        value={item.username}
+                                                        onSelect={(currentValue) => {
+                                                            setData('peserta', [...data.peserta, currentValue])
+                                                            // setData("username", currentValue === data.username ? "" : currentValue)
+                                                            setOpenPengguna(false)
+                                                        }}
+                                                    >
+                                                        {item.name}
+                                                    {/* {userDict.has(item.pemilik_username) ? userDict.get(item.pemilik_username) : item.pemilik_username} */}
+                                                    {/* <Check
+                                                        className={cn(
+                                                        "ml-auto",
+                                                            data.username === item.pemilik_username ? "opacity-100" : "opacity-0"
+                                                        )}
+                                                    /> */}
+                                                    </CommandItem>
+                                                ))}
+                                                </CommandGroup>
+                                            </CommandList>
+                                        </Command>
+                                    </PopoverContent>
+                                </Popover>
                             </div>
                         </div>
 
@@ -664,17 +764,21 @@ export function AddEditEventDialog({
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-100">
-                                    <tr>
-                                        <td className="px-4 py-3 font-semibold text-slate-700">
-                                            Ahmad Subarjo
-                                        </td>
-                                        <td className="px-4 py-3 text-center">
-                                            <Trash2
-                                                size={16}
-                                                className="text-red-400 cursor-pointer mx-auto"
-                                            />
-                                        </td>
-                                    </tr>
+                                    {data.peserta.map((item, index) => (
+                                        <tr>
+                                            <td className="px-4 py-3 font-semibold text-slate-700">
+                                                {userDict.has(item) ? userDict.get(item)?.name : '-'}
+                                            </td>
+                                            <td className="px-4 py-3 text-center">
+                                                <Trash2 onClick={(e) => deleteUser(item)}
+                                                    size={16}
+                                                    className="text-red-400 cursor-pointer mx-auto"
+                                                />
+                                            </td>
+                                        </tr>
+
+                                    ))}
+
                                 </tbody>
                             </table>
                         </div>

@@ -16,7 +16,7 @@ import {
 export function DatePicker22({
     value,
     setValue,
-    className,
+    className = '',
     modal = false,
 }: {
     value: Date;

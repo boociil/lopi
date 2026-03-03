@@ -213,6 +213,7 @@ export default function DialogFormManage() {
                                     Pengisian Awal
                                 </Label>
                                 <DatePicker22
+                                    className=""
                                     value={new Date(data.isi_awal)}
                                     setValue={(value) => {
                                         setData("isi_awal", formatDate(value.toISOString()));
@@ -228,7 +229,7 @@ export default function DialogFormManage() {
                                 >
                                     Pengisian Akhir
                                 </Label>
-                                <DatePicker22
+                                <DatePicker22 className=""
                                     value={new Date(data.isi_akhir)}
                                     setValue={(value) => {
                                         setData("isi_akhir", formatDate(value.toISOString()));

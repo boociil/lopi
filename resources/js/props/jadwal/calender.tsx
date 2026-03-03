@@ -2,7 +2,7 @@ import { CalendarBody } from "@/components/calender_modules/calendar-body";
 import { CalendarProvider } from "@/components/calender_modules/contexts/calendar-context";
 import { DndProvider } from "@/components/calender_modules/contexts/dnd-context";
 import { CalendarHeader } from "@/components/calender_modules/header/calendar-header";
-import { jadwal, pairIEventDenganUser, JadwalIEvent, produceJadwalIEvent, zoom_app } from "./types";
+import { jadwal, pairIEventDenganUser, JadwalIEvent, produceJadwalIEvent, SettingCalenderJadwal } from "./types";
 import { type SharedData, type User } from "@/types";
 import { CalenderUser, produceCalenderUser, SettingCalender, type IEvent, type IUser } from "@/components/calender_modules/interfaces";
 import { AddEditEventDialog } from "./dialog/add-edit-event-dialog";
@@ -35,7 +35,14 @@ export function JadwalCalender({
     const axiosClient = useApi();
     const auth = usePage<SharedData>().props.auth;
 
-    const settingCalender: SettingCalender = {name_event: 'kegiatan', calender_show: ["week", "month","agenda"], show_filter: true, filter_name: [['green', 'statsulbar'], ['yellow', 'sp2020']], show_filter_user: false}
+    const settingCalender: SettingCalenderJadwal = {
+        name_event: 'kegiatan',
+        calender_show: ["week", "month","agenda"],
+        show_filter: true,
+        filter_name: [['green', 'statsulbar'], ['yellow', 'sp2020']],
+        show_filter_user: false,
+        ruang: ruang
+    }
     const _user: IUser[] = produceCalenderUser(user);
     const _allEvents: JadwalIEvent[] = produceJadwalIEvent(jadwal_data);
 
@@ -106,8 +113,14 @@ export function JadwalCalender({
             });
     }
 
-    function havePeran():  boolean{
-        return have_zoom_peran
+    function havePeran(peran : string):  boolean{
+        if(peran == 'zoom'){
+            return have_zoom_peran
+        }else if(peran == 'ruang'){
+            return have_ruang_peran
+        }
+        return have_zoom_peran && have_ruang_peran
+
     }
     function canAdd():  boolean{
         return true

@@ -369,7 +369,7 @@ export function AddEditEventDialog({
                                 <InputError message={errors.waktu_akhir} />
                             </div>
                         </div>
-                         {havePeran() &&
+                         {havePeran('zoom') &&
                             <div className="grid gap-3">
                                 <Label
                                     className="block text-sm font-medium text-slate-700 mb-1 flex items-center gap-1"

@@ -1,4 +1,4 @@
-import { CalenderUser, IEvent } from "@/components/calender_modules/interfaces";
+import { CalenderUser, IEvent, SettingCalender } from "@/components/calender_modules/interfaces";
 import { User } from "@/types";
 import { pinjam_zoom } from "../pinjam-zoom/types";
 
@@ -140,4 +140,8 @@ export function pairIEventDenganUser(
             jadwal_event[i].user = user;
         }
     }
+}
+
+export interface SettingCalenderJadwal extends SettingCalender {
+    ruang: string[],
 }

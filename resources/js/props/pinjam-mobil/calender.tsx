@@ -107,7 +107,7 @@ export function PinjamMobilCalender({
             });
     }
 
-    function havePeran():  boolean{
+    function havePeran(peran: string):  boolean{
         return havePinjamMobilPeran
     }
 

@@ -3,6 +3,7 @@ import { User } from "@/types";
 
 export interface IUser {
 	id: number;
+    username: string;
 	name: string;
 	picturePath: string | null;
 }

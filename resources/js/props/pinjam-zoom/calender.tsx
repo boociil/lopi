@@ -122,7 +122,7 @@ export function PinjamZoomCalender({
             });
     }
 
-    function havePeran():  boolean{
+    function havePeran(peran: string):  boolean{
         return have_zoom_peran
     }
     function canAdd():  boolean{
