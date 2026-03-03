@@ -116,11 +116,12 @@ return new class extends Migration
             //peserta ruang mana tanggal, tautan daftar hadrir, notulensi, tautan dokumentasi, tautan undangan
             $table->string('id', 36)->primary();
             $table->string('jadwal_id', 36);
-            $table->nullableUuidMorphs('peserta');
+            $table->string('username', 100);
 
             $table->engine = 'InnoDB';
 
             $table->foreign('jadwal_id', 'peserta_fk_jadwal_id')->references('id')->on('siakip2_jadwal');
+            $table->foreign('username', 'jadwal_peserta_fk_username')->references('username')->on('siakip2_users');
         });
     }
 

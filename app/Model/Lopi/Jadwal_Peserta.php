@@ -9,7 +9,7 @@ class Jadwal_Peserta extends Model
     protected $table = 'siakip2_jadwal_peserta';
     public $incrementing = false;
     protected $keyType = 'string';
-    public $timestamps = true;
+    public $timestamps = false;
 
     protected $fillable = ['id', 'jadwal_id', 'username'];
 

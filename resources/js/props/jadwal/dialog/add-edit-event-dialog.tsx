@@ -117,7 +117,7 @@ export function AddEditEventDialog({
         useForm<Required<jadwal_req>>({
             id: "12345",
             kegiatan: "",
-            deskripsi: "",
+            description: "",
             tipe: "sekali",
 
             tanggal: formatDate(new Date().toISOString()),
@@ -235,6 +235,7 @@ export function AddEditEventDialog({
             const event_: JadwalIEvent = event as JadwalIEvent;
             setData("id", event.id);
             setData("kegiatan", event.title);
+            setData("description", event.description)
             setData("tipe", "sekali");
             if (event._startDate != event._endDate) {
                 setData("tipe", "berulang");
@@ -352,9 +353,9 @@ export function AddEditEventDialog({
                             <Textarea
                                 className="w-full px-3 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none"
                                 rows={2}
-                                value={data.deskripsi}
+                                value={data.description}
                                 onChange={(e) =>
-                                    setData("deskripsi", e.target.value)
+                                    setData("description", e.target.value)
                                 }
                                 placeholder="Detail kegiatan..."
                             ></Textarea>

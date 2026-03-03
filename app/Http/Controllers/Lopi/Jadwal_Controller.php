@@ -136,7 +136,7 @@ class Jadwal_Controller extends Controller
     {
         $validated = $request->validate([
             'kegiatan'          => 'required|string|max:255',
-            'deskripsi'         => 'string',
+            'description'         => 'string',
             'tipe'              => 'required|in:sekali,berulang',
             'tanggal'           => 'date',
             'tanggal_awal'      => 'date',
@@ -171,7 +171,7 @@ class Jadwal_Controller extends Controller
             $jadwal = new Jadwal();
             $jadwal->id = Str::uuid();
             $jadwal->kegiatan = $request->input('kegiatan');
-            $jadwal->deskripsi = $request->input('deskripsi');
+            $jadwal->deskripsi = $request->input('description');
             $jadwal->tipe = $request->input('tipe');
 
             if($request->input('tipe') == 'sekali'){
@@ -262,7 +262,7 @@ class Jadwal_Controller extends Controller
     {
          $validated = $request->validate([
             'kegiatan'          => 'required|string|max:255',
-            'deskripsi'         => 'string',
+            'description'         => 'string',
             'tipe'              => 'required|in:sekali,berulang',
             'tanggal'           => 'date',
             'tanggal_awal'      => 'date',
@@ -301,7 +301,7 @@ class Jadwal_Controller extends Controller
         try
         {
             $jadwal->kegiatan = $request->input('kegiatan');
-            $jadwal->deskripsi = $request->input('deskripsi');
+            $jadwal->deskripsi = $request->input('description');
             $jadwal->tipe = $request->input('tipe');
 
             if($request->input('tipe') == 'sekali'){

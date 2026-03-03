@@ -50,7 +50,7 @@ export interface jadwal {
 export interface jadwal_req {
     id: string;
     kegiatan: string;
-    deskripsi: string;
+    description: string;
 
     tipe: string;
     tanggal: string | null;
