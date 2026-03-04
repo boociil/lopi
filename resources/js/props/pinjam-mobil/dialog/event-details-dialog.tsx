@@ -63,6 +63,7 @@ export function EventDetailsDialog({
         canApprove,
         axiosClient,
         users,
+        userDict
     } = useCalendar();
 
     const deleteEvent = (event_id: string) => {
@@ -142,26 +143,90 @@ export function EventDetailsDialog({
                     <DialogTrigger asChild>{children}</DialogTrigger>
                 </TooltipTrigger>
                 <TooltipContent className="bg-background p-1 m-1 shadow-2xl rounded-2xl">
-                    <div className="p-5">
-                        <div className="mb-8">
-                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] block mb-2">
+                    <div className="p-4">
+                        <div className="mb-1">
+                            <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">
                                 Nama Kegiatan
                             </label>
-                            <h3 className="text-2xl font-bold text-slate-900 leading-tight">
+                            <h3 className="text-sm font-bold text-slate-800">
                                 {event.title}
                             </h3>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-                            <div className="space-y-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                            <div className="space-y-3">
+                                <div>
+                                    <div className="flex items-center gap-2 text-slate-400 mb-2">
+                                        <User size={16} />
+                                        <span className="text-xs font-bold uppercase tracking-wider">
+                                            Pemohon
+                                        </span>
+                                    </div>
+                                    <div className="bg-slate-50 p-2 rounded-2xl border border-slate-100 flex items-center gap-1">
+                                        <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold uppercase border border-blue-200">
+                                            {(event as PinjamMobilIEvent)
+                                                .pinjam_mobil_ori
+                                                ? (
+                                                      event as PinjamMobilIEvent
+                                                  ).pinjam_mobil_ori.pembuat_username.charAt(
+                                                      0,
+                                                  )
+                                                : "-"}
+                                        </div>
+                                        <div>
+                                            <p className="text-sm font-bold text-slate-800 ml-1">
+                                                <p className="text-sm font-bold text-emerald-800">
+                                                    {( (event as PinjamMobilIEvent).pinjam_mobil_ori.pembuat_username && userDict.has((event as PinjamMobilIEvent).pinjam_mobil_ori.pembuat_username as string) )
+                                                        ? userDict.get((event as PinjamMobilIEvent).pinjam_mobil_ori.pembuat_username as string)?.name
+                                                        : (event as PinjamMobilIEvent).pinjam_mobil_ori.pembuat_username
+                                                    }
+                                                </p>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {(event as PinjamMobilIEvent).pinjam_mobil_ori
+                                    .status == "disetujui" && (
+                                    <div>
+                                        <div className="flex items-center gap-2 text-slate-400 mb-2">
+                                            <UserCheck size={16} />
+                                            <span className="text-xs font-bold uppercase tracking-wider">
+                                                Disetujui Oleh
+                                            </span>
+                                        </div>
+                                        <div className="bg-slate-50 p-2 rounded-2xl border border-slate-100 flex items-center gap-1">
+                                            <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 font-bold uppercase border border-emerald-200">
+                                                {(event as PinjamMobilIEvent)
+                                                    .pinjam_mobil_ori
+                                                    ? (
+                                                          event as PinjamMobilIEvent
+                                                      ).pinjam_mobil_ori.confirm_username?.charAt(
+                                                          0,
+                                                      )
+                                                    : "-"}
+                                            </div>
+                                            <div>
+                                                <p className="text-sm font-bold text-emerald-800">
+                                                    {( (event as PinjamMobilIEvent).pinjam_mobil_ori.confirm_username && userDict.has((event as PinjamMobilIEvent).pinjam_mobil_ori.confirm_username as string) )
+                                                        ? userDict.get((event as PinjamMobilIEvent).pinjam_mobil_ori.confirm_username as string)?.name
+                                                        : (event as PinjamMobilIEvent).pinjam_mobil_ori.confirm_username
+                                                    }
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                            <div className="space-y-3">
                                 <div>
                                     <div className="flex items-center gap-2 text-slate-400 mb-2">
                                         <CalendarDays size={16} />
-                                        <span className="text-[10px] font-bold uppercase tracking-wider">
+                                        <span className="text-xs font-bold uppercase tracking-wider">
                                             Waktu Pelaksanaan
                                         </span>
                                     </div>
-                                    <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                                    <div className="bg-slate-50 p-2 rounded-2xl border border-slate-100">
                                         <p className="text-sm font-bold text-slate-800">
                                             {event._startDate == event._endDate
                                                 ? formatDate(event._startDate)
@@ -175,102 +240,16 @@ export function EventDetailsDialog({
                                     </div>
                                 </div>
 
-                                <div>
-                                    <div className="flex items-center gap-2 text-slate-400 mb-2">
-                                        <History size={16} />
-                                        <span className="text-[10px] font-bold uppercase tracking-wider">
-                                            Data Identitas
-                                        </span>
-                                    </div>
-                                    <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                                        <p className="text-xs text-slate-500 uppercase font-mono">
-                                            ID: {event.id}
-                                        </p>
-                                        <p className="text-xs text-slate-500 mt-1 uppercase font-mono">
-                                            Tipe:{" "}
-                                            {event._startDate == event._endDate
-                                                ? "Sekali"
-                                                : "Berulang"}
-                                        </p>
-                                    </div>
-                                </div>
                             </div>
 
-                            <div className="space-y-6">
-                                <div>
-                                    <div className="flex items-center gap-2 text-slate-400 mb-2">
-                                        <User size={16} />
-                                        <span className="text-[10px] font-bold uppercase tracking-wider">
-                                            Pemohon / Driver
-                                        </span>
-                                    </div>
-                                    <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 flex items-center gap-3">
-                                        <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold uppercase border border-blue-200">
-                                            {(event as PinjamMobilIEvent)
-                                                .pinjam_mobil_ori
-                                                ? (
-                                                      event as PinjamMobilIEvent
-                                                  ).pinjam_mobil_ori.pembuat_username.charAt(
-                                                      0,
-                                                  )
-                                                : "-"}
-                                        </div>
-                                        <div>
-                                            <p className="text-sm font-bold text-slate-800">
-                                                {
-                                                    (event as PinjamMobilIEvent)
-                                                        .pinjam_mobil_ori
-                                                        .pembuat_username
-                                                }
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
 
-                                {(event as PinjamMobilIEvent).pinjam_mobil_ori
-                                    .status == "disetujui" && (
-                                    <div>
-                                        <div className="flex items-center gap-2 text-slate-400 mb-2">
-                                            <UserCheck size={16} />
-                                            <span className="text-[10px] font-bold uppercase tracking-wider">
-                                                Disetujui Oleh
-                                            </span>
-                                        </div>
-                                        <div className="bg-emerald-50 p-4 rounded-2xl border border-emerald-100 flex items-center gap-3">
-                                            <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 font-bold uppercase border border-emerald-200">
-                                                {(event as PinjamMobilIEvent)
-                                                    .pinjam_mobil_ori
-                                                    ? (
-                                                          event as PinjamMobilIEvent
-                                                      ).pinjam_mobil_ori.confirm_username?.charAt(
-                                                          0,
-                                                      )
-                                                    : "-"}
-                                            </div>
-                                            <div>
-                                                <p className="text-sm font-bold text-emerald-800">
-                                                    {
-                                                        (
-                                                            event as PinjamMobilIEvent
-                                                        ).pinjam_mobil_ori
-                                                            .confirm_username
-                                                    }
-                                                </p>
-                                                <p className="text-[10px] text-emerald-400 uppercase tracking-tighter">
-                                                    Verified Official
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
                         </div>
                     </div>
                 </TooltipContent>
             </Tooltip>
             <DialogContent>
-                <DialogHeader>
-                    <DialogTitle className="text-secondary flex mt-5">
+                <DialogHeader className="p-1">
+                    <DialogTitle className="text-secondary flex items-center p-1">
                         <p className="flex grow">Rincian Peminjaman</p>
 
                         <div className={`flex px-4 py-1.5 rounded-full text-xs font-bold border justify-end ${getStatusStyle((event as PinjamMobilIEvent).pinjam_mobil_ori.status)} uppercase tracking-wider`}>
@@ -281,25 +260,89 @@ export function EventDetailsDialog({
 
                 <div className="w-full max-w-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
                     <div className="p-2">
-                        <div className="mb-8">
-                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] block mb-2">
+                        <div className="mb-1">
+                            <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">
                                 Nama Kegiatan
                             </label>
-                            <h3 className="text-2xl font-bold text-slate-900 leading-tight">
+                            <h3 className="text-sm font-bold text-slate-800">
                                 {event.title}
                             </h3>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-                            <div className="space-y-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                            <div className="space-y-3">
+                                <div>
+                                    <div className="flex items-center gap-2 text-slate-400 mb-2">
+                                        <User size={16} />
+                                        <span className="text-xs font-bold uppercase tracking-wider">
+                                            Pemohon
+                                        </span>
+                                    </div>
+                                    <div className="bg-slate-50 p-2 rounded-2xl border border-slate-100 flex items-center gap-1">
+                                        <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold uppercase border border-blue-200">
+                                            {(event as PinjamMobilIEvent)
+                                                .pinjam_mobil_ori
+                                                ? (
+                                                      event as PinjamMobilIEvent
+                                                  ).pinjam_mobil_ori.pembuat_username.charAt(
+                                                      0,
+                                                  )
+                                                : "-"}
+                                        </div>
+                                        <div>
+                                            <p className="text-sm font-bold text-slate-800 ml-1">
+                                                <p className="text-sm font-bold text-emerald-800">
+                                                    {( (event as PinjamMobilIEvent).pinjam_mobil_ori.pembuat_username && userDict.has((event as PinjamMobilIEvent).pinjam_mobil_ori.pembuat_username as string) )
+                                                        ? userDict.get((event as PinjamMobilIEvent).pinjam_mobil_ori.pembuat_username as string)?.name
+                                                        : (event as PinjamMobilIEvent).pinjam_mobil_ori.pembuat_username
+                                                    }
+                                                </p>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {(event as PinjamMobilIEvent).pinjam_mobil_ori
+                                    .status == "disetujui" && (
+                                    <div>
+                                        <div className="flex items-center gap-2 text-slate-400 mb-2">
+                                            <UserCheck size={16} />
+                                            <span className="text-xs font-bold uppercase tracking-wider">
+                                                Disetujui Oleh
+                                            </span>
+                                        </div>
+                                        <div className="bg-slate-50 p-2 rounded-2xl border border-slate-100 flex items-center gap-1">
+                                            <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 font-bold uppercase border border-emerald-200">
+                                                {(event as PinjamMobilIEvent)
+                                                    .pinjam_mobil_ori
+                                                    ? (
+                                                          event as PinjamMobilIEvent
+                                                      ).pinjam_mobil_ori.confirm_username?.charAt(
+                                                          0,
+                                                      )
+                                                    : "-"}
+                                            </div>
+                                            <div>
+                                                <p className="text-sm font-bold text-emerald-800">
+                                                    {( (event as PinjamMobilIEvent).pinjam_mobil_ori.confirm_username && userDict.has((event as PinjamMobilIEvent).pinjam_mobil_ori.confirm_username as string) )
+                                                        ? userDict.get((event as PinjamMobilIEvent).pinjam_mobil_ori.confirm_username as string)?.name
+                                                        : (event as PinjamMobilIEvent).pinjam_mobil_ori.confirm_username
+                                                    }
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                            <div className="space-y-3">
                                 <div>
                                     <div className="flex items-center gap-2 text-slate-400 mb-2">
                                         <CalendarDays size={16} />
-                                        <span className="text-[10px] font-bold uppercase tracking-wider">
+                                        <span className="text-xs font-bold uppercase tracking-wider">
                                             Waktu Pelaksanaan
                                         </span>
                                     </div>
-                                    <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                                    <div className="bg-slate-50 p-2 rounded-2xl border border-slate-100">
                                         <p className="text-sm font-bold text-slate-800">
                                             {event._startDate == event._endDate
                                                 ? formatDate(event._startDate)
@@ -313,95 +356,9 @@ export function EventDetailsDialog({
                                     </div>
                                 </div>
 
-                                <div>
-                                    <div className="flex items-center gap-2 text-slate-400 mb-2">
-                                        <History size={16} />
-                                        <span className="text-[10px] font-bold uppercase tracking-wider">
-                                            Data Identitas
-                                        </span>
-                                    </div>
-                                    <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                                        <p className="text-xs text-slate-500 uppercase font-mono">
-                                            ID: {event.id}
-                                        </p>
-                                        <p className="text-xs text-slate-500 mt-1 uppercase font-mono">
-                                            Tipe:{" "}
-                                            {event._startDate == event._endDate
-                                                ? "Sekali"
-                                                : "Berulang"}
-                                        </p>
-                                    </div>
-                                </div>
                             </div>
 
-                            <div className="space-y-6">
-                                <div>
-                                    <div className="flex items-center gap-2 text-slate-400 mb-2">
-                                        <User size={16} />
-                                        <span className="text-[10px] font-bold uppercase tracking-wider">
-                                            Pemohon / Driver
-                                        </span>
-                                    </div>
-                                    <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 flex items-center gap-3">
-                                        <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold uppercase border border-blue-200">
-                                            {(event as PinjamMobilIEvent)
-                                                .pinjam_mobil_ori
-                                                ? (
-                                                      event as PinjamMobilIEvent
-                                                  ).pinjam_mobil_ori.pembuat_username.charAt(
-                                                      0,
-                                                  )
-                                                : "-"}
-                                        </div>
-                                        <div>
-                                            <p className="text-sm font-bold text-slate-800">
-                                                {
-                                                    (event as PinjamMobilIEvent)
-                                                        .pinjam_mobil_ori
-                                                        .pembuat_username
-                                                }
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
 
-                                {(event as PinjamMobilIEvent).pinjam_mobil_ori
-                                    .status == "disetujui" && (
-                                    <div>
-                                        <div className="flex items-center gap-2 text-slate-400 mb-2">
-                                            <UserCheck size={16} />
-                                            <span className="text-[10px] font-bold uppercase tracking-wider">
-                                                Disetujui Oleh
-                                            </span>
-                                        </div>
-                                        <div className="bg-emerald-50 p-4 rounded-2xl border border-emerald-100 flex items-center gap-3">
-                                            <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 font-bold uppercase border border-emerald-200">
-                                                {(event as PinjamMobilIEvent)
-                                                    .pinjam_mobil_ori
-                                                    ? (
-                                                          event as PinjamMobilIEvent
-                                                      ).pinjam_mobil_ori.confirm_username?.charAt(
-                                                          0,
-                                                      )
-                                                    : "-"}
-                                            </div>
-                                            <div>
-                                                <p className="text-sm font-bold text-emerald-800">
-                                                    {
-                                                        (
-                                                            event as PinjamMobilIEvent
-                                                        ).pinjam_mobil_ori
-                                                            .confirm_username
-                                                    }
-                                                </p>
-                                                <p className="text-[10px] text-emerald-400 uppercase tracking-tighter">
-                                                    Verified Official
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
                         </div>
                     </div>
                 </div>

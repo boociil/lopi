@@ -19,18 +19,30 @@ export const LoadingProvider: React.FC<{ children: ReactNode }> = ({
 }) => {
     const [isLoading, setIsLoading] = useState<boolean>(false);
 
-
     useEffect(() => {
-        const unbindStart = router.on("before", (event) => {
+        const unbindStart = router.on("start", (event) => {
             if (!event.detail.visit.prefetch) {
                 setIsLoading(true);
             }
         });
-        const unbindFinish = router.on("finish", () => setIsLoading(false));
+
+        const unbindFinish = router.on("finish", () => {
+            setIsLoading(false);
+        });
+
+        const unbindError = router.on("error", () => {
+            setIsLoading(false);
+        });
+
+        const unbindCancel = router.on("cancel", () => {
+            setIsLoading(false);
+        });
 
         return () => {
             unbindStart();
             unbindFinish();
+            unbindError();
+            unbindCancel();
         };
     }, []);
 

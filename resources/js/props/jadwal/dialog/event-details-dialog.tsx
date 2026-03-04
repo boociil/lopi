@@ -120,119 +120,11 @@ export function EventDetailsDialog({ _event, children }: Event_Details_Dialog_IP
                 </TooltipTrigger>
                 <TooltipContent className="bg-background p-1 m-1 shadow-2xl rounded-2xl">
 
-                    <div className="max-h-[80vh]">
-                        <DialogTitle className="text-secondary p-4">{event.title}</DialogTitle>
-                        <div className="space-y-4 p-2">
-                            <div className="grid grid-cols-2 gap-2">
-                                <div className="p-5 bg-slate-50 rounded-3xl border border-slate-100 relative overflow-hidden">
-                                    <div className="flex justify-between items-start mb-2">
-                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Jadwal</p>
-                                    </div>
-                                    <div className="flex items-center gap-3"><Calendar className="text-blue-600" size={18} />
-                                        <span className="text-sm font-bold text-slate-700">
-                                            {event._startDate == event._endDate ? formatDate(event.startDate) : <>{formatDate(event.startDate)}-{formatDate(event.endDate)}</>}
-                                        </span>
-                                    </div>
-                                    <div className="flex items-center gap-3 mt-1"><Clock className="text-blue-600" size={18} /><span className="text-sm font-bold text-slate-700">{formatTime(event.startDate,true)} - {formatTime(event.endDate,true)}</span></div>
-                                </div>
-
-                                <div className="p-5 bg-slate-50 rounded-3xl border border-slate-100">
-                                    <div className="flex justify-between items-start mb-2">
-                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Lokasi Utama</p>
-                                        { event.jadwal_ori.ruang_status !== 'tidak' && <StatusBadge status={event.jadwal_ori.ruang_status || 'menunggu'} />}
-                                    </div>
-                                    <div className="flex items-center gap-3">
-                                    <MapPin className={`${ event.jadwal_ori.ruang_status !== 'tidak' ? 'text-amber-600' : 'text-slate-400'}`} size={18} />
-                                    <span className="text-sm font-bold text-slate-700">{ event.jadwal_ori.ruang_status !== 'tidak' ? capitalizeWords(event.jadwal_ori.ruang as string) : 'Hanya Online'}</span>
-                                    </div>
-                                    {!( event.jadwal_ori.ruang_status !== 'tidak') && <p className="text-[10px] text-slate-400 mt-1 font-bold italic">*Tidak menggunakan fasilitas gedung</p>}
-                                </div>
-                                </div>
-
-                                {(event.jadwal_ori.zoom_status !== 'tidak') && (
-                                <div className="p-6 bg-blue-50/50 border-2 border-dashed border-blue-200 rounded-[2rem]">
-                                    <div className="flex items-center justify-between mb-5">
-                                    <div className="flex items-center gap-4">
-                                        <div className="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center text-white shadow-lg"><Video size={24} /></div>
-                                        <div>
-                                        <h4 className="font-black text-blue-900 leading-none">Akses Zoom Meeting</h4>
-                                        </div>
-                                    </div>
-                                    <StatusBadge status={event.jadwal_ori.zoom_status || 'langsung'} />
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-3">
-                                        <a
-                                            href={event.jadwal_ori.zoom_pinjam?.zoom_start_url ?? "#"}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            aria-disabled={!event.jadwal_ori.zoom_pinjam?.zoom_start_url}
-                                            className={`flex items-center justify-center gap-2 py-3.5 rounded-2xl text-xs font-black transition-all shadow-xl shadow-blue-100
-                                                ${event.jadwal_ori.zoom_pinjam?.zoom_start_url
-                                                ? "bg-blue-600 hover:bg-blue-700 text-white"
-                                                : "bg-gray-400 cursor-not-allowed text-white"
-                                                }`}
-                                            onClick={(e) => {
-                                                if (!event.jadwal_ori.zoom_pinjam?.zoom_start_url) e.preventDefault();
-                                            }}
-                                            >
-                                            <PlayCircle size={18} />
-                                            START ZOOM
-                                        </a>
-
-                                        <a
-                                            href={(event.jadwal_ori.zoom_pinjam?.zoom_join_url ||
-                                                event.jadwal_ori.zoom_langsung_join_url) ?? "#"}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            aria-disabled={!(event.jadwal_ori.zoom_pinjam?.zoom_join_url ||
-                                                event.jadwal_ori.zoom_langsung_join_url)}
-                                            onClick={(e) => {
-                                                if (!(event.jadwal_ori.zoom_pinjam?.zoom_join_url ||
-                                                    event.jadwal_ori.zoom_langsung_join_url)) e.preventDefault();
-                                            }}
-                                            className={`flex items-center justify-center gap-2 py-3.5 rounded-2xl text-xs font-black transition-all border-2
-                                                ${
-                                                (event.jadwal_ori.zoom_pinjam?.zoom_join_url ||
-                                                    event.jadwal_ori.zoom_langsung_join_url)
-                                                    ? "bg-white text-blue-600 border-blue-600 hover:bg-blue-50"
-                                                    : "bg-gray-100 text-gray-400 border-gray-300 cursor-not-allowed"
-                                                }`}
-                                            >
-                                            <LogIn size={18} />
-                                            JOIN ZOOM
-                                        </a>
-                                    </div>
-                                </div>
-                                )}
-
-                                <div>
-                                <div className="flex items-center justify-between mb-4">
-                                    <h4 className="text-sm font-black text-slate-800 flex items-center gap-2"><Users size={18} className="text-slate-400" /> DAFTAR PESERTA</h4>
-                                    <span className="px-3 py-1 bg-slate-100 text-slate-600 rounded-full text-[10px] font-black">{event.jadwal_ori.peserta?.length || 0} ORANG</span>
-                                </div>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                    {event.jadwal_ori.peserta?.map((p, idx) => (
-                                        <div key={idx} className="flex items-center gap-3 p-3 bg-white border border-slate-100 rounded-2xl hover:border-blue-200 transition-all group">
-                                            <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-500 font-bold text-sm group-hover:bg-blue-500 group-hover:text-white transition-all">{p ? p.username.charAt(0) : '?'}</div>
-                                            <span className="text-sm font-bold text-slate-700">{userDict.get(p.username)?.name}</span>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
-
-                    </div>``
-                </TooltipContent>
-            </Tooltip>
-			<DialogContent>
-				<DialogHeader>
-					<DialogTitle className="text-secondary ">{event.title}</DialogTitle>
-				</DialogHeader>
-
-				<ScrollArea className="max-h-[80vh]">
+                    <div className="max-h-[40vh] overflow-auto">
+                        <DialogTitle className="text-secondary p-2 text-lg px-4">{event.title}</DialogTitle>
 					<div className="space-y-4 p-2">
                         <div className="grid grid-cols-2 gap-2">
-                            <div className="p-5 bg-slate-50 rounded-3xl border border-slate-100 relative overflow-hidden">
+                            <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 relative overflow-hidden">
                                 <div className="flex justify-between items-start mb-2">
                                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Jadwal</p>
                                 </div>
@@ -244,7 +136,7 @@ export function EventDetailsDialog({ _event, children }: Event_Details_Dialog_IP
                                 <div className="flex items-center gap-3 mt-1"><Clock className="text-blue-600" size={18} /><span className="text-sm font-bold text-slate-700">{formatTime(event.startDate,true)} - {formatTime(event.endDate,true)}</span></div>
                             </div>
 
-                            <div className="p-5 bg-slate-50 rounded-3xl border border-slate-100">
+                            <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
                                 <div className="flex justify-between items-start mb-2">
                                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Lokasi Utama</p>
                                     { event.jadwal_ori.ruang_status !== 'tidak' && <StatusBadge status={event.jadwal_ori.ruang_status || 'menunggu'} />}
@@ -258,7 +150,7 @@ export function EventDetailsDialog({ _event, children }: Event_Details_Dialog_IP
                             </div>
 
                             {(event.jadwal_ori.zoom_status !== 'tidak') && (
-                            <div className="p-6 bg-blue-50/50 border-2 border-dashed border-blue-200 rounded-[2rem]">
+                            <div className="p-4 bg-blue-50/50 border-2 border-dashed border-blue-200 rounded-[2rem]">
                                 <div className="flex items-center justify-between mb-5">
                                 <div className="flex items-center gap-4">
                                     <div className="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center text-white shadow-lg"><Video size={24} /></div>
@@ -274,7 +166,7 @@ export function EventDetailsDialog({ _event, children }: Event_Details_Dialog_IP
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         aria-disabled={!event.jadwal_ori.zoom_pinjam?.zoom_start_url}
-                                        className={`flex items-center justify-center gap-2 py-3.5 rounded-2xl text-xs font-black transition-all shadow-xl shadow-blue-100
+                                        className={`flex items-center justify-center gap-2 py-2 rounded-lg text-xs font-black transition-all shadow-xl shadow-blue-100
                                             ${event.jadwal_ori.zoom_pinjam?.zoom_start_url
                                             ? "bg-blue-600 hover:bg-blue-700 text-white"
                                             : "bg-gray-400 cursor-not-allowed text-white"
@@ -298,7 +190,115 @@ export function EventDetailsDialog({ _event, children }: Event_Details_Dialog_IP
                                             if (!(event.jadwal_ori.zoom_pinjam?.zoom_join_url ||
                                                 event.jadwal_ori.zoom_langsung_join_url)) e.preventDefault();
                                         }}
-                                        className={`flex items-center justify-center gap-2 py-3.5 rounded-2xl text-xs font-black transition-all border-2
+                                        className={`flex items-center justify-center gap-2 py-2 rounded-lg text-xs font-black transition-all border-2
+                                            ${
+                                            (event.jadwal_ori.zoom_pinjam?.zoom_join_url ||
+                                                event.jadwal_ori.zoom_langsung_join_url)
+                                                ? "bg-white text-blue-600 border-blue-600 hover:bg-blue-50"
+                                                : "bg-gray-100 text-gray-400 border-gray-300 cursor-not-allowed"
+                                            }`}
+                                        >
+                                        <LogIn size={18} />
+                                        JOIN ZOOM
+                                    </a>
+                                </div>
+                            </div>
+                            )}
+
+                            <div>
+                            <div className="flex items-center justify-between mb-4">
+                                <h4 className="text-sm font-black text-slate-800 flex items-center gap-2"><Users size={18} className="text-slate-400" /> DAFTAR PESERTA</h4>
+                                <span className="px-3 py-1 bg-slate-100 text-slate-600 rounded-full text-[10px] font-black">{event.jadwal_ori.peserta?.length || 0} ORANG</span>
+                            </div>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                {event.jadwal_ori.peserta?.map((p, idx) => (
+                                    <div key={idx} className="flex items-center gap-3 p-3 bg-white border border-slate-100 rounded-2xl hover:border-blue-200 transition-all group">
+                                        <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-500 font-bold text-sm group-hover:bg-blue-500 group-hover:text-white transition-all">{p ? p.username.charAt(0) : '?'}</div>
+                                        <span className="text-sm font-bold text-slate-700">{userDict.get(p.username)?.name}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+
+				</div>`
+                </TooltipContent>
+            </Tooltip>
+			<DialogContent>
+				<DialogHeader>
+					<DialogTitle className="text-secondary ">{event.title}</DialogTitle>
+				</DialogHeader>
+
+				<ScrollArea className="max-h-[60vh]">
+					<div className="space-y-4 p-2">
+                        <div className="grid grid-cols-2 gap-2">
+                            <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 relative overflow-hidden">
+                                <div className="flex justify-between items-start mb-2">
+                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Jadwal</p>
+                                </div>
+                                <div className="flex items-center gap-3"><Calendar className="text-blue-600" size={18} />
+                                    <span className="text-sm font-bold text-slate-700">
+                                        {event._startDate == event._endDate ? formatDate(event.startDate) : <>{formatDate(event.startDate)}-{formatDate(event.endDate)}</>}
+                                    </span>
+                                </div>
+                                <div className="flex items-center gap-3 mt-1"><Clock className="text-blue-600" size={18} /><span className="text-sm font-bold text-slate-700">{formatTime(event.startDate,true)} - {formatTime(event.endDate,true)}</span></div>
+                            </div>
+
+                            <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
+                                <div className="flex justify-between items-start mb-2">
+                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Lokasi Utama</p>
+                                    { event.jadwal_ori.ruang_status !== 'tidak' && <StatusBadge status={event.jadwal_ori.ruang_status || 'menunggu'} />}
+                                </div>
+                                <div className="flex items-center gap-3">
+                                <MapPin className={`${ event.jadwal_ori.ruang_status !== 'tidak' ? 'text-amber-600' : 'text-slate-400'}`} size={18} />
+                                <span className="text-sm font-bold text-slate-700">{ event.jadwal_ori.ruang_status !== 'tidak' ? capitalizeWords(event.jadwal_ori.ruang as string) : 'Hanya Online'}</span>
+                                </div>
+                                {!( event.jadwal_ori.ruang_status !== 'tidak') && <p className="text-[10px] text-slate-400 mt-1 font-bold italic">*Tidak menggunakan fasilitas gedung</p>}
+                            </div>
+                            </div>
+
+                            {(event.jadwal_ori.zoom_status !== 'tidak') && (
+                            <div className="p-4 bg-blue-50/50 border-2 border-dashed border-blue-200 rounded-[2rem]">
+                                <div className="flex items-center justify-between mb-5">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center text-white shadow-lg"><Video size={24} /></div>
+                                    <div>
+                                    <h4 className="font-black text-blue-900 leading-none">Akses Zoom Meeting</h4>
+                                    </div>
+                                </div>
+                                <StatusBadge status={event.jadwal_ori.zoom_status || 'langsung'} />
+                                </div>
+                                <div className="grid grid-cols-2 gap-3">
+                                   <a
+                                        href={event.jadwal_ori.zoom_pinjam?.zoom_start_url ?? "#"}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        aria-disabled={!event.jadwal_ori.zoom_pinjam?.zoom_start_url}
+                                        className={`flex items-center justify-center gap-2 py-2 rounded-lg text-xs font-black transition-all shadow-xl shadow-blue-100
+                                            ${event.jadwal_ori.zoom_pinjam?.zoom_start_url
+                                            ? "bg-blue-600 hover:bg-blue-700 text-white"
+                                            : "bg-gray-400 cursor-not-allowed text-white"
+                                            }`}
+                                        onClick={(e) => {
+                                            if (!event.jadwal_ori.zoom_pinjam?.zoom_start_url) e.preventDefault();
+                                        }}
+                                        >
+                                        <PlayCircle size={18} />
+                                        START ZOOM
+                                    </a>
+
+                                    <a
+                                        href={(event.jadwal_ori.zoom_pinjam?.zoom_join_url ||
+                                            event.jadwal_ori.zoom_langsung_join_url) ?? "#"}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        aria-disabled={!(event.jadwal_ori.zoom_pinjam?.zoom_join_url ||
+                                            event.jadwal_ori.zoom_langsung_join_url)}
+                                        onClick={(e) => {
+                                            if (!(event.jadwal_ori.zoom_pinjam?.zoom_join_url ||
+                                                event.jadwal_ori.zoom_langsung_join_url)) e.preventDefault();
+                                        }}
+                                        className={`flex items-center justify-center gap-2 py-2 rounded-lg text-xs font-black transition-all border-2
                                             ${
                                             (event.jadwal_ori.zoom_pinjam?.zoom_join_url ||
                                                 event.jadwal_ori.zoom_langsung_join_url)
