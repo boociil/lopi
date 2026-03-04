@@ -288,7 +288,7 @@ export function EventDetailsDialog({ _event, children }: Event_Details_Dialog_IP
 				<DialogHeader>
 					<DialogTitle className="text-secondary flex-1">
                         <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">Nama Kegiatan</label>
-                        <h2 className="font-bold text-lg text-slate-800 leading-tight">{event.title}</h2>
+                        <p className="font-bold text-lg text-slate-800 leading-tight">{event.title}</p>
                     </DialogTitle>
 				</DialogHeader>
 

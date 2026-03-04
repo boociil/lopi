@@ -329,6 +329,7 @@ trait Zoom_Traits
                 $instance->zoom_start_url = null;
                 $instance->zoom_join_url = null;
             }else{
+                Log::alert($zoom_mmet);
                 throw ValidationException::withMessages([
                     'status' => 'Zoom tidak dapat dibuat',
                 ]);

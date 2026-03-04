@@ -114,7 +114,7 @@ export function producePinjamZoomIEvent(
                 _startTime: element.waktu_awal,
                 _endTime: element.waktu_akhir,
                 title: element.kegiatan,
-                color: element.status == "disetujui" ? "green" : "blue",
+                color: element.status == "disetujui" ? element.zoom_akun == 'statsulbar' ? "green" : "yellow" : "purple",
                 description: "Peminjaman Zoom",
                 user: null,
                 zoom_akun: element.zoom_akun as 'statsulbar' | 'sp2020' | null,

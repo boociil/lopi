@@ -36,7 +36,7 @@ export default function Index({
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Pemakaian Mobil" />
+            <Head title="Pemakaian Zoom" />
                 <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4 overflow-x-auto">
                     <div className="w-full">
                         <Heading

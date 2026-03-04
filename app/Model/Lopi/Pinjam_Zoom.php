@@ -138,7 +138,7 @@ class Pinjam_Zoom extends Model
             if(!$this->zoom_meeting_id){
                 $this->zoom_meta_createMeeting($zoom_akun, $this);
             }else if($this->zoom_meeting_id && $this->zoom_akun != $zoom_akun){
-                $this->zoom_meta_deleteMeeting($zoom_akun, $this);
+                $this->zoom_meta_deleteMeeting($this->zoom_akun, $this);
                 $this->zoom_meta_createMeeting($zoom_akun, $this);
             }else if($this->zoom_meeting_id && $this->zoom_akun == $zoom_akun){
                 $this->zoom_meta_updateMeeting($zoom_akun, $this);
