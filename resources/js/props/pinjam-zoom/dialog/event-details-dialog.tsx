@@ -416,7 +416,7 @@ export function EventDetailsDialog({ _event, children }: Event_Details_Dialog_IP
                                             name="zoom_status"
                                             className="text-secondary"
                                         >
-                                            <SelectValue placeholder="Pilih Tipe" />
+                                            <SelectValue placeholder="Pilih Akun" />
                                         </SelectTrigger>
                                         <SelectContent>
                                             <SelectGroup>

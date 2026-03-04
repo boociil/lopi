@@ -127,8 +127,8 @@ export function MonthEventBadge({
 
 					<div className="hidden sm:block">
 						{renderBadgeTime && (
-							<span>
-							{formatTime(new Date(event.startDate), use24HourFormat)} - {formatTime(new Date(event.endDate), use24HourFormat)}
+							<span className="tracking-tight">
+							{formatTime(new Date(event.startDate), use24HourFormat)}-{formatTime(new Date(event.endDate), use24HourFormat)}
 						</span>
 						)}
 					</div>

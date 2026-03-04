@@ -475,25 +475,62 @@ class Jadwal_Controller extends Controller
         }
     }
 
-    /**
-     * Approve a pinjam zoom request
-     */
-    public function approval(Request $request, Jadwal $jadwal)
+    public function approval_ruang(Request $request, Jadwal $jadwal)
+    {
+        $validated = $request->validate([
+            'ruang_status'      => 'in:disetujui,ditolak',
+        ]);
+
+        $have_ruang_peran =  Peran::where('pemilik_username', Auth::user()->username)
+            ->where('peran', 'ruang')
+            ->first();
+
+        if(! ($have_ruang_peran) ){
+            throw ValidationException::withMessages([
+                '_status' => 'Gagal approval peminjaman zoom!',
+            ]);
+        }
+
+        DB::beginTransaction();
+        try
+        {
+            if($have_ruang_peran && in_array($request->ruang_status, ['disetujui', 'ditolak'])){
+                $jadwal->ruang_status = $request->ruang_status;
+                $jadwal->ruang_confirm_username = Auth::user()->username;
+            }
+
+            if($jadwal->ruang_status == 'disetujui' && in_array($jadwal->zoom_status, ['langsung', 'disetujui'])){
+                $jadwal->status = 'disetujui';
+            }else{
+                $jadwal->status = 'menunggu';
+            }
+            $jadwal->save();
+            DB::commit();
+            return [
+                "_status" => 'Berhasil approval peminjaman zoom!',
+                "data" => $jadwal
+            ];
+        }catch(Exception $ex){
+            DB::rollBack();
+            Log::error($ex);
+            throw ValidationException::withMessages([
+                '_status' => 'Gagal approval peminjaman zoom!',
+            ]);
+        }
+    }
+
+    public function approval_zoom(Request $request, Jadwal $jadwal)
     {
         $validated = $request->validate([
             'zoom_status'       => 'in:disetujui,ditolak',
             'zoom_akun'         => 'in:statsulbar,sp2020',
-            'ruang_status'      => 'in:disetujui,ditolak',
         ]);
 
         $have_zoom_peran =  Peran::where('pemilik_username', Auth::user()->username)
             ->where('peran', 'zoom')
             ->first();
-        $have_ruang_peran =  Peran::where('pemilik_username', Auth::user()->username)
-            ->where('peran', 'ruang')
-            ->first();
 
-        if(! ($have_zoom_peran || $have_ruang_peran) ){
+        if(! ($have_zoom_peran) ){
             throw ValidationException::withMessages([
                 '_status' => 'Gagal approval peminjaman zoom!',
             ]);
@@ -512,11 +549,6 @@ class Jadwal_Controller extends Controller
                     $jadwal->zoom_status = $pinjam_zoom->status;
                     $jadwal->zoom_confirm_username = $pinjam_zoom->confirm_username;
                 }
-            }
-
-            if($have_ruang_peran && in_array($request->ruang_status, ['disetujui', 'ditolak'])){
-                $jadwal->ruang_status = $request->ruang_status;
-                $jadwal->ruang_confirm_username = Auth::user()->username;
             }
 
             if($jadwal->ruang_status == 'disetujui' && in_array($jadwal->zoom_status, ['langsung', 'disetujui'])){

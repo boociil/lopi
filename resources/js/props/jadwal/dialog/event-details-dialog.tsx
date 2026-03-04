@@ -44,19 +44,23 @@ interface Approval_Event {
 
 export function EventDetailsDialog({ _event, children }: Event_Details_Dialog_IProps) {
     const [event, setEvent] = useState<JadwalIEvent>(_event as JadwalIEvent)
-	const { events, settingCalender, updateEvent, removeEvent, AddEditEventDialog, canChange, canApprove, axiosClient, users, userDict } = useCalendar();
+	const { events, settingCalender, updateEvent, removeEvent, AddEditEventDialog, canChange, canApprove, axiosClient, users, userDict, havePeran } = useCalendar();
 
+    const [zoomAkun, setZoomAkun] = useState<'statsulbar' | 'sp2020' | undefined>(undefined)
     useEffect(() => {
         const itemSelect = events.find(item => item.id == _event.id);
         if(itemSelect){
-            console.log(itemSelect)
             setEvent(itemSelect as JadwalIEvent)
+            if((itemSelect as JadwalIEvent)?.jadwal_ori.zoom_pinjam){
+                setZoomAkun((itemSelect as JadwalIEvent).jadwal_ori.zoom_pinjam?.zoom_akun as 'statsulbar' | 'sp2020')
+            }
+
         }
     }, [_event, events]);
 
     const deleteEvent = (event_id: string) => {
         progressIndikator.start()
-        axiosClient.post(route("pinjam-zoom-hapus", {pinjamZoom: event_id}))
+        axiosClient.post(route("jadwal-hapus", {pinjamZoom: event_id}))
             .then(function (response) {
                 removeEvent(event_id);
                 progressIndikator.finish()
@@ -71,6 +75,52 @@ export function EventDetailsDialog({ _event, children }: Event_Details_Dialog_IP
     const onUpdateOpenChange = (event: IEvent) => {
 
     }
+
+    const approvalRuangEvent = (event_id: string, status: 'disetujui'|'ditolak') => {
+        progressIndikator.start()
+        axiosClient.post(route("jadwal-approval-ruang", {jadwal: event_id}), {status: status})
+            .then(function (response) {
+                 try {
+                    const return_data: IEvent[] = produceJadwalIEvent([response.data.data] as jadwal[]);
+                    pairIEventDenganUser(return_data as JadwalIEvent[], users  as CalenderUser[])
+                    updateEvent(return_data[0])
+
+                    progressIndikator.finish()
+                    toast.success('Berhasil mengubah data')
+                } catch (error) {
+                    console.log(error)
+                    progressIndikator.finish()
+                    toast.error('Gagal mengubah data')
+                }
+            })
+            .catch(function (error) {
+                progressIndikator.finish()
+                toast.error("Kesalahan saat menghapus "+capitalizeWords(settingCalender.name_event)+".");
+            });
+    };
+
+     const approvalZoomEvent = (event_id: string, status: 'disetujui'|'ditolak') => {
+        progressIndikator.start()
+        axiosClient.post(route("jadwal-approval-zoom", {jadwal: event_id}), {status: status, zoom_akun: zoomAkun})
+            .then(function (response) {
+                 try {
+                    const return_data: IEvent[] = produceJadwalIEvent([response.data.data] as jadwal[]);
+                    pairIEventDenganUser(return_data as JadwalIEvent[], users  as CalenderUser[])
+                    updateEvent(return_data[0])
+
+                    progressIndikator.finish()
+                    toast.success('Berhasil mengubah data')
+                } catch (error) {
+                    console.log(error)
+                    progressIndikator.finish()
+                    toast.error('Gagal mengubah data')
+                }
+            })
+            .catch(function (error) {
+                progressIndikator.finish()
+                toast.error("Kesalahan saat menghapus "+capitalizeWords(settingCalender.name_event)+".");
+            });
+    };
 
     const approvalEvent = (event_id: string, status: 'disetujui'|'ditolak') => {
         progressIndikator.start()
@@ -214,7 +264,7 @@ export function EventDetailsDialog({ _event, children }: Event_Details_Dialog_IP
                                 {event.jadwal_ori.peserta?.map((p, idx) => (
                                     <div key={idx} className="flex items-center gap-3 p-3 bg-white border border-slate-100 rounded-2xl hover:border-blue-200 transition-all group">
                                         <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-500 font-bold text-sm group-hover:bg-blue-500 group-hover:text-white transition-all">{p ? p.username.charAt(0) : '?'}</div>
-                                        <span className="text-sm font-bold text-slate-700">{userDict.get(p.username)?.name}</span>
+                                        <span className="text-sm  text-slate-700">{userDict.get(p.username)?.name}</span>
                                     </div>
                                 ))}
                             </div>
@@ -322,7 +372,7 @@ export function EventDetailsDialog({ _event, children }: Event_Details_Dialog_IP
                                 {event.jadwal_ori.peserta?.map((p, idx) => (
                                     <div key={idx} className="flex items-center gap-3 p-3 bg-white border border-slate-100 rounded-2xl hover:border-blue-200 transition-all group">
                                         <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-500 font-bold text-sm group-hover:bg-blue-500 group-hover:text-white transition-all">{p ? p.username.charAt(0) : '?'}</div>
-                                        <span className="text-sm font-bold text-slate-700">{userDict.get(p.username)?.name}</span>
+                                        <span className="text-sm  text-slate-700">{userDict.get(p.username)?.name}</span>
                                     </div>
                                 ))}
                             </div>
@@ -331,10 +381,52 @@ export function EventDetailsDialog({ _event, children }: Event_Details_Dialog_IP
 
 				</ScrollArea>
 				<div className="flex justify-end gap-2">
-                    {canApprove(event) &&
+                    {havePeran('ruang') && (
                         <AlertDialog>
                             <AlertDialogTrigger asChild>
-                                <Button variant="outline" className="text-secondary">Approval</Button>
+                                <Button
+                                    variant="outline"
+                                    className="text-secondary"
+                                >
+                                    Approval Ruang
+                                </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                                <AlertDialogHeader>
+                                    <AlertDialogTitle className="text-secondary">
+                                        Konfirmasi tindakan
+                                    </AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                        Apakah Anda menyetujui atau
+                                        menolak permintaan pemakaian ruangan?
+                                    </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                    <AlertDialogCancel className="text-secondary">
+                                        Tutup
+                                    </AlertDialogCancel>
+                                    <AlertDialogAction
+                                        onClick={() =>
+                                            approvalRuangEvent(event.id, "ditolak")
+                                        }
+                                    >
+                                        Tolak
+                                    </AlertDialogAction>
+                                    <AlertDialogAction
+                                        onClick={() =>
+                                            approvalRuangEvent(event.id, "disetujui")
+                                        }
+                                    >
+                                        Setujui
+                                    </AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
+                    )}
+                    {(havePeran('zoom') && !['tidak', 'langsung'].includes(event.jadwal_ori.zoom_status)) &&
+                        <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                                <Button variant="outline" className="text-secondary">Approval Zoom</Button>
                             </AlertDialogTrigger>
                             <AlertDialogContent>
                                 <AlertDialogHeader>
@@ -353,17 +445,17 @@ export function EventDetailsDialog({ _event, children }: Event_Details_Dialog_IP
                                     <Select
                                         name="tipe"
                                         required
-                                        // value={approval}
-                                        // onValueChange={(value) => {
-                                        //     console.log(value)
-                                        //     setApproval(value as 'statsulbar' | 'sp2020' | undefined)
-                                        // }}
+                                        value={zoomAkun}
+                                        onValueChange={(value) => {
+                                            console.log(value)
+                                            setZoomAkun(value as 'statsulbar' | 'sp2020' | undefined)
+                                        }}
                                     >
                                         <SelectTrigger
                                             name="zoom_status"
                                             className="text-secondary"
                                         >
-                                            <SelectValue placeholder="Pilih Tipe" />
+                                            <SelectValue placeholder="Pilih Akun" />
                                         </SelectTrigger>
                                         <SelectContent>
                                             <SelectGroup>
@@ -379,8 +471,8 @@ export function EventDetailsDialog({ _event, children }: Event_Details_Dialog_IP
                                 </div>
                                 <AlertDialogFooter>
                                 <AlertDialogCancel className="text-secondary">Tutup</AlertDialogCancel>
-                                <AlertDialogAction onClick={() => approvalEvent(event.id, 'ditolak')}>Tolak</AlertDialogAction>
-                                <AlertDialogAction onClick={() => approvalEvent(event.id, 'disetujui')}>Setujui</AlertDialogAction>
+                                <AlertDialogAction onClick={() => approvalZoomEvent(event.id, 'ditolak')}>Tolak</AlertDialogAction>
+                                <AlertDialogAction onClick={() => approvalZoomEvent(event.id, 'disetujui')}>Setujui</AlertDialogAction>
                                 </AlertDialogFooter>
                             </AlertDialogContent>
                         </AlertDialog>
@@ -391,17 +483,25 @@ export function EventDetailsDialog({ _event, children }: Event_Details_Dialog_IP
                         </AddEditEventDialog>
                     }
 
-					<Button
-						variant="destructive"
-						onClick={() => {
-							deleteEvent(event.id);
-						}}
-					>
-						Hapus
-					</Button>
+
+                    {canApprove(event) &&
+                        <Button
+                            variant="destructive"
+                            onClick={() => {
+                                deleteEvent(event.id);
+                            }}
+                        >
+                            Hapus
+                        </Button>
+                    }
+                    <DialogClose asChild>
+                        <Button variant="outline">Tutup</Button>
+                    </DialogClose>
+
 				</div>
 				<DialogClose />
 			</DialogContent>
 		</Dialog>
 	);
 }
+

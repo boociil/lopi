@@ -52,7 +52,7 @@ export function JadwalCalender({
     function reload_data(selectedDate: Date, currentView: TCalendarView, setAllEventsOri: (_allEvents: IEvent[]) => void){
         toast.info('Meload data baru')
         progress.start()
-        axiosClient.post(route("pinjam-zoom-index"), {'selectedDate': selectedDate.toISOString(), view: currentView})
+        axiosClient.post(route("jadwal-index"), {'selectedDate': selectedDate.toISOString(), view: currentView})
             .then(function (response: any) {
                 try {
 
@@ -91,7 +91,7 @@ export function JadwalCalender({
 
         toast.info('Mencoba mengubah data')
         progress.start()
-        axiosClient.post(route("pinjam-zoom-ubah", { pinjamZoom: event.id }), data)
+        axiosClient.post(route("jadwal-ubah", { jadwal: event.id }), data)
             .then(function (response: any) {
                 try {
                     const return_data: IEvent[] = produceJadwalIEvent([response.data.data] as jadwal[]);

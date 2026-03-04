@@ -207,7 +207,8 @@ Route::group(
     Route::post('/tambah', [Jadwal_Controller::class, 'tambah'])->name('jadwal-tambah');
     Route::post('/{jadwal}/ubah', [Jadwal_Controller::class, 'ubah'])->name('jadwal-ubah');
     Route::post('/{jadwal}/hapus', [Jadwal_Controller::class, 'hapus'])->name('jadwal-hapus');
-    Route::post('/{jadwal}/approval', [Jadwal_Controller::class, 'approval'])->name('jadwal-approval');
+    Route::post('/{jadwal}/approval/ruang', [Jadwal_Controller::class, 'approval_ruang'])->name('jadwal-approval-ruang');
+    Route::post('/{jadwal}/approval/zoom', [Jadwal_Controller::class, 'approval_zoom'])->name('jadwal-approval-zoom');
 });
 
 Route::group(
