@@ -1,7 +1,6 @@
 "use client";
 
-import { format, parseISO } from "date-fns";
-import { AlertCircle, Calendar, Check, CheckCircle, Clock, Copy, ExternalLink, Link, Play, Text, Type, User, Video, X, XCircle } from "lucide-react";
+import { AlertCircle, Calendar, Check, CheckCircle, Clock, Copy, ExternalLink, Play, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -44,13 +43,16 @@ interface Approval_Event {
 
 export function EventDetailsDialog({ _event, children }: Event_Details_Dialog_IProps) {
     const [event, setEvent] = useState<PinjamZoomIEvent>(_event as PinjamZoomIEvent)
-	const startDate = parseISO(event.startDate);
-	const endDate = parseISO(event.endDate);
-	const { settingCalender, use24HourFormat, updateEvent, removeEvent, AddEditEventDialog, canChange, canApprove, axiosClient, users } = useCalendar();
+	const { events, updateEvent, removeEvent, AddEditEventDialog, canChange, canApprove, axiosClient, users, settingCalender } = useCalendar();
+
 
     const [approval, setApproval] = useState<'statsulbar' | 'sp2020' | undefined>(undefined)
 
     useEffect(() => {
+        const itemSelect = events.find(item => item.id == _event.id);
+        if(itemSelect){
+            setEvent(itemSelect as PinjamZoomIEvent)
+        }
         if(event){
            if(event.zoom_akun == 'statsulbar'){
                 setApproval('statsulbar')
@@ -62,7 +64,7 @@ export function EventDetailsDialog({ _event, children }: Event_Details_Dialog_IP
         }else{
             setApproval(undefined)
         }
-    }, [event]);
+    }, [event, events]);
 
     const deleteEvent = (event_id: string) => {
         progressIndikator.start()

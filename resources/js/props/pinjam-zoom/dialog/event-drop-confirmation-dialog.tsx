@@ -12,7 +12,6 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import type {IEvent} from "@/components/calender_modules/interfaces";
 import {capitalizeWords, formatTime, getColorClass} from "@/components/calender_modules/helpers";
 import {cn} from "@/lib/utils";
 import {useCalendar} from "@/components/calender_modules/contexts/calendar-context";

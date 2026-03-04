@@ -1,13 +1,8 @@
 "use client";
 
-import { format, parseISO } from "date-fns";
 import {
-    Calendar,
     CalendarDays,
-    Clock,
     History,
-    Text,
-    Type,
     User,
     UserCheck,
 } from "lucide-react";
@@ -32,7 +27,6 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { useCalendar } from "@/components/calender_modules/contexts/calendar-context";
 import {
     capitalizeWords,
@@ -60,11 +54,8 @@ export function EventDetailsDialog({
     children,
 }: Event_Details_Dialog_IProps) {
     const [event, setEvent] = useState(_event);
-    const startDate = parseISO(event.startDate);
-    const endDate = parseISO(event.endDate);
     const {
         settingCalender,
-        use24HourFormat,
         updateEvent,
         removeEvent,
         AddEditEventDialog,

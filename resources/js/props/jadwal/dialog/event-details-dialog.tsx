@@ -44,9 +44,15 @@ interface Approval_Event {
 
 export function EventDetailsDialog({ _event, children }: Event_Details_Dialog_IProps) {
     const [event, setEvent] = useState<JadwalIEvent>(_event as JadwalIEvent)
-	const startDate = parseISO(event.startDate);
-	const endDate = parseISO(event.endDate);
-	const { settingCalender, use24HourFormat, updateEvent, removeEvent, AddEditEventDialog, canChange, canApprove, axiosClient, users, userDict } = useCalendar();
+	const { events, settingCalender, updateEvent, removeEvent, AddEditEventDialog, canChange, canApprove, axiosClient, users, userDict } = useCalendar();
+
+    useEffect(() => {
+        const itemSelect = events.find(item => item.id == _event.id);
+        if(itemSelect){
+            console.log(itemSelect)
+            setEvent(itemSelect as JadwalIEvent)
+        }
+    }, [_event, events]);
 
     const deleteEvent = (event_id: string) => {
         progressIndikator.start()

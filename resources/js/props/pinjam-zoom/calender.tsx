@@ -1,7 +1,7 @@
 import { CalendarBody } from "@/components/calender_modules/calendar-body";
 import { CalendarProvider } from "@/components/calender_modules/contexts/calendar-context";
 import { DndProvider } from "@/components/calender_modules/contexts/dnd-context";
-import { pairIEventDenganUser, pinjam_zoom, pinjam_zoom_req, PinjamZoomIEvent, producePinjamZoomIEvent, producePinjamZoomIEventFromZoomApp, zoom_app } from "./types";
+import { pairIEventDenganUser, pinjam_zoom, PinjamZoomIEvent, producePinjamZoomIEvent, producePinjamZoomIEventFromZoomApp, zoom_app } from "./types";
 import { type SharedData, type User } from "@/types";
 import { CalenderUser, produceCalenderUser, SettingCalender, type IEvent, type IUser } from "@/components/calender_modules/interfaces";
 import { AddEditEventDialog } from "./dialog/add-edit-event-dialog";

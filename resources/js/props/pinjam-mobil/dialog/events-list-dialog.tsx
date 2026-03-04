@@ -1,6 +1,5 @@
 import {format} from "date-fns";
 import { id } from 'date-fns/locale';
-import type {ReactNode} from "react";
 import {
     Modal,
     ModalContent,
@@ -11,7 +10,6 @@ import {
 import {cn} from "@/lib/utils";
 import {useCalendar} from "@/components/calender_modules/contexts/calendar-context";
 import {capitalizeWords, formatTime} from "@/components/calender_modules/helpers";
-import type {IEvent} from "@/components/calender_modules/interfaces";
 import {dayCellVariants} from "@/components/calender_modules/views/month-view/day-cell";
 import {EventBullet} from "@/components/calender_modules/views/month-view/event-bullet";
 import { Event_List_Dialog_IProps } from "@/components/calender_modules/dialogs/props-dialog";

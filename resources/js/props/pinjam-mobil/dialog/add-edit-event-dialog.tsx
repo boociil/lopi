@@ -14,18 +14,9 @@ import {
     ModalTitle,
     ModalTrigger,
 } from "@/components/ui/responsive-modal";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
 import { useCalendar } from "@/components/calender_modules/contexts/calendar-context";
 import { useDisclosure } from "@/components/calender_modules/hooks";
-import { Label } from "@/components/ui/label";
 import InputError from "@/components/input-error";
-import { SelectGroup } from "@radix-ui/react-select";
 import { DatePicker22 } from "@/components/ui/date-picker";
 import {
     capitalizeWords,

@@ -15,7 +15,6 @@ import { Button } from "@/components/ui/button";
 import { useCalendar } from "@/components/calender_modules/contexts/calendar-context";
 import { Delete_Event_Dialog_IProps } from "@/components/calender_modules/dialogs/props-dialog";
 import { IEvent } from "@/components/calender_modules/interfaces";
-import { router } from "@inertiajs/react";
 import { progress as progressIndikator } from '@inertiajs/react'
 import { capitalizeWords } from "@/components/calender_modules/helpers";
 

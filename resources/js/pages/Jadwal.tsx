@@ -9,7 +9,7 @@ import * as React from "react";
 import Heading from "@/components/heading";
 
 import { JadwalCalender } from "@/props/jadwal/calender";
-import { jadwal, zoom_app_with_status } from "@/props/jadwal/types";
+import { jadwal } from "@/props/jadwal/types";
 
 
 const breadcrumbs: BreadcrumbItem[] = [
