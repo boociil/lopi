@@ -230,20 +230,14 @@ export function EventDetailsDialog({ _event, children }: Event_Details_Dialog_IP
                                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4 pt-3 border-t border-blue-200">
                                                             <a
                                                                 href={
-                                                                    event.pinjam_zoom_ori
-                                                                        ? event.pinjam_zoom_ori
-                                                                              .zoom_start_url
-                                                                            ? event.pinjam_zoom_ori
-                                                                                  .zoom_start_url
-                                                                            : "#"
+                                                                    event.start_url
+                                                                        ? event.start_url
                                                                         : "#"
                                                                 }
                                                                 target="_blank"
                                                                 rel="noopener noreferrer"
                                                                 className={`flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-bold transition-all shadow-md active:scale-95 ${
-                                                                    event.pinjam_zoom_ori &&
-                                                                    event.pinjam_zoom_ori
-                                                                        .zoom_start_url
+                                                                    event.start_url
                                                                         ? "bg-green-600 text-white hover:bg-green-700 hover:shadow-green-200"
                                                                         : "bg-slate-200 text-slate-400 cursor-not-allowed"
                                                                 }`}
@@ -257,17 +251,14 @@ export function EventDetailsDialog({ _event, children }: Event_Details_Dialog_IP
 
                                                             <a
                                                                 href={
-                                                                    event.pinjam_zoom_ori &&
-                                                                    event.pinjam_zoom_ori
-                                                                        .zoom_join_url
-                                                                        ? event.pinjam_zoom_ori
-                                                                              .zoom_join_url
+                                                                    event.join_url
+                                                                        ? event.join_url
                                                                         : "#"
                                                                 }
                                                                 target="_blank"
                                                                 rel="noopener noreferrer"
                                                                 className={`flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-bold transition-all border-2 shadow-sm active:scale-95 ${
-                                                                    event.pinjam_zoom_ori
+                                                                    event.join_url
                                                                         ? "bg-white border-blue-600 text-blue-600 hover:bg-blue-50"
                                                                         : "bg-slate-50 border-slate-200 text-slate-300 cursor-not-allowed"
                                                                 }`}
@@ -360,11 +351,11 @@ export function EventDetailsDialog({ _event, children }: Event_Details_Dialog_IP
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4 pt-3 border-t border-blue-200">
                         <a
-                        href={event.pinjam_zoom_ori? event.pinjam_zoom_ori.zoom_start_url? event.pinjam_zoom_ori.zoom_start_url : '#' : '#'}
+                        href={event.start_url? event.start_url : '#'}
                         target="_blank"
                         rel="noopener noreferrer"
                         className={`flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-bold transition-all shadow-md active:scale-95 ${
-                            (event.pinjam_zoom_ori && event.pinjam_zoom_ori.zoom_start_url)
+                            (event.start_url )
                             ? "bg-green-600 text-white hover:bg-green-700 hover:shadow-green-200"
                             : "bg-slate-200 text-slate-400 cursor-not-allowed"
                         }`}
@@ -373,11 +364,11 @@ export function EventDetailsDialog({ _event, children }: Event_Details_Dialog_IP
                         </a>
 
                         <a
-                        href={event.pinjam_zoom_ori && event.pinjam_zoom_ori.zoom_join_url ? event.pinjam_zoom_ori.zoom_join_url : '#'}
+                        href={event.join_url  ? event.join_url : '#'}
                         target="_blank"
                         rel="noopener noreferrer"
                         className={`flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-bold transition-all border-2 shadow-sm active:scale-95 ${
-                            event.pinjam_zoom_ori
+                            event.join_url
                             ? "bg-white border-blue-600 text-blue-600 hover:bg-blue-50"
                             : "bg-slate-50 border-slate-200 text-slate-300 cursor-not-allowed"
                         }`}
