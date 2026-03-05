@@ -25,15 +25,15 @@ export function UserMenuContent({ user }: UserMenuContentProps) {
                 </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuGroup>
+            {/* <DropdownMenuGroup>
                 <DropdownMenuItem asChild>
                     <Link className="block w-full" href={route('tampilan')} as="button" prefetch onClick={cleanup}>
                         <Settings className="mr-2" />
                         Tampilan
                     </Link>
                 </DropdownMenuItem>
-            </DropdownMenuGroup>
-            <DropdownMenuSeparator />
+            </DropdownMenuGroup> */}
+            {/* <DropdownMenuSeparator /> */}
             <DropdownMenuItem asChild>
                 <Link className="block w-full" href={route('logout')} as="button" onClick={handleLogout}>
                     <LogOut className="mr-2" />

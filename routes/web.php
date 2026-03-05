@@ -133,9 +133,9 @@ Route::get('tahun/{tahun}/ubah', function ($tahun) {
     redirect()->route('zoom-index');
 })->middleware('auth');
 
-Route::get('/tampilan', function () {
-    return Inertia::render('tampilan');
-})->name('tampilan')->middleware(['auth', 'check_maintenance', 'statistik']);
+// Route::get('/tampilan', function () {
+//     return Inertia::render('tampilan');
+// })->name('tampilan')->middleware(['auth', 'check_maintenance', 'statistik']);
 
 Route::group(
 [
