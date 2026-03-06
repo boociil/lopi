@@ -172,7 +172,7 @@ class Jadwal_Controller extends Controller
                     , $request->input('waktu_awal').':00', $request->input('waktu_akhir').':00'))
                 {
                     throw ValidationException::withMessages([
-                        'error_clash' => 'Sudah terdapat peminjaman di tanggal dan waktu tersebut',
+                        'error_clash_zoom' => 'Sudah terdapat peminjaman zoom di tanggal dan waktu tersebut',
                     ]);
                 }
              }else{
@@ -180,7 +180,7 @@ class Jadwal_Controller extends Controller
                     , $request->input('waktu_awal').':00', $request->input('waktu_akhir').':00'))
                 {
                     throw ValidationException::withMessages([
-                        'error_clash' => 'Sudah terdapat peminjaman di tanggal dan waktu tersebut',
+                        'error_clash_zoom' => 'Sudah terdapat peminjaman zoom di tanggal dan waktu tersebut',
                     ]);
                 }
              }
@@ -200,7 +200,7 @@ class Jadwal_Controller extends Controller
                     , $request->input('waktu_awal').':00', $request->input('waktu_akhir').':00'))
                 {
                     throw ValidationException::withMessages([
-                        'error_clash' => 'Sudah terdapat peminjaman di tanggal dan waktu tersebut',
+                        'error_clash_ruang' => 'Sudah terdapat peminjaman ruang di tanggal dan waktu tersebut',
                     ]);
                 }
              }else{
@@ -208,7 +208,7 @@ class Jadwal_Controller extends Controller
                     , $request->input('waktu_awal').':00', $request->input('waktu_akhir').':00'))
                 {
                     throw ValidationException::withMessages([
-                        'error_clash' => 'Sudah terdapat peminjaman di tanggal dan waktu tersebut',
+                        'error_clash_ruang' => 'Sudah terdapat peminjaman ruang di tanggal dan waktu tersebut',
                     ]);
                 }
              }
@@ -356,7 +356,7 @@ class Jadwal_Controller extends Controller
                     , $request->input('waktu_awal').':00', $request->input('waktu_akhir').':00'))
                 {
                     throw ValidationException::withMessages([
-                        'error_clash' => 'Sudah terdapat peminjaman di tanggal dan waktu tersebut',
+                        'error_clash_zoom' => 'Sudah terdapat peminjaman zoom di tanggal dan waktu tersebut',
                     ]);
                 }
              }else{
@@ -364,7 +364,7 @@ class Jadwal_Controller extends Controller
                     , $request->input('waktu_awal').':00', $request->input('waktu_akhir').':00'))
                 {
                     throw ValidationException::withMessages([
-                        'error_clash' => 'Sudah terdapat peminjaman di tanggal dan waktu tersebut',
+                        'error_clash_zoom' => 'Sudah terdapat peminjaman zoom di tanggal dan waktu tersebut',
                     ]);
                 }
              }
@@ -384,7 +384,7 @@ class Jadwal_Controller extends Controller
                     , $request->input('waktu_awal').':00', $request->input('waktu_akhir').':00'))
                 {
                     throw ValidationException::withMessages([
-                        'error_clash' => 'Sudah terdapat peminjaman di tanggal dan waktu tersebut',
+                        'error_clash_ruang' => 'Sudah terdapat peminjaman ruang di tanggal dan waktu tersebut',
                     ]);
                 }
              }else{
@@ -392,7 +392,7 @@ class Jadwal_Controller extends Controller
                     , $request->input('waktu_awal').':00', $request->input('waktu_akhir').':00'))
                 {
                     throw ValidationException::withMessages([
-                        'error_clash' => 'Sudah terdapat peminjaman di tanggal dan waktu tersebut',
+                        'error_clash_ruang' => 'Sudah terdapat peminjaman ruang di tanggal dan waktu tersebut',
                     ]);
                 }
              }
@@ -608,7 +608,7 @@ class Jadwal_Controller extends Controller
                     , $jadwal->waktu_awal, $jadwal->waktu_akhir))
                 {
                     throw ValidationException::withMessages([
-                        'error_clash' => 'Sudah terdapat peminjaman di tanggal dan waktu tersebut',
+                        'error_clash_ruang' => 'Sudah terdapat peminjaman zoom di tanggal dan waktu tersebut',
                     ]);
                 }
              }else{
@@ -616,7 +616,7 @@ class Jadwal_Controller extends Controller
                     , $jadwal->waktu_awal, $jadwal->waktu_akhir))
                 {
                     throw ValidationException::withMessages([
-                        'error_clash' => 'Sudah terdapat peminjaman di tanggal dan waktu tersebut',
+                       'error_clash_ruang' => 'Sudah terdapat peminjaman zoom di tanggal dan waktu tersebut',
                     ]);
                 }
              }
@@ -670,7 +670,7 @@ class Jadwal_Controller extends Controller
         if($have_zoom_peran && $request->input('zoom_status') == 'disetujui'){
            if($jadwal->zoom_pinjam->checkClash($request->input('zoom_akun'))){
                 throw ValidationException::withMessages([
-                    'error_clash' => 'Sudah terdapat peminjaman di tanggal dan waktu tersebut',
+                    'error_clash_zoom' => 'Sudah terdapat peminjaman ruang di tanggal dan waktu tersebut',
                 ]);
             }
         }

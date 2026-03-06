@@ -65,6 +65,7 @@ export interface pinjam_zoom_req {
     pembuat_username: string;
     confirm_username: string | null;
     zoom_akun: 'statsulbar' | 'sp2020' | null;
+    error_clash: string;
 }
 
 export interface PinjamZoomIEvent extends IEvent {

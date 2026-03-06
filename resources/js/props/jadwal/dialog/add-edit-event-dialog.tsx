@@ -135,6 +135,9 @@ export function AddEditEventDialog({
             zoom_akun: null,
             zoom_langsung_join_url: null,
             peserta: [],
+
+            error_clash_zoom: '',
+            error_clash_ruang: '',
         });
 
     const submit: React.FormEventHandler = (e) => {
@@ -277,6 +280,9 @@ export function AddEditEventDialog({
                 setData("ruang_status", "tidak");
                 setData("ruang", null);
             }
+
+            setData('error_clash_zoom', '');
+            setData('error_clash_ruang','');
         } else {
             setData("id", "xxxx-xxxx-xxxx");
             setData("kegiatan", "");
@@ -299,6 +305,9 @@ export function AddEditEventDialog({
             setData("zoom_status", "tidak");
             setData("zoom_password", null);
             setData("zoom_akun", null);
+
+            setData('error_clash_zoom', '');
+            setData('error_clash_ruang','');
         }
         setStep(1);
     }, [event, initialDates]);
@@ -341,6 +350,7 @@ export function AddEditEventDialog({
                                 }
                                 placeholder="Masukkan nama kegiatan"
                             />
+                            <InputError message={errors.kegiatan} />
                         </div>
                         <div>
                             <label className="block text-xs font-bold text-slate-700 mb-1">
@@ -355,9 +365,10 @@ export function AddEditEventDialog({
                                 }
                                 placeholder="Detail kegiatan..."
                             ></Textarea>
+                            <InputError message={errors.description} />
                         </div>
                         <div>
-                            <label className="block text-[10px] font-bold text-slate-700 uppercase tracking-wider mb-2">
+                            <label className="block text-xs font-bold text-slate-700 mb-1">
                                 Tipe
                             </label>
                             <div className="grid grid-cols-2 gap-3">
@@ -376,6 +387,7 @@ export function AddEditEventDialog({
                                     Berulang
                                 </button>
                             </div>
+                            <InputError message={errors.tipe} />
                         </div>
 
                         {data.tipe === "sekali" ? (
@@ -391,15 +403,10 @@ export function AddEditEventDialog({
                                             "tanggal",
                                             formatDate(value.toISOString()),
                                         );
-                                        setData(
-                                            "tanggal_awal",
-                                            formatDate(value.toISOString()),
-                                        );
                                     }}
                                     modal={true}
                                 />
                                 <InputError message={errors.tanggal} />
-                                <InputError message={errors.tanggal_awal} />
                             </div>
                         ) : (
                             <div className="grid grid-cols-2 gap-4">
@@ -412,17 +419,12 @@ export function AddEditEventDialog({
                                         value={initialDates.startDate}
                                         setValue={(value) => {
                                             setData(
-                                                "tanggal",
-                                                formatDate(value.toISOString()),
-                                            );
-                                            setData(
                                                 "tanggal_awal",
                                                 formatDate(value.toISOString()),
                                             );
                                         }}
                                         modal={true}
                                     />
-                                    <InputError message={errors.tanggal} />
                                     <InputError message={errors.tanggal_awal} />
                                 </div>
                                 <div>
@@ -440,24 +442,18 @@ export function AddEditEventDialog({
                                         }}
                                         modal={true}
                                     />
-                                    <InputError
-                                        message={errors.tanggal_akhir}
-                                    />
+                                    <InputError message={errors.tanggal_akhir}/>
                                 </div>
                             </div>
                         )}
                         <div className="grid grid-cols-2 gap-4">
                             <div>
                                 <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                                    Mulai
+                                    Waktu Mulai
                                 </label>
                                 <Time24Picker
                                     className="w-full px-4 py-2.5 rounded-xl border border-slate-200 outline-none text-sm"
-                                    value={
-                                        new Date(
-                                            `${data.tanggal}T${data.waktu_awal}`,
-                                        )
-                                    }
+                                    value={new Date(`${formatDate(initialDates.startDate)}T${data.waktu_awal}`)}
                                     setValue={(value) => {
                                         setData("waktu_awal", value);
                                     }}
@@ -467,15 +463,11 @@ export function AddEditEventDialog({
                             </div>
                             <div>
                                 <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                                    Selesai
+                                    Waktu Selesai
                                 </label>
                                 <Time24Picker
                                     className="w-full px-4 py-2.5 rounded-xl border border-slate-200 outline-none text-sm"
-                                    value={
-                                        new Date(
-                                            `${data.tanggal}T${data.waktu_akhir}`,
-                                        )
-                                    }
+                                    value={new Date(`${formatDate(initialDates.startDate)}T${data.waktu_akhir}`)}
                                     setValue={(value) => {
                                         setData("waktu_akhir", value);
                                     }}
@@ -576,6 +568,7 @@ export function AddEditEventDialog({
                                         </SelectGroup>
                                     </SelectContent>
                                 </Select>
+                                <InputError message={errors.ruang} />
                             </div>
                         )}
                     </div>
@@ -717,6 +710,7 @@ export function AddEditEventDialog({
                                                     </SelectGroup>
                                                 </SelectContent>
                                             </Select>
+                                            <InputError message={errors.zoom_akun} />
                                         </div>
                                     )}
                                 </div>
@@ -893,6 +887,8 @@ export function AddEditEventDialog({
                 <form className="flex flex-col gap-0 mt-5" onSubmit={submit}>
                     <div className="">
                         <div className="p-2">{renderStepContent()}</div>
+                        <InputError message={errors.error_clash_zoom} />
+                        <InputError message={errors.error_clash_ruang} />
                     </div>
                     <div className="">
                         <ModalFooter className="flex justify-end gap-2 m-0">

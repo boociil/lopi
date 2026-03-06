@@ -73,6 +73,8 @@ export interface jadwal_req {
     zoom_password:  null | string;
     zoom_akun: 'statsulbar' | 'sp2020' | null;
     peserta: string [],
+    error_clash_zoom: string,
+    error_clash_ruang: string,
 }
 
 export interface JadwalIEvent extends IEvent {

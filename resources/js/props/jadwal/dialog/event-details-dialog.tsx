@@ -35,12 +35,6 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
-interface Approval_Event {
-    event: JadwalIEvent;
-    zoom_akun: 'statsulbar' | 'sp2020' | null;
-    status: 'disetujui'|'ditolak' | null;
-}
-
 
 export function EventDetailsDialog({ _event, children }: Event_Details_Dialog_IProps) {
     const [event, setEvent] = useState<JadwalIEvent>(_event as JadwalIEvent)

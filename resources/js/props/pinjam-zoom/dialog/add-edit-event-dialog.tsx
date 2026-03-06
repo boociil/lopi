@@ -90,6 +90,7 @@ export function AddEditEventDialog({
         pembuat_username: '',
         confirm_username: null,
         zoom_akun: null,
+        error_clash: '',
     });
 
     const submit: React.FormEventHandler = (e) => {
@@ -190,6 +191,7 @@ export function AddEditEventDialog({
                 setData('pembuat_username', '')
                 setData('confirm_username', '')
             }
+            setData('error_clash', '')
         }else{
             setData("id", 'xxxx-xxxx-xxxx');
             setData("kegiatan", "Zoom");
@@ -204,6 +206,7 @@ export function AddEditEventDialog({
             setData("status", 'menunggu');
             setData('pembuat_username', '')
             setData('confirm_username', '')
+            setData('error_clash', '')
         }
 	}, [event, initialDates]);
 
@@ -240,6 +243,7 @@ export function AddEditEventDialog({
                                 setData("kegiatan", e.target.value)
                             }
                         ></textarea>
+                        <InputError message={errors.kegiatan} />
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -256,6 +260,7 @@ export function AddEditEventDialog({
                                 setData("password", e.target.value)
                             }
                             />
+                            <InputError message={errors.password} />
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-slate-700 mb-1">Tipe Peminjaman</label>
@@ -284,6 +289,7 @@ export function AddEditEventDialog({
                                     </SelectGroup>
                                 </SelectContent>
                             </Select>
+                            <InputError message={errors.tipe} />
                         </div>
                         </div>
                     </div>
@@ -300,13 +306,10 @@ export function AddEditEventDialog({
                                 value={initialDates.startDate}
                                 setValue={(value) => {
                                     setData("tanggal", formatDate(value.toISOString()));
-                                    setData("tanggal_awal", formatDate(value.toISOString()));
-                                    setData("tanggal_akhir", formatDate(value.toISOString()));
                                 }}
                                 modal={true}
                             />
                             <InputError message={errors.tanggal} />
-                            <InputError message={errors.tanggal_awal} />
                         </div>
                         ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -316,7 +319,6 @@ export function AddEditEventDialog({
                                     className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
                                     value={initialDates.startDate}
                                     setValue={(value) => {
-                                        setData("tanggal", formatDate(value.toISOString()));
                                         setData("tanggal_awal", formatDate(value.toISOString()));
 
                                     }}
@@ -334,7 +336,7 @@ export function AddEditEventDialog({
                                     }}
                                     modal={true}
                                 />
-                                <InputError message={errors.tanggal_awal} />
+                                <InputError message={errors.tanggal_akhir} />
                             </div>
                         </div>
                         )}
@@ -342,10 +344,10 @@ export function AddEditEventDialog({
                         <div className="grid grid-cols-2 gap-4">
                             <div>
                                 <label className="block text-sm font-medium text-slate-700 mb-1 flex items-center gap-1">
-                                <Clock size={14} /> Jam Mulai
+                                <Clock size={14} /> Waktu Mulai
                                 </label>
                                 <Time24Picker className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
-                                    value={new Date(`${data.tanggal}T${data.waktu_awal}`)}
+                                    value={new Date(`${formatDate(initialDates.startDate)}T${data.waktu_awal}`)}
                                     setValue={(value) => {
                                         setData("waktu_awal", value);
                                     }}
@@ -355,10 +357,10 @@ export function AddEditEventDialog({
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-slate-700 mb-1 flex items-center gap-1">
-                                <Clock size={14} /> Jam Selesai
+                                <Clock size={14} /> Waktu Selesai
                                 </label>
                                 <Time24Picker className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
-                                    value={new Date(`${data.tanggal}T${data.waktu_akhir}`)}
+                                    value={new Date(`${formatDate(initialDates.startDate)}T${data.waktu_akhir}`)}
                                     setValue={(value) => {
                                         setData("waktu_akhir", value);
                                     }}
@@ -367,7 +369,7 @@ export function AddEditEventDialog({
                                 <InputError message={errors.waktu_akhir} />
                             </div>
                         </div>
-                         {havePeran('zoom') &&
+                        {havePeran('zoom') &&
                             <div className="grid gap-3">
                                 <Label
                                     className="block text-sm font-medium text-slate-700 mb-1 flex items-center gap-1"
@@ -400,12 +402,11 @@ export function AddEditEventDialog({
                                         </SelectGroup>
                                     </SelectContent>
                                 </Select>
+                                <InputError message={errors.zoom_akun} />
                             </div>
                         }
+                        <InputError message={errors.error_clash} />
                     </div>
-
-
-
 
 
                     <ModalFooter className="flex justify-end gap-2">

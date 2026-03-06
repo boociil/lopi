@@ -80,7 +80,7 @@ export function AddEditEventDialog({
         status: 'menunggu',
         pembuat_username: '',
         confirm_username: null,
-        error_clash: '-',
+        error_clash: '',
     });
 
     const submit: React.FormEventHandler = (e) => {
@@ -172,7 +172,7 @@ export function AddEditEventDialog({
             setData("status", event_.pinjam_mobil_ori.status);
             setData('pembuat_username', event_.pinjam_mobil_ori.pembuat_username)
             setData('confirm_username', event_.pinjam_mobil_ori.confirm_username)
-            setData('error_clash', '-')
+            setData('error_clash', '')
         }else{
             setData("id", 'xxxx-xxxx-xxxx');
             setData("kegiatan", "Peminjaman Mobil");
@@ -185,7 +185,7 @@ export function AddEditEventDialog({
             setData("status", 'menunggu');
             setData('pembuat_username', '')
             setData('confirm_username', '')
-            setData('error_clash', '-')
+            setData('error_clash', '')
 
             console.log(data)
         }
@@ -252,7 +252,6 @@ export function AddEditEventDialog({
                             modal={true}
                         />
                         <InputError message={errors.tanggal} />
-                        <InputError message={errors.tanggal_awal} />
                     </div>
                     ) : (
                         <div className="grid grid-cols-2 gap-4">
@@ -265,7 +264,6 @@ export function AddEditEventDialog({
                                     }}
                                     modal={true}
                                 />
-                                <InputError message={errors.tanggal} />
                                 <InputError message={errors.tanggal_awal} />
                             </div>
                             <div>
@@ -284,9 +282,9 @@ export function AddEditEventDialog({
 
                     <div className="grid grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-xs font-bold text-slate-700 mb-1.5">Mulai</label>
+                            <label className="block text-xs font-bold text-slate-700 mb-1.5">Waktu Mulai</label>
                             <Time24Picker className="w-full px-4 py-2.5 rounded-xl border border-slate-200 outline-none text-sm"
-                                value={new Date(`${data.tanggal}T${data.waktu_awal}`)}
+                                value={new Date(`${formatDate(initialDates.startDate)}T${data.waktu_awal}`)}
                                 setValue={(value) => {
                                     setData("waktu_awal", value);
                                 }}
@@ -295,9 +293,9 @@ export function AddEditEventDialog({
                             <InputError message={errors.waktu_awal} />
                         </div>
                         <div>
-                            <label className="block text-xs font-bold text-slate-700 mb-1.5">Selesai</label>
+                            <label className="block text-xs font-bold text-slate-700 mb-1.5">Waktu Selesai</label>
                             <Time24Picker className="w-full px-4 py-2.5 rounded-xl border border-slate-200 outline-none text-sm"
-                                value={new Date(`${data.tanggal}T${data.waktu_akhir}`)}
+                                value={new Date(`${formatDate(initialDates.startDate)}T${data.waktu_akhir}`)}
                                 setValue={(value) => {
                                     setData("waktu_akhir", value);
                                 }}
