@@ -305,6 +305,7 @@ export function AddEditEventDialog({
             setData("zoom_status", "tidak");
             setData("zoom_password", null);
             setData("zoom_akun", null);
+            setData("peserta", []);
 
             setData('error_clash_zoom', '');
             setData('error_clash_ruang','');
@@ -538,7 +539,7 @@ export function AddEditEventDialog({
                         {(data.ruang_status === "menunggu" ||
                             data.ruang_status === "disetujui") && (
                             <div className="animate-in slide-in-from-top-2">
-                                <label className="block text-sm font-bold text-slate-700 mb-1">
+                                <label className="block text-xs font-bold text-slate-700 mb-1.5">
                                     Pilih Ruangan
                                 </label>
                                 <Select
@@ -635,7 +636,7 @@ export function AddEditEventDialog({
                         </div>
                         {data.zoom_status === "langsung" && (
                             <div className="animate-in slide-in-from-top-2">
-                                <label className="block text-sm font-bold text-slate-700 mb-1">
+                                <label className="block text-xs font-bold text-slate-700 mb-1.5">
                                     Link Zoom Meeting
                                 </label>
                                 <input
@@ -656,7 +657,7 @@ export function AddEditEventDialog({
                             <>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
-                                        <label className="block text-sm font-medium text-slate-700 mb-1">
+                                        <label className="block text-xs font-bold text-slate-700 mb-1.5">
                                             Password Meeting
                                         </label>
                                         <input
@@ -676,7 +677,7 @@ export function AddEditEventDialog({
                                     </div>
                                     {havePeran("zoom") && (
                                         <div>
-                                            <label className="block text-sm font-medium text-slate-700 mb-1">
+                                            <label className="block text-xs font-bold text-slate-700 mb-1.5">
                                                 Zoom Akun
                                             </label>
                                             <Select
@@ -761,13 +762,16 @@ export function AddEditEventDialog({
                                                             onSelect={(
                                                                 currentValue,
                                                             ) => {
-                                                                setData(
-                                                                    "peserta",
-                                                                    [
-                                                                        ...data.peserta,
-                                                                        currentValue,
-                                                                    ],
-                                                                );
+                                                                if(!data.peserta.includes(currentValue)){
+                                                                    setData(
+                                                                        "peserta",
+                                                                        [
+                                                                            ...data.peserta,
+                                                                            currentValue,
+                                                                        ],
+                                                                    );
+                                                                }
+
                                                                 // setData("username", currentValue === data.username ? "" : currentValue)
                                                                 setOpenPengguna(
                                                                     false,

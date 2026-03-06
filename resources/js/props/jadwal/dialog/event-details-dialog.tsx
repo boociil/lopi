@@ -1,16 +1,27 @@
 "use client";
 
 import { parseISO } from "date-fns";
-import { Calendar, CheckCircle, Clock, ClockIcon, LogIn, MapPin, PlayCircle, Users, Video, XCircle } from "lucide-react";
+import {
+    Calendar,
+    CheckCircle,
+    Clock,
+    ClockIcon,
+    LogIn,
+    MapPin,
+    PlayCircle,
+    Users,
+    Video,
+    XCircle,
+} from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
-	Dialog,
-	DialogClose,
-	DialogContent,
-	DialogHeader,
-	DialogTitle,
-	DialogTrigger,
+    Dialog,
+    DialogClose,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
 } from "@/components/ui/dialog";
 import {
     AlertDialog,
@@ -22,360 +33,670 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
     AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
+} from "@/components/ui/alert-dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useCalendar } from "@/components/calender_modules/contexts/calendar-context";
-import { capitalizeWords, formatDate, formatTime } from "@/components/calender_modules/helpers";
+import {
+    capitalizeWords,
+    formatDate,
+    formatTime,
+} from "@/components/calender_modules/helpers";
 import { Event_Details_Dialog_IProps } from "@/components/calender_modules/dialogs/props-dialog";
-import { progress as progressIndikator } from '@inertiajs/react'
+import { progress as progressIndikator } from "@inertiajs/react";
 import { CalenderUser, IEvent } from "@/components/calender_modules/interfaces";
-import { pairIEventDenganUser, jadwal, JadwalIEvent, produceJadwalIEvent } from "../types";
+import {
+    pairIEventDenganUser,
+    jadwal,
+    JadwalIEvent,
+    produceJadwalIEvent,
+} from "../types";
 import { useEffect, useState } from "react";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+    Select,
+    SelectContent,
+    SelectGroup,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipTrigger,
+} from "@/components/ui/tooltip";
 
+export function EventDetailsDialog({
+    _event,
+    children,
+}: Event_Details_Dialog_IProps) {
+    const [event, setEvent] = useState<JadwalIEvent>(_event as JadwalIEvent);
+    const {
+        events,
+        settingCalender,
+        updateEvent,
+        removeEvent,
+        AddEditEventDialog,
+        canChange,
+        canApprove,
+        axiosClient,
+        users,
+        userDict,
+        havePeran,
+    } = useCalendar();
 
-export function EventDetailsDialog({ _event, children }: Event_Details_Dialog_IProps) {
-    const [event, setEvent] = useState<JadwalIEvent>(_event as JadwalIEvent)
-	const { events, settingCalender, updateEvent, removeEvent, AddEditEventDialog, canChange, canApprove, axiosClient, users, userDict, havePeran } = useCalendar();
-
-    const [zoomAkun, setZoomAkun] = useState<'statsulbar' | 'sp2020' | undefined>(undefined)
+    const [zoomAkun, setZoomAkun] = useState<
+        "statsulbar" | "sp2020" | undefined
+    >(undefined);
     useEffect(() => {
-        const itemSelect = events.find(item => item.id == _event.id);
-        if(itemSelect){
-            setEvent(itemSelect as JadwalIEvent)
-            if((itemSelect as JadwalIEvent)?.jadwal_ori.zoom_pinjam){
-                setZoomAkun((itemSelect as JadwalIEvent).jadwal_ori.zoom_pinjam?.zoom_akun as 'statsulbar' | 'sp2020')
+        const itemSelect = events.find((item) => item.id == _event.id);
+        if (itemSelect) {
+            setEvent(itemSelect as JadwalIEvent);
+            if ((itemSelect as JadwalIEvent)?.jadwal_ori.zoom_pinjam) {
+                setZoomAkun(
+                    (itemSelect as JadwalIEvent).jadwal_ori.zoom_pinjam
+                        ?.zoom_akun as "statsulbar" | "sp2020",
+                );
             }
-
         }
     }, [_event, events]);
 
     const deleteEvent = (event_id: string) => {
-        progressIndikator.start()
-        axiosClient.post(route("jadwal-hapus", {jadwal: event_id}))
+        progressIndikator.start();
+        axiosClient
+            .post(route("jadwal-hapus", { jadwal: event_id }))
             .then(function (response) {
                 removeEvent(event_id);
-                progressIndikator.finish()
-                toast.success(capitalizeWords(settingCalender.name_event)+" telah dihapus dengan sukses.");
+                progressIndikator.finish();
+                toast.success(
+                    capitalizeWords(settingCalender.name_event) +
+                        " telah dihapus dengan sukses.",
+                );
             })
             .catch(function (error) {
-                progressIndikator.finish()
-                toast.error("Kesalahan saat menghapus "+capitalizeWords(settingCalender.name_event)+".");
+                progressIndikator.finish();
+                toast.error(
+                    "Kesalahan saat menghapus " +
+                        capitalizeWords(settingCalender.name_event) +
+                        ".",
+                );
             });
     };
 
-    const onUpdateOpenChange = (event: IEvent) => {
+    const onUpdateOpenChange = (event: IEvent) => {};
 
-    }
-
-    const approvalRuangEvent = (event_id: string, status: 'disetujui'|'ditolak') => {
-        progressIndikator.start()
-        axiosClient.post(route("jadwal-approval-ruang", {jadwal: event_id}), {status: status})
+    const approvalRuangEvent = (
+        event_id: string,
+        status: "disetujui" | "ditolak",
+    ) => {
+        progressIndikator.start();
+        axiosClient
+            .post(route("jadwal-approval-ruang", { jadwal: event_id }), {
+                status: status,
+            })
             .then(function (response) {
-                 try {
-                    const return_data: IEvent[] = produceJadwalIEvent([response.data.data] as jadwal[]);
-                    pairIEventDenganUser(return_data as JadwalIEvent[], users  as CalenderUser[])
-                    updateEvent(return_data[0])
+                try {
+                    const return_data: IEvent[] = produceJadwalIEvent([
+                        response.data.data,
+                    ] as jadwal[]);
+                    pairIEventDenganUser(
+                        return_data as JadwalIEvent[],
+                        users as CalenderUser[],
+                    );
+                    updateEvent(return_data[0]);
 
-                    progressIndikator.finish()
-                    toast.success('Berhasil mengubah data')
+                    progressIndikator.finish();
+                    toast.success("Berhasil mengubah data");
                 } catch (error) {
-                    console.log(error)
-                    progressIndikator.finish()
-                    toast.error('Gagal mengubah data')
+                    console.log(error);
+                    progressIndikator.finish();
+                    toast.error("Gagal mengubah data");
                 }
             })
             .catch(function (error) {
-                progressIndikator.finish()
-                toast.error("Kesalahan saat menghapus "+capitalizeWords(settingCalender.name_event)+".");
+                progressIndikator.finish();
+                toast.error(
+                    "Kesalahan saat menghapus " +
+                        capitalizeWords(settingCalender.name_event) +
+                        ".",
+                );
             });
     };
 
-     const approvalZoomEvent = (event_id: string, status: 'disetujui'|'ditolak') => {
-        progressIndikator.start()
-        axiosClient.post(route("jadwal-approval-zoom", {jadwal: event_id}), {status: status, zoom_akun: zoomAkun})
+    const approvalZoomEvent = (
+        event_id: string,
+        status: "disetujui" | "ditolak",
+    ) => {
+        progressIndikator.start();
+        axiosClient
+            .post(route("jadwal-approval-zoom", { jadwal: event_id }), {
+                status: status,
+                zoom_akun: zoomAkun,
+            })
             .then(function (response) {
-                 try {
-                    const return_data: IEvent[] = produceJadwalIEvent([response.data.data] as jadwal[]);
-                    pairIEventDenganUser(return_data as JadwalIEvent[], users  as CalenderUser[])
-                    updateEvent(return_data[0])
+                try {
+                    const return_data: IEvent[] = produceJadwalIEvent([
+                        response.data.data,
+                    ] as jadwal[]);
+                    pairIEventDenganUser(
+                        return_data as JadwalIEvent[],
+                        users as CalenderUser[],
+                    );
+                    updateEvent(return_data[0]);
 
-                    progressIndikator.finish()
-                    toast.success('Berhasil mengubah data')
+                    progressIndikator.finish();
+                    toast.success("Berhasil mengubah data");
                 } catch (error) {
-                    console.log(error)
-                    progressIndikator.finish()
-                    toast.error('Gagal mengubah data')
+                    console.log(error);
+                    progressIndikator.finish();
+                    toast.error("Gagal mengubah data");
                 }
             })
             .catch(function (error) {
-                progressIndikator.finish()
-                toast.error("Kesalahan saat menghapus "+capitalizeWords(settingCalender.name_event)+".");
+                progressIndikator.finish();
+                toast.error(
+                    "Kesalahan saat menghapus " +
+                        capitalizeWords(settingCalender.name_event) +
+                        ".",
+                );
             });
     };
 
-    const approvalEvent = (event_id: string, status: 'disetujui'|'ditolak') => {
-        progressIndikator.start()
-        axiosClient.post(route("pinjam-zoom-approval", {jadwal: event_id}), {status: status, zoom_akun: ""})
+    const approvalEvent = (
+        event_id: string,
+        status: "disetujui" | "ditolak",
+    ) => {
+        progressIndikator.start();
+        axiosClient
+            .post(route("pinjam-zoom-approval", { jadwal: event_id }), {
+                status: status,
+                zoom_akun: "",
+            })
             .then(function (response) {
-                 try {
-                    const return_data: IEvent[] = produceJadwalIEvent([response.data.data] as jadwal[]);
-                    pairIEventDenganUser(return_data as JadwalIEvent[], users  as CalenderUser[])
-                    updateEvent(return_data[0])
+                try {
+                    const return_data: IEvent[] = produceJadwalIEvent([
+                        response.data.data,
+                    ] as jadwal[]);
+                    pairIEventDenganUser(
+                        return_data as JadwalIEvent[],
+                        users as CalenderUser[],
+                    );
+                    updateEvent(return_data[0]);
 
-                    progressIndikator.finish()
-                    toast.success('Berhasil mengubah data')
+                    progressIndikator.finish();
+                    toast.success("Berhasil mengubah data");
                 } catch (error) {
-                    console.log(error)
-                    progressIndikator.finish()
-                    toast.error('Gagal mengubah data')
+                    console.log(error);
+                    progressIndikator.finish();
+                    toast.error("Gagal mengubah data");
                 }
             })
             .catch(function (error) {
-                progressIndikator.finish()
-                toast.error("Kesalahan saat menghapus "+capitalizeWords(settingCalender.name_event)+".");
+                progressIndikator.finish();
+                toast.error(
+                    "Kesalahan saat menghapus " +
+                        capitalizeWords(settingCalender.name_event) +
+                        ".",
+                );
             });
     };
 
-      const StatusBadge = ({ status }: {status : "menunggu"|"disetujui"|"ditolak"|"langsung"}) => {
+    const StatusBadge = ({
+        status,
+    }: {
+        status: "menunggu" | "disetujui" | "ditolak" | "langsung";
+    }) => {
         const config = {
-            menunggu: { color: 'bg-yellow-100 text-yellow-800 border-yellow-200', icon: <ClockIcon size={12} /> },
-            disetujui: { color: 'bg-green-100 text-green-800 border-green-200', icon: <CheckCircle size={12} /> },
-            ditolak: { color: 'bg-red-100 text-red-800 border-red-200', icon: <XCircle size={12} /> },
-            langsung: { color: 'bg-blue-100 text-blue-800 border-blue-200', icon: <Video size={12} /> }
+            menunggu: {
+                color: "bg-yellow-100 text-yellow-800 border-yellow-200",
+                icon: <ClockIcon size={12} />,
+            },
+            disetujui: {
+                color: "bg-green-100 text-green-800 border-green-200",
+                icon: <CheckCircle size={12} />,
+            },
+            ditolak: {
+                color: "bg-red-100 text-red-800 border-red-200",
+                icon: <XCircle size={12} />,
+            },
+            langsung: {
+                color: "bg-blue-100 text-blue-800 border-blue-200",
+                icon: <Video size={12} />,
+            },
         };
         const item = config[status] || config.menunggu;
         return (
-        <span className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black border ${item.color}`}>
-            {item.icon}
-            {status.toUpperCase()}
-        </span>
+            <span
+                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black border ${item.color}`}
+            >
+                {item.icon}
+                {status.toUpperCase()}
+            </span>
         );
     };
 
-
-	return (
+    return (
         <Dialog>
             <Tooltip>
                 <TooltipTrigger asChild>
                     <DialogTrigger asChild>{children}</DialogTrigger>
                 </TooltipTrigger>
                 <TooltipContent className="bg-background p-1 m-1 shadow-2xl rounded-2xl">
-
-                    <div className="max-h-[40vh] overflow-auto">
-                        <DialogTitle className="text-secondary p-2 text-lg px-4">{event.title}</DialogTitle>
-					<div className="space-y-4 p-2">
-                        <div className="grid grid-cols-2 gap-2">
-                            <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 relative overflow-hidden">
-                                <div className="flex justify-between items-start mb-2">
-                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Jadwal</p>
-                                </div>
-                                <div className="flex items-center gap-3"><Calendar className="text-blue-600" size={18} />
-                                    <span className="text-sm font-bold text-slate-700">
-                                        {event._startDate == event._endDate ? formatDate(event.startDate) : <>{formatDate(event.startDate)}-{formatDate(event.endDate)}</>}
-                                    </span>
-                                </div>
-                                <div className="flex items-center gap-3 mt-1"><Clock className="text-blue-600" size={18} /><span className="text-sm font-bold text-slate-700">{formatTime(event.startDate,true)} - {formatTime(event.endDate,true)}</span></div>
-                            </div>
-
-                            <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
-                                <div className="flex justify-between items-start mb-2">
-                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Lokasi Utama</p>
-                                    { event.jadwal_ori.ruang_status !== 'tidak' && <StatusBadge status={event.jadwal_ori.ruang_status || 'menunggu'} />}
-                                </div>
-                                <div className="flex items-center gap-3">
-                                <MapPin className={`${ event.jadwal_ori.ruang_status !== 'tidak' ? 'text-amber-600' : 'text-slate-400'}`} size={18} />
-                                <span className="text-sm font-bold text-slate-700">{ event.jadwal_ori.ruang_status !== 'tidak' ? capitalizeWords(event.jadwal_ori.ruang as string) : 'Hanya Online'}</span>
-                                </div>
-                                {!( event.jadwal_ori.ruang_status !== 'tidak') && <p className="text-[10px] text-slate-400 mt-1 font-bold italic">*Tidak menggunakan fasilitas gedung</p>}
-                            </div>
-                            </div>
-
-                            {(event.jadwal_ori.zoom_status !== 'tidak') && (
-                            <div className="p-4 bg-blue-50/50 border-2 border-dashed border-blue-200 rounded-[2rem]">
-                                <div className="flex items-center justify-between mb-5">
-                                <div className="flex items-center gap-4">
-                                    <div className="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center text-white shadow-lg"><Video size={24} /></div>
-                                    <div>
-                                    <h4 className="font-black text-blue-900 leading-none">Akses Zoom Meeting</h4>
-                                    </div>
-                                </div>
-                                <StatusBadge status={event.jadwal_ori.zoom_status || 'langsung'} />
-                                </div>
-                                <div className="grid grid-cols-2 gap-3">
-                                   <a
-                                        href={event.jadwal_ori.zoom_pinjam?.zoom_start_url ?? "#"}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        aria-disabled={!event.jadwal_ori.zoom_pinjam?.zoom_start_url}
-                                        className={`flex items-center justify-center gap-2 py-2 rounded-lg text-xs font-black transition-all shadow-xl shadow-blue-100
-                                            ${event.jadwal_ori.zoom_pinjam?.zoom_start_url
-                                            ? "bg-blue-600 hover:bg-blue-700 text-white"
-                                            : "bg-gray-400 cursor-not-allowed text-white"
-                                            }`}
-                                        onClick={(e) => {
-                                            if (!event.jadwal_ori.zoom_pinjam?.zoom_start_url) e.preventDefault();
-                                        }}
-                                        >
-                                        <PlayCircle size={18} />
-                                        START ZOOM
-                                    </a>
-
-                                    <a
-                                        href={(event.jadwal_ori.zoom_pinjam?.zoom_join_url ||
-                                            event.jadwal_ori.zoom_langsung_join_url) ?? "#"}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        aria-disabled={!(event.jadwal_ori.zoom_pinjam?.zoom_join_url ||
-                                            event.jadwal_ori.zoom_langsung_join_url)}
-                                        onClick={(e) => {
-                                            if (!(event.jadwal_ori.zoom_pinjam?.zoom_join_url ||
-                                                event.jadwal_ori.zoom_langsung_join_url)) e.preventDefault();
-                                        }}
-                                        className={`flex items-center justify-center gap-2 py-2 rounded-lg text-xs font-black transition-all border-2
-                                            ${
-                                            (event.jadwal_ori.zoom_pinjam?.zoom_join_url ||
-                                                event.jadwal_ori.zoom_langsung_join_url)
-                                                ? "bg-white text-blue-600 border-blue-600 hover:bg-blue-50"
-                                                : "bg-gray-100 text-gray-400 border-gray-300 cursor-not-allowed"
-                                            }`}
-                                        >
-                                        <LogIn size={18} />
-                                        JOIN ZOOM
-                                    </a>
-                                </div>
-                            </div>
-                            )}
-
-                            <div>
-                            <div className="flex items-center justify-between mb-4">
-                                <h4 className="text-sm font-black text-slate-800 flex items-center gap-2"><Users size={18} className="text-slate-400" /> DAFTAR PESERTA</h4>
-                                <span className="px-3 py-1 bg-slate-100 text-slate-600 rounded-full text-[10px] font-black">{event.jadwal_ori.peserta?.length || 0} ORANG</span>
-                            </div>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                {event.jadwal_ori.peserta?.map((p, idx) => (
-                                    <div key={idx} className="flex items-center gap-3 p-3 bg-white border border-slate-100 rounded-2xl hover:border-blue-200 transition-all group">
-                                        <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-500 font-bold text-sm group-hover:bg-blue-500 group-hover:text-white transition-all">{p ? p.username.charAt(0) : '?'}</div>
-                                        <span className="text-sm  text-slate-700">{userDict.get(p.username)?.name}</span>
-                                    </div>
-                                ))}
+                    <div className="max-h-[40vh] overflow-auto p-2">
+                        <div>
+                            <div className="text-secondary flex-1 mb-1">
+                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">
+                                    Nama Kegiatan
+                                </label>
+                                <h2 className="font-bold text-lg text-slate-800 leading-tight">
+                                    {event.title}
+                                </h2>
                             </div>
                         </div>
-                    </div>
+                        <div className="space-y-4 py-0">
+                            <div className="grid grid-cols-2 gap-2">
+                                <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 relative overflow-hidden">
+                                    <div className="flex justify-between items-start mb-2">
+                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">
+                                            Jadwal
+                                        </p>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <Calendar
+                                            className="text-blue-600"
+                                            size={18}
+                                        />
+                                        <span className="flex items-start gap-1.5 bg-slate-50  rounded-xl border border-slate-100 w-fit text-sm text-slate-700 font-medium">
+                                            {event._startDate ==
+                                            event._endDate ? (
+                                                formatDate(event.startDate)
+                                            ) : (
+                                                <>
+                                                    {formatDate(
+                                                        event.startDate,
+                                                    )}
+                                                    -{formatDate(event.endDate)}
+                                                </>
+                                            )}
+                                        </span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <Clock
+                                            className="text-blue-600"
+                                            size={18}
+                                        />
+                                        <span className="flex items-start gap-1.5 bg-slate-50  rounded-xl border border-slate-100 w-fit text-sm text-slate-700 font-medium">
+                                            {formatTime(event.startDate, true)}{" "}
+                                            - {formatTime(event.endDate, true)}
+                                        </span>
+                                    </div>
+                                </div>
 
-				</div>`
+                                <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
+                                    <div className="flex justify-between items-start mb-2">
+                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">
+                                            Lokasi Utama
+                                        </p>
+                                        {event.jadwal_ori.ruang_status !==
+                                            "tidak" && (
+                                            <StatusBadge
+                                                status={
+                                                    event.jadwal_ori
+                                                        .ruang_status ||
+                                                    "menunggu"
+                                                }
+                                            />
+                                        )}
+                                    </div>
+                                    <div className="flex items-center gap-3">
+                                        <MapPin
+                                            className={`${event.jadwal_ori.ruang_status !== "tidak" ? "text-amber-600" : "text-slate-400"}`}
+                                            size={18}
+                                        />
+                                        <span className="flex items-start gap-1.5 bg-slate-50  rounded-xl border border-slate-100 w-fit text-sm text-slate-700 font-medium">
+                                            {event.jadwal_ori.ruang_status !==
+                                            "tidak"
+                                                ? capitalizeWords(
+                                                      event.jadwal_ori
+                                                          .ruang as string,
+                                                  )
+                                                : "Hanya Online"}
+                                        </span>
+                                    </div>
+                                    {!(
+                                        event.jadwal_ori.ruang_status !==
+                                        "tidak"
+                                    ) && (
+                                        <p className="flex items-start gap-1.5 bg-slate-50  rounded-xl border border-slate-100 w-fit text-sm text-slate-700 font-medium italic">
+                                            *Tidak menggunakan fasilitas gedung
+                                        </p>
+                                    )}
+                                </div>
+                            </div>
+
+                            {event.jadwal_ori.zoom_status !== "tidak" && (
+                                <div className="p-4 bg-blue-50/50 border-2 border-dashed border-blue-200 rounded-[2rem]">
+                                    <div className="flex items-center justify-between mb-2">
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center text-white shadow-lg">
+                                                <Video size={16} />
+                                            </div>
+                                            <div>
+                                                <h4 className="font-black text-blue-900 leading-none">
+                                                    Akses Zoom Meeting
+                                                </h4>
+                                            </div>
+                                        </div>
+                                        <StatusBadge
+                                            status={
+                                                event.jadwal_ori.zoom_status ||
+                                                "langsung"
+                                            }
+                                        />
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <a
+                                            href={
+                                                event.jadwal_ori.zoom_pinjam
+                                                    ?.zoom_start_url ?? "#"
+                                            }
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            aria-disabled={
+                                                !event.jadwal_ori.zoom_pinjam
+                                                    ?.zoom_start_url
+                                            }
+                                            className={`flex items-center justify-center gap-2 py-2 rounded-lg text-xs font-black transition-all shadow-xl shadow-blue-100
+                                            ${
+                                                event.jadwal_ori.zoom_pinjam
+                                                    ?.zoom_start_url
+                                                    ? "bg-blue-600 hover:bg-blue-700 text-white"
+                                                    : "bg-gray-400 cursor-not-allowed text-white"
+                                            }`}
+                                            onClick={(e) => {
+                                                if (
+                                                    !event.jadwal_ori
+                                                        .zoom_pinjam
+                                                        ?.zoom_start_url
+                                                )
+                                                    e.preventDefault();
+                                            }}
+                                        >
+                                            <PlayCircle size={18} />
+                                            START ZOOM
+                                        </a>
+
+                                        <a
+                                            href={
+                                                (event.jadwal_ori.zoom_pinjam
+                                                    ?.zoom_join_url ||
+                                                    event.jadwal_ori
+                                                        .zoom_langsung_join_url) ??
+                                                "#"
+                                            }
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            aria-disabled={
+                                                !(
+                                                    event.jadwal_ori.zoom_pinjam
+                                                        ?.zoom_join_url ||
+                                                    event.jadwal_ori
+                                                        .zoom_langsung_join_url
+                                                )
+                                            }
+                                            onClick={(e) => {
+                                                if (
+                                                    !(
+                                                        event.jadwal_ori
+                                                            .zoom_pinjam
+                                                            ?.zoom_join_url ||
+                                                        event.jadwal_ori
+                                                            .zoom_langsung_join_url
+                                                    )
+                                                )
+                                                    e.preventDefault();
+                                            }}
+                                            className={`flex items-center justify-center gap-2 py-2 rounded-lg text-xs font-black transition-all border-2
+                                            ${
+                                                event.jadwal_ori.zoom_pinjam
+                                                    ?.zoom_join_url ||
+                                                event.jadwal_ori
+                                                    .zoom_langsung_join_url
+                                                    ? "bg-white text-blue-600 border-blue-600 hover:bg-blue-50"
+                                                    : "bg-gray-100 text-gray-400 border-gray-300 cursor-not-allowed"
+                                            }`}
+                                        >
+                                            <LogIn size={18} />
+                                            JOIN ZOOM
+                                        </a>
+                                    </div>
+                                </div>
+                            )}
+
+                            <div></div>
+                        </div>
+                    </div>
+                    `
                 </TooltipContent>
             </Tooltip>
-			<DialogContent>
-				<DialogHeader>
-					<DialogTitle className="text-secondary ">{event.title}</DialogTitle>
-				</DialogHeader>
+            <DialogContent>
+                <DialogHeader>
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                        Nama Kegiatan
+                    </label>
+                    <p className="font-bold text-lg text-slate-800 leading-tight">
+                        {event.title}
+                    </p>
+                </DialogHeader>
 
-				<ScrollArea className="max-h-[60vh]">
-					<div className="space-y-4 p-2">
+                <ScrollArea className="max-h-[60vh] py-0">
+                    <div className="space-y-4 py-0">
                         <div className="grid grid-cols-2 gap-2">
                             <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 relative overflow-hidden">
                                 <div className="flex justify-between items-start mb-2">
-                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Jadwal</p>
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">
+                                        Jadwal
+                                    </p>
                                 </div>
-                                <div className="flex items-center gap-3"><Calendar className="text-blue-600" size={18} />
-                                    <span className="text-sm font-bold text-slate-700">
-                                        {event._startDate == event._endDate ? formatDate(event.startDate) : <>{formatDate(event.startDate)}-{formatDate(event.endDate)}</>}
+                                <div className="flex items-center gap-2">
+                                    <Calendar
+                                        className="text-blue-600"
+                                        size={18}
+                                    />
+                                    <span className="flex items-start gap-1.5 bg-slate-50  rounded-xl border border-slate-100 w-fit text-sm text-slate-700 font-medium">
+                                        {event._startDate == event._endDate ? (
+                                            formatDate(event.startDate)
+                                        ) : (
+                                            <>
+                                                {formatDate(event.startDate)}-
+                                                {formatDate(event.endDate)}
+                                            </>
+                                        )}
                                     </span>
                                 </div>
-                                <div className="flex items-center gap-3 mt-1"><Clock className="text-blue-600" size={18} /><span className="text-sm font-bold text-slate-700">{formatTime(event.startDate,true)} - {formatTime(event.endDate,true)}</span></div>
+                                <div className="flex items-center gap-2">
+                                    <Clock
+                                        className="text-blue-600"
+                                        size={18}
+                                    />
+                                    <span className="flex items-start gap-1.5 bg-slate-50  rounded-xl border border-slate-100 w-fit text-sm text-slate-700 font-medium">
+                                        {formatTime(event.startDate, true)} -{" "}
+                                        {formatTime(event.endDate, true)}
+                                    </span>
+                                </div>
                             </div>
 
                             <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
                                 <div className="flex justify-between items-start mb-2">
-                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Lokasi Utama</p>
-                                    { event.jadwal_ori.ruang_status !== 'tidak' && <StatusBadge status={event.jadwal_ori.ruang_status || 'menunggu'} />}
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">
+                                        Lokasi Utama
+                                    </p>
+                                    {event.jadwal_ori.ruang_status !==
+                                        "tidak" && (
+                                        <StatusBadge
+                                            status={
+                                                event.jadwal_ori.ruang_status ||
+                                                "menunggu"
+                                            }
+                                        />
+                                    )}
                                 </div>
                                 <div className="flex items-center gap-3">
-                                <MapPin className={`${ event.jadwal_ori.ruang_status !== 'tidak' ? 'text-amber-600' : 'text-slate-400'}`} size={18} />
-                                <span className="text-sm font-bold text-slate-700">{ event.jadwal_ori.ruang_status !== 'tidak' ? capitalizeWords(event.jadwal_ori.ruang as string) : 'Hanya Online'}</span>
+                                    <MapPin
+                                        className={`${event.jadwal_ori.ruang_status !== "tidak" ? "text-amber-600" : "text-slate-400"}`}
+                                        size={18}
+                                    />
+                                    <span className="flex items-start gap-1.5 bg-slate-50  rounded-xl border border-slate-100 w-fit text-sm text-slate-700 font-medium">
+                                        {event.jadwal_ori.ruang_status !==
+                                        "tidak"
+                                            ? capitalizeWords(
+                                                  event.jadwal_ori
+                                                      .ruang as string,
+                                              )
+                                            : "Hanya Online"}
+                                    </span>
                                 </div>
-                                {!( event.jadwal_ori.ruang_status !== 'tidak') && <p className="text-[10px] text-slate-400 mt-1 font-bold italic">*Tidak menggunakan fasilitas gedung</p>}
+                                {!(
+                                    event.jadwal_ori.ruang_status !== "tidak"
+                                ) && (
+                                    <p className="flex items-start gap-1.5 bg-slate-50  rounded-xl border border-slate-100 w-fit text-sm text-slate-700 font-medium italic">
+                                        *Tidak menggunakan fasilitas gedung
+                                    </p>
+                                )}
                             </div>
-                            </div>
+                        </div>
 
-                            {(event.jadwal_ori.zoom_status !== 'tidak') && (
+                        {event.jadwal_ori.zoom_status !== "tidak" && (
                             <div className="p-4 bg-blue-50/50 border-2 border-dashed border-blue-200 rounded-[2rem]">
-                                <div className="flex items-center justify-between mb-5">
-                                <div className="flex items-center gap-4">
-                                    <div className="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center text-white shadow-lg"><Video size={24} /></div>
-                                    <div>
-                                    <h4 className="font-black text-blue-900 leading-none">Akses Zoom Meeting</h4>
+                                <div className="flex items-center justify-between mb-2">
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center text-white shadow-lg">
+                                            <Video size={16} />
+                                        </div>
+                                        <div>
+                                            <h4 className="font-black text-blue-900 leading-none">
+                                                Akses Zoom Meeting
+                                            </h4>
+                                        </div>
                                     </div>
-                                </div>
-                                <StatusBadge status={event.jadwal_ori.zoom_status || 'langsung'} />
+                                    <StatusBadge
+                                        status={
+                                            event.jadwal_ori.zoom_status ||
+                                            "langsung"
+                                        }
+                                    />
                                 </div>
                                 <div className="grid grid-cols-2 gap-3">
-                                   <a
-                                        href={event.jadwal_ori.zoom_pinjam?.zoom_start_url ?? "#"}
+                                    <a
+                                        href={
+                                            event.jadwal_ori.zoom_pinjam
+                                                ?.zoom_start_url ?? "#"
+                                        }
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        aria-disabled={!event.jadwal_ori.zoom_pinjam?.zoom_start_url}
+                                        aria-disabled={
+                                            !event.jadwal_ori.zoom_pinjam
+                                                ?.zoom_start_url
+                                        }
                                         className={`flex items-center justify-center gap-2 py-2 rounded-lg text-xs font-black transition-all shadow-xl shadow-blue-100
-                                            ${event.jadwal_ori.zoom_pinjam?.zoom_start_url
-                                            ? "bg-blue-600 hover:bg-blue-700 text-white"
-                                            : "bg-gray-400 cursor-not-allowed text-white"
+                                            ${
+                                                event.jadwal_ori.zoom_pinjam
+                                                    ?.zoom_start_url
+                                                    ? "bg-blue-600 hover:bg-blue-700 text-white"
+                                                    : "bg-gray-400 cursor-not-allowed text-white"
                                             }`}
                                         onClick={(e) => {
-                                            if (!event.jadwal_ori.zoom_pinjam?.zoom_start_url) e.preventDefault();
+                                            if (
+                                                !event.jadwal_ori.zoom_pinjam
+                                                    ?.zoom_start_url
+                                            )
+                                                e.preventDefault();
                                         }}
-                                        >
+                                    >
                                         <PlayCircle size={18} />
                                         START ZOOM
                                     </a>
 
                                     <a
-                                        href={(event.jadwal_ori.zoom_pinjam?.zoom_join_url ||
-                                            event.jadwal_ori.zoom_langsung_join_url) ?? "#"}
+                                        href={
+                                            (event.jadwal_ori.zoom_pinjam
+                                                ?.zoom_join_url ||
+                                                event.jadwal_ori
+                                                    .zoom_langsung_join_url) ??
+                                            "#"
+                                        }
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        aria-disabled={!(event.jadwal_ori.zoom_pinjam?.zoom_join_url ||
-                                            event.jadwal_ori.zoom_langsung_join_url)}
+                                        aria-disabled={
+                                            !(
+                                                event.jadwal_ori.zoom_pinjam
+                                                    ?.zoom_join_url ||
+                                                event.jadwal_ori
+                                                    .zoom_langsung_join_url
+                                            )
+                                        }
                                         onClick={(e) => {
-                                            if (!(event.jadwal_ori.zoom_pinjam?.zoom_join_url ||
-                                                event.jadwal_ori.zoom_langsung_join_url)) e.preventDefault();
+                                            if (
+                                                !(
+                                                    event.jadwal_ori.zoom_pinjam
+                                                        ?.zoom_join_url ||
+                                                    event.jadwal_ori
+                                                        .zoom_langsung_join_url
+                                                )
+                                            )
+                                                e.preventDefault();
                                         }}
                                         className={`flex items-center justify-center gap-2 py-2 rounded-lg text-xs font-black transition-all border-2
                                             ${
-                                            (event.jadwal_ori.zoom_pinjam?.zoom_join_url ||
-                                                event.jadwal_ori.zoom_langsung_join_url)
-                                                ? "bg-white text-blue-600 border-blue-600 hover:bg-blue-50"
-                                                : "bg-gray-100 text-gray-400 border-gray-300 cursor-not-allowed"
+                                                event.jadwal_ori.zoom_pinjam
+                                                    ?.zoom_join_url ||
+                                                event.jadwal_ori
+                                                    .zoom_langsung_join_url
+                                                    ? "bg-white text-blue-600 border-blue-600 hover:bg-blue-50"
+                                                    : "bg-gray-100 text-gray-400 border-gray-300 cursor-not-allowed"
                                             }`}
-                                        >
+                                    >
                                         <LogIn size={18} />
                                         JOIN ZOOM
                                     </a>
                                 </div>
                             </div>
-                            )}
+                        )}
 
-                            <div>
+                        <div>
                             <div className="flex items-center justify-between mb-4">
-                                <h4 className="text-sm font-black text-slate-800 flex items-center gap-2"><Users size={18} className="text-slate-400" /> DAFTAR PESERTA</h4>
-                                <span className="px-3 py-1 bg-slate-100 text-slate-600 rounded-full text-[10px] font-black">{event.jadwal_ori.peserta?.length || 0} ORANG</span>
+                                <h4 className="text-sm font-black text-slate-800 flex items-center gap-2">
+                                    <Users
+                                        size={18}
+                                        className="text-slate-400"
+                                    />{" "}
+                                    DAFTAR PESERTA
+                                </h4>
+                                <span className="px-3 py-1 bg-slate-100 text-slate-600 rounded-full text-[10px] font-black">
+                                    {event.jadwal_ori.peserta?.length || 0}{" "}
+                                    ORANG
+                                </span>
                             </div>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 {event.jadwal_ori.peserta?.map((p, idx) => (
-                                    <div key={idx} className="flex items-center gap-3 p-3 bg-white border border-slate-100 rounded-2xl hover:border-blue-200 transition-all group">
-                                        <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-500 font-bold text-sm group-hover:bg-blue-500 group-hover:text-white transition-all">{p ? p.username.charAt(0) : '?'}</div>
-                                        <span className="text-sm  text-slate-700">{userDict.get(p.username)?.name}</span>
+                                    <div
+                                        key={idx}
+                                        className="flex items-center gap-2 p-2 bg-white border border-slate-100 rounded-2xl hover:border-blue-200 transition-all group"
+                                    >
+                                        <div className="w-8 h-8 rounded-xl bg-slate-100 flex items-center justify-center text-slate-500 font-bold text-sm group-hover:bg-blue-500 group-hover:text-white transition-all">
+                                            {p ? p.username.charAt(0) : "?"}
+                                        </div>
+                                        <span className="text-sm  text-slate-700">
+                                            {userDict.get(p.username)?.name}
+                                        </span>
                                     </div>
                                 ))}
                             </div>
                         </div>
                     </div>
-
-				</ScrollArea>
-				<div className="flex justify-end gap-2">
-                    {havePeran('ruang') && (
+                </ScrollArea>
+                <div className="flex justify-end gap-2">
+                    {havePeran("ruang") && (
                         <AlertDialog>
                             <AlertDialogTrigger asChild>
                                 <Button
@@ -391,8 +712,8 @@ export function EventDetailsDialog({ _event, children }: Event_Details_Dialog_IP
                                         Konfirmasi tindakan
                                     </AlertDialogTitle>
                                     <AlertDialogDescription>
-                                        Apakah Anda menyetujui atau
-                                        menolak permintaan pemakaian ruangan?
+                                        Apakah Anda menyetujui atau menolak
+                                        permintaan pemakaian ruangan?
                                     </AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
@@ -401,14 +722,20 @@ export function EventDetailsDialog({ _event, children }: Event_Details_Dialog_IP
                                     </AlertDialogCancel>
                                     <AlertDialogAction
                                         onClick={() =>
-                                            approvalRuangEvent(event.id, "ditolak")
+                                            approvalRuangEvent(
+                                                event.id,
+                                                "ditolak",
+                                            )
                                         }
                                     >
                                         Tolak
                                     </AlertDialogAction>
                                     <AlertDialogAction
                                         onClick={() =>
-                                            approvalRuangEvent(event.id, "disetujui")
+                                            approvalRuangEvent(
+                                                event.id,
+                                                "disetujui",
+                                            )
                                         }
                                     >
                                         Setujui
@@ -417,68 +744,113 @@ export function EventDetailsDialog({ _event, children }: Event_Details_Dialog_IP
                             </AlertDialogContent>
                         </AlertDialog>
                     )}
-                    {(havePeran('zoom') && !['tidak', 'langsung'].includes(event.jadwal_ori.zoom_status)) &&
-                        <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                                <Button variant="outline" className="text-secondary">Approval Zoom</Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                                <AlertDialogHeader>
-                                    <AlertDialogTitle className="text-secondary">Konfirmasi tindakan</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                    Apakah Anda ingin menyetujui atau menolak permintaan ini?
-                                </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <div className="grid gap-3">
-                                    <Label
+                    {havePeran("zoom") &&
+                        !["tidak", "langsung"].includes(
+                            event.jadwal_ori.zoom_status,
+                        ) && (
+                            <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                    <Button
+                                        variant="outline"
                                         className="text-secondary"
-                                        htmlFor="tipe-1"
                                     >
-                                        Zoom Akun
-                                    </Label>
-                                    <Select
-                                        name="tipe"
-                                        required
-                                        value={zoomAkun}
-                                        onValueChange={(value) => {
-                                            console.log(value)
-                                            setZoomAkun(value as 'statsulbar' | 'sp2020' | undefined)
-                                        }}
-                                    >
-                                        <SelectTrigger
-                                            name="zoom_status"
+                                        Approval Zoom
+                                    </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                        <AlertDialogTitle className="text-secondary">
+                                            Konfirmasi tindakan
+                                        </AlertDialogTitle>
+                                        <AlertDialogDescription>
+                                            Apakah Anda ingin menyetujui atau
+                                            menolak permintaan ini?
+                                        </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <div className="grid gap-3">
+                                        <Label
                                             className="text-secondary"
+                                            htmlFor="tipe-1"
                                         >
-                                            <SelectValue placeholder="Pilih Akun" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectGroup>
-                                                <SelectItem value="statsulbar">
-                                                    statsulbar
-                                                </SelectItem>
-                                                <SelectItem value="sp2020">
-                                                    sp2020
-                                                </SelectItem>
-                                            </SelectGroup>
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                                <AlertDialogFooter>
-                                <AlertDialogCancel className="text-secondary">Tutup</AlertDialogCancel>
-                                <AlertDialogAction onClick={() => approvalZoomEvent(event.id, 'ditolak')}>Tolak</AlertDialogAction>
-                                <AlertDialogAction onClick={() => approvalZoomEvent(event.id, 'disetujui')}>Setujui</AlertDialogAction>
-                                </AlertDialogFooter>
-                            </AlertDialogContent>
-                        </AlertDialog>
-                    }
-                    {canChange(event) &&
-                        <AddEditEventDialog event={event} onUpdateOpenChange={(_event: IEvent) => setEvent(_event as JadwalIEvent)}>
-                            <Button variant="outline" className="text-accent-foreground">Ubah</Button>
+                                            Zoom Akun
+                                        </Label>
+                                        <Select
+                                            name="tipe"
+                                            required
+                                            value={zoomAkun}
+                                            onValueChange={(value) => {
+                                                console.log(value);
+                                                setZoomAkun(
+                                                    value as
+                                                        | "statsulbar"
+                                                        | "sp2020"
+                                                        | undefined,
+                                                );
+                                            }}
+                                        >
+                                            <SelectTrigger
+                                                name="zoom_status"
+                                                className="text-secondary"
+                                            >
+                                                <SelectValue placeholder="Pilih Akun" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectGroup>
+                                                    <SelectItem value="statsulbar">
+                                                        statsulbar
+                                                    </SelectItem>
+                                                    <SelectItem value="sp2020">
+                                                        sp2020
+                                                    </SelectItem>
+                                                </SelectGroup>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                    <AlertDialogFooter>
+                                        <AlertDialogCancel className="text-secondary">
+                                            Tutup
+                                        </AlertDialogCancel>
+                                        <AlertDialogAction
+                                            onClick={() =>
+                                                approvalZoomEvent(
+                                                    event.id,
+                                                    "ditolak",
+                                                )
+                                            }
+                                        >
+                                            Tolak
+                                        </AlertDialogAction>
+                                        <AlertDialogAction
+                                            onClick={() =>
+                                                approvalZoomEvent(
+                                                    event.id,
+                                                    "disetujui",
+                                                )
+                                            }
+                                        >
+                                            Setujui
+                                        </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                </AlertDialogContent>
+                            </AlertDialog>
+                        )}
+                    {canChange(event) && (
+                        <AddEditEventDialog
+                            event={event}
+                            onUpdateOpenChange={(_event: IEvent) =>
+                                setEvent(_event as JadwalIEvent)
+                            }
+                        >
+                            <Button
+                                variant="outline"
+                                className="text-accent-foreground"
+                            >
+                                Ubah
+                            </Button>
                         </AddEditEventDialog>
-                    }
+                    )}
 
-
-                    {canApprove(event) &&
+                    {canApprove(event) && (
                         <Button
                             variant="destructive"
                             onClick={() => {
@@ -487,15 +859,13 @@ export function EventDetailsDialog({ _event, children }: Event_Details_Dialog_IP
                         >
                             Hapus
                         </Button>
-                    }
+                    )}
                     <DialogClose asChild>
                         <Button variant="outline">Tutup</Button>
                     </DialogClose>
-
-				</div>
-				<DialogClose />
-			</DialogContent>
-		</Dialog>
-	);
+                </div>
+                <DialogClose />
+            </DialogContent>
+        </Dialog>
+    );
 }
-
