@@ -39,6 +39,7 @@ export interface pinjam_mobil_req {
     status: 'menunggu' | 'disetujui' | 'ditolak';
     pembuat_username: string;
     confirm_username: string | null;
+    error_clash: string;
 }
 
 export interface PinjamMobilIEvent extends IEvent{

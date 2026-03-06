@@ -357,21 +357,21 @@ export function AddEditEventDialog({
                             ></Textarea>
                         </div>
                         <div>
-                            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">
+                            <label className="block text-[10px] font-bold text-slate-700 uppercase tracking-wider mb-2">
                                 Tipe
                             </label>
                             <div className="grid grid-cols-2 gap-3">
                                 <button
                                     type="button"
                                     onClick={() => setData("tipe", "sekali")}
-                                    className={`py-2 rounded-xl text-xs font-bold border transition-all ${data.tipe === "sekali" ? "bg-slate-900 border-slate-900 text-white" : "bg-white border-slate-200 text-slate-500"}`}
+                                    className={`py-2 rounded-xl text-xs font-bold border transition-all ${data.tipe === "sekali" ? "bg-blue-600 border-blue-600 text-white" : "bg-white border-slate-200 text-slate-500"}`}
                                 >
                                     Sekali
                                 </button>
                                 <button
                                     type="button"
                                     onClick={() => setData("tipe", "berulang")}
-                                    className={`py-2 rounded-xl text-xs font-bold border transition-all ${data.tipe === "berulang" ? "bg-slate-900 border-slate-900 text-white" : "bg-white border-slate-200 text-slate-500"}`}
+                                    className={`py-2 rounded-xl text-xs font-bold border transition-all ${data.tipe === "berulang" ? "bg-blue-600 border-blue-600 text-white" : "bg-white border-slate-200 text-slate-500"}`}
                                 >
                                     Berulang
                                 </button>

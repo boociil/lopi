@@ -161,9 +161,58 @@ class Jadwal_Controller extends Controller
         $have_zoom_peran =  Peran::where('pemilik_username', Auth::user()->username)
             ->where('peran', 'zoom')
             ->first();
+
+        if($have_zoom_peran
+            && $request->input('zoom_status') != 'tidak'
+            && $request->input('zoom_status') != 'langsung'
+            && in_array($request->input('zoom_akun'), ['statsulbar', 'sp2020']))
+        {
+             if($request->input('tipe') == 'sekali'){
+                if(Pinjam_Zoom::staticCheckClash($request->input('zoom_akun'), $request->input('tanggal'), $request->input('tanggal')
+                    , $request->input('waktu_awal').':00', $request->input('waktu_akhir').':00'))
+                {
+                    throw ValidationException::withMessages([
+                        'error_clash' => 'Sudah terdapat peminjaman di tanggal dan waktu tersebut',
+                    ]);
+                }
+             }else{
+                if(Pinjam_Zoom::staticCheckClash($request->input('zoom_akun'), $request->input('tanggal_awal'), $request->input('tanggal_akhir')
+                    , $request->input('waktu_awal').':00', $request->input('waktu_akhir').':00'))
+                {
+                    throw ValidationException::withMessages([
+                        'error_clash' => 'Sudah terdapat peminjaman di tanggal dan waktu tersebut',
+                    ]);
+                }
+             }
+        }
+
         $have_ruang_peran =  Peran::where('pemilik_username', Auth::user()->username)
             ->where('peran', 'ruang')
             ->first();
+
+
+        if($have_ruang_peran
+            && $request->input('ruang_status') != 'tidak'
+            && in_array($request->input('ruang'), $this->ruang))
+        {
+             if($request->input('tipe') == 'sekali'){
+                if($this->checkRuangClash($request->input('ruang'), $request->input('tanggal'), $request->input('tanggal')
+                    , $request->input('waktu_awal').':00', $request->input('waktu_akhir').':00'))
+                {
+                    throw ValidationException::withMessages([
+                        'error_clash' => 'Sudah terdapat peminjaman di tanggal dan waktu tersebut',
+                    ]);
+                }
+             }else{
+                if($this->checkRuangClash($request->input('ruang'), $request->input('tanggal_awal'), $request->input('tanggal_akhir')
+                    , $request->input('waktu_awal').':00', $request->input('waktu_akhir').':00'))
+                {
+                    throw ValidationException::withMessages([
+                        'error_clash' => 'Sudah terdapat peminjaman di tanggal dan waktu tersebut',
+                    ]);
+                }
+             }
+        }
 
         DB::beginTransaction();
         try
@@ -278,6 +327,15 @@ class Jadwal_Controller extends Controller
             'zoom_akun'         => 'nullable|in:statsulbar,sp2020',
         ]);
 
+        $berubahInti = true;
+        if($jadwal->tipe == $request->input('tipe') &&  $jadwal->tanggal == $request->input('tanggal')
+            && $jadwal->berulang_tanggal_awal == $request->input('tanggal_awal')
+            && $jadwal->berulang_tanggal_akhir == $request->input('tanggal_akhir')
+            && $jadwal->waktu_awal == $request->input('waktu_awal')
+            && $jadwal->waktu_akhir == $request->input('waktu_akhir')){
+             $berubahInti = false;
+        }
+
         if(!$request->input('tanggal') || (!$request->input('tanggal_awal') && !$request->input('tanggal_akhir'))){
             throw ValidationException::withMessages([
                 '_status' => 'Peran tidak dapat dibuat',
@@ -287,9 +345,58 @@ class Jadwal_Controller extends Controller
         $have_zoom_peran =  Peran::where('pemilik_username', Auth::user()->username)
             ->where('peran', 'zoom')
             ->first();
+
+        if($have_zoom_peran
+            && $request->input('zoom_status') != 'tidak'
+            && $request->input('zoom_status') != 'langsung'
+            && in_array($request->input('zoom_akun'), ['statsulbar', 'sp2020']))
+        {
+             if($request->input('tipe') == 'sekali'){
+                if(Pinjam_Zoom::staticCheckClash($request->input('zoom_akun'), $request->input('tanggal'), $request->input('tanggal')
+                    , $request->input('waktu_awal').':00', $request->input('waktu_akhir').':00'))
+                {
+                    throw ValidationException::withMessages([
+                        'error_clash' => 'Sudah terdapat peminjaman di tanggal dan waktu tersebut',
+                    ]);
+                }
+             }else{
+                if(Pinjam_Zoom::staticCheckClash($request->input('zoom_akun'), $request->input('tanggal_awal'), $request->input('tanggal_akhir')
+                    , $request->input('waktu_awal').':00', $request->input('waktu_akhir').':00'))
+                {
+                    throw ValidationException::withMessages([
+                        'error_clash' => 'Sudah terdapat peminjaman di tanggal dan waktu tersebut',
+                    ]);
+                }
+             }
+        }
+
         $have_ruang_peran =  Peran::where('pemilik_username', Auth::user()->username)
             ->where('peran', 'ruang')
             ->first();
+
+
+        if($have_ruang_peran
+            && $request->input('ruang_status') != 'tidak'
+            && in_array($request->input('ruang'), $this->ruang))
+        {
+             if($request->input('tipe') == 'sekali'){
+                if($this->checkRuangClash($request->input('ruang'), $request->input('tanggal'), $request->input('tanggal')
+                    , $request->input('waktu_awal').':00', $request->input('waktu_akhir').':00'))
+                {
+                    throw ValidationException::withMessages([
+                        'error_clash' => 'Sudah terdapat peminjaman di tanggal dan waktu tersebut',
+                    ]);
+                }
+             }else{
+                if($this->checkRuangClash($request->input('ruang'), $request->input('tanggal_awal'), $request->input('tanggal_akhir')
+                    , $request->input('waktu_awal').':00', $request->input('waktu_akhir').':00'))
+                {
+                    throw ValidationException::withMessages([
+                        'error_clash' => 'Sudah terdapat peminjaman di tanggal dan waktu tersebut',
+                    ]);
+                }
+             }
+        }
 
         if(! ( $jadwal->pembuat_username == Auth::user()->username) ){
             throw ValidationException::withMessages([
@@ -306,9 +413,12 @@ class Jadwal_Controller extends Controller
 
             if($request->input('tipe') == 'sekali'){
                 $jadwal->tanggal = $request->input('tanggal');
+                $jadwal->berulang_tanggal_awal = null;
+                $jadwal->berulang_tanggal_akhir = null;
                 $jadwal->waktu_awal = $request->input('waktu_awal');
                 $jadwal->waktu_akhir = $request->input('waktu_akhir');
             }else if($request->input('tipe') == 'berulang'){
+                $jadwal->tanggal = null;
                 $jadwal->berulang_tanggal_awal = $request->input('tanggal_awal');
                 $jadwal->berulang_tanggal_akhir = $request->input('tanggal_akhir');
                 $jadwal->waktu_awal = $request->input('waktu_awal');
@@ -317,8 +427,6 @@ class Jadwal_Controller extends Controller
 
             $jadwal->status = 'menunggu';
 
-
-            $jadwal->ruang_status = 'tidak';
             if($request->input('ruang_status') == 'tidak'){
                 $jadwal->ruang_status = 'tidak';
                 $jadwal->ruang = null;
@@ -328,7 +436,7 @@ class Jadwal_Controller extends Controller
                     $jadwal->ruang_status = 'disetujui';
                     $jadwal->ruang = $request->input('ruang');
                     $jadwal->ruang_confirm_username = Auth::user()->username;
-                }else if($jadwal->ruang_status == 'disetujui' && $jadwal->ruang == $request->input('ruang')){
+                }else if($jadwal->ruang_status == 'disetujui' && $jadwal->ruang == $request->input('ruang') && !$berubahInti ){
                     $jadwal->ruang_status = 'disetujui';
                     $jadwal->ruang = $request->input('ruang');
                 }else{
@@ -491,6 +599,29 @@ class Jadwal_Controller extends Controller
             ]);
         }
 
+        if($have_ruang_peran
+            && $request->input('ruang_status') != 'tidak'
+            && in_array($request->input('ruang'), $this->ruang))
+        {
+             if($request->input('tipe') == 'sekali'){
+                if($this->checkRuangClash($jadwal->ruang, $jadwal->tanggal, $jadwal->tanggal
+                    , $jadwal->waktu_awal, $jadwal->waktu_akhir))
+                {
+                    throw ValidationException::withMessages([
+                        'error_clash' => 'Sudah terdapat peminjaman di tanggal dan waktu tersebut',
+                    ]);
+                }
+             }else{
+                if($this->checkRuangClash($jadwal->ruang, $jadwal->berulang_tanggal_awal, $jadwal->berulang_tanggal_akhir
+                    , $jadwal->waktu_awal, $jadwal->waktu_akhir))
+                {
+                    throw ValidationException::withMessages([
+                        'error_clash' => 'Sudah terdapat peminjaman di tanggal dan waktu tersebut',
+                    ]);
+                }
+             }
+        }
+
         DB::beginTransaction();
         try
         {
@@ -536,6 +667,14 @@ class Jadwal_Controller extends Controller
             ]);
         }
 
+        if($have_zoom_peran && $request->input('zoom_status') == 'disetujui'){
+           if($jadwal->zoom_pinjam->checkClash($request->input('zoom_akun'))){
+                throw ValidationException::withMessages([
+                    'error_clash' => 'Sudah terdapat peminjaman di tanggal dan waktu tersebut',
+                ]);
+            }
+        }
+
 
         DB::beginTransaction();
         try
@@ -569,5 +708,45 @@ class Jadwal_Controller extends Controller
                 '_status' => 'Gagal approval peminjaman zoom!',
             ]);
         }
+    }
+
+    public function checkRuangClash($ruang, $tanggal_awal, $tanggal_akhir, $waktu_awal, $waktu_akhir){
+       $jadwal_daftar = Jadwal::where('ruang', $ruang)
+            ->where('ruang_status', 'disetujui')
+            ->where(function ($query) use($tanggal_awal, $tanggal_akhir) {
+                $query->orWhere(function (Builder $query) use ($tanggal_awal, $tanggal_akhir){
+                            $query->where('tipe', 'sekali')
+                                ->whereBetween('tanggal', [$tanggal_awal, $tanggal_akhir]);
+                        })
+                        ->orWhere(function (Builder $query) use ($tanggal_awal, $tanggal_akhir) {
+                            $query->where('tipe', 'berulang')
+                                ->where('berulang_tanggal_awal', '<=', $tanggal_akhir)
+                                ->where('berulang_tanggal_akhir', '>=', $tanggal_awal);
+                        });
+            })
+            ->get();
+
+        $awalCarrbon = Carbon::createFromFormat('Y-m-d H:i:s',  $tanggal_awal . ' ' . $waktu_awal);
+        $akhirCarrbon = Carbon::createFromFormat('Y-m-d H:i:s',  $tanggal_akhir . ' ' . $waktu_akhir);
+
+        $isClash = false;
+
+        foreach($jadwal_daftar as $item){
+            if($item->tipe == 'sekali'){
+                if( ( $awalCarrbon < Carbon::createFromFormat('Y-m-d H:i:s', $item->tanggal. ' ' .$item->waktu_akhir)
+                    && $akhirCarrbon > Carbon::createFromFormat('Y-m-d H:i:s', $item->tanggal. ' ' .$item->waktu_awal)))
+                {
+                    $isClash=true;
+                }
+            }else if($item->tipe == 'berulang'){
+                if( ( $awalCarrbon < Carbon::createFromFormat('Y-m-d H:i:s', $item->tanggal_akhir. ' ' .$item->waktu_akhir)
+                    && $akhirCarrbon > Carbon::createFromFormat('Y-m-d H:i:s', $item->tanggal_awal. ' ' .$item->waktu_awal)))
+                {
+                    $isClash=true;
+                }
+            }
+        }
+
+        return $isClash;
     }
 }

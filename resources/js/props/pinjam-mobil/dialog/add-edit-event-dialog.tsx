@@ -70,7 +70,7 @@ export function AddEditEventDialog({
         Required<pinjam_mobil_req>
     >({
         id: "12345",
-        kegiatan:  "Peminjaman Mobil",
+        kegiatan:  "Peminjaman Mobil Untuk ...",
         tipe: 'string',
         tanggal: formatDate(new Date().toISOString()),
         tanggal_awal: formatDate(new Date().toISOString()),
@@ -79,7 +79,8 @@ export function AddEditEventDialog({
         waktu_akhir: "16:00:00",
         status: 'menunggu',
         pembuat_username: '',
-        confirm_username: null
+        confirm_username: null,
+        error_clash: '-',
     });
 
     const submit: React.FormEventHandler = (e) => {
@@ -171,6 +172,7 @@ export function AddEditEventDialog({
             setData("status", event_.pinjam_mobil_ori.status);
             setData('pembuat_username', event_.pinjam_mobil_ori.pembuat_username)
             setData('confirm_username', event_.pinjam_mobil_ori.confirm_username)
+            setData('error_clash', '-')
         }else{
             setData("id", 'xxxx-xxxx-xxxx');
             setData("kegiatan", "Peminjaman Mobil");
@@ -183,6 +185,9 @@ export function AddEditEventDialog({
             setData("status", 'menunggu');
             setData('pembuat_username', '')
             setData('confirm_username', '')
+            setData('error_clash', '-')
+
+            console.log(data)
         }
 	}, [event, initialDates]);
 
@@ -215,7 +220,7 @@ export function AddEditEventDialog({
                  <div className="p-0 space-y-3">
 
                     <div>
-                        <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Nama Kegiatan</label>
+                        <label className="block text-[10px] font-bold text-slate-700 uppercase tracking-wider mb-2">Nama Kegiatan</label>
                         <Input
                             required name="kegiatan"
                             value={data.kegiatan}
@@ -223,16 +228,16 @@ export function AddEditEventDialog({
                                 setData("kegiatan", e.target.value)
                             }
                             className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none text-sm font-medium"
-                            placeholder="Contoh: Perjalanan Dinas ke Kantor Wilayah"
+                            placeholder="Contoh: Peminjaman Mobil untuk .."
                         />
                         <InputError message={errors.kegiatan} />
                     </div>
 
                     <div>
-                        <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Tipe Peminjaman</label>
+                        <label className="block text-[10px] font-bold text-slate-700 uppercase tracking-wider mb-2">Tipe Peminjaman</label>
                         <div className="grid grid-cols-2 gap-3">
-                        <button type="button" onClick={() => setData('tipe',  'sekali' )} className={`py-2 rounded-xl text-xs font-bold border transition-all ${data.tipe === 'sekali' ? 'bg-slate-900 border-slate-900 text-white' : 'bg-white border-slate-200 text-slate-500'}`}>Sekali</button>
-                        <button type="button" onClick={() => setData('tipe',  'berulang' )} className={`py-2 rounded-xl text-xs font-bold border transition-all ${data.tipe === 'berulang' ? 'bg-slate-900 border-slate-900 text-white' : 'bg-white border-slate-200 text-slate-500'}`}>Berulang</button>
+                        <button type="button" onClick={() => {setData('tipe',  'sekali')}} className={`py-2 rounded-xl text-xs font-bold border transition-all ${data.tipe === 'sekali' ? 'bg-blue-600 border-blue-600 text-white' : 'bg-white border-slate-200 text-slate-500'}`}>Sekali</button>
+                        <button type="button" onClick={() => setData('tipe',  'berulang' )} className={`py-2 rounded-xl text-xs font-bold border transition-all ${data.tipe === 'berulang' ? 'bg-blue-600 border-blue-600 text-white' : 'bg-white border-slate-200 text-slate-500'}`}>Berulang</button>
                         </div>
                     </div>
 
@@ -243,7 +248,6 @@ export function AddEditEventDialog({
                             value={initialDates.startDate}
                             setValue={(value) => {
                                 setData("tanggal", formatDate(value.toISOString()));
-                                setData("tanggal_awal", formatDate(value.toISOString()));
                             }}
                             modal={true}
                         />
@@ -257,7 +261,6 @@ export function AddEditEventDialog({
                                 <DatePicker22 className="w-full px-4 py-2.5 rounded-xl border border-slate-200 outline-none text-sm"
                                     value={initialDates.startDate}
                                     setValue={(value) => {
-                                        setData("tanggal", formatDate(value.toISOString()));
                                         setData("tanggal_awal", formatDate(value.toISOString()));
                                     }}
                                     modal={true}
@@ -303,6 +306,8 @@ export function AddEditEventDialog({
                             <InputError message={errors.waktu_akhir} />
                         </div>
                     </div>
+                    <InputError message={errors.error_clash} />
+
                 </div>
 
                     <ModalFooter className="flex justify-end gap-2">

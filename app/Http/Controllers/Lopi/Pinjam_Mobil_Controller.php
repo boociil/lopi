@@ -123,6 +123,26 @@ class Pinjam_Mobil_Controller extends Controller
             ->where('peran', 'mobil')
             ->first();
 
+        if($have_mobil_peran){
+             if($request->input('tipe') == 'sekali'){
+                if(Pinjam_Mobil::staticCheckClash($request->input('tanggal'), $request->input('tanggal')
+                    , $request->input('waktu_awal').':00', $request->input('waktu_akhir').':00'))
+                {
+                    throw ValidationException::withMessages([
+                        'error_clash' => 'Sudah terdapat peminjaman di tanggal dan waktu tersebut',
+                    ]);
+                }
+             }else{
+                if(Pinjam_Mobil::staticCheckClash($request->input('tanggal_awal'), $request->input('tanggal_akhir')
+                    , $request->input('waktu_awal').':00', $request->input('waktu_akhir').':00'))
+                {
+                    throw ValidationException::withMessages([
+                        'error_clash' => 'Sudah terdapat peminjaman di tanggal dan waktu tersebut',
+                    ]);
+                }
+             }
+        }
+
         DB::beginTransaction();
         try
         {
@@ -211,6 +231,26 @@ class Pinjam_Mobil_Controller extends Controller
             ]);
         }
 
+        if($have_mobil_peran){
+             if($request->input('tipe') == 'sekali'){
+                if(Pinjam_Mobil::staticCheckClash($request->input('tanggal'), $request->input('tanggal')
+                    , $request->input('waktu_awal').':00', $request->input('waktu_akhir').':00'))
+                {
+                    throw ValidationException::withMessages([
+                        'error_clash' => 'Sudah terdapat peminjaman di tanggal dan waktu tersebut',
+                    ]);
+                }
+             }else{
+                if(Pinjam_Mobil::staticCheckClash($request->input('tanggal_awal'), $request->input('tanggal_akhir')
+                    , $request->input('waktu_awal').':00', $request->input('waktu_akhir').':00'))
+                {
+                    throw ValidationException::withMessages([
+                        'error_clash' => 'Sudah terdapat peminjaman di tanggal dan waktu tersebut',
+                    ]);
+                }
+             }
+        }
+
         DB::beginTransaction();
         try
         {
@@ -219,6 +259,9 @@ class Pinjam_Mobil_Controller extends Controller
                 $pinjamMobil->tipe = $request->input('tipe');
 
                 $pinjamMobil->tanggal = $request->input('tanggal');
+                $pinjamMobil->berulang_tanggal_awal = null;
+                $pinjamMobil->berulang_tanggal_akhir = null;
+
                 $pinjamMobil->waktu_awal = $request->input('waktu_awal');
                 $pinjamMobil->waktu_akhir = $request->input('waktu_akhir');
                 $pinjamMobil->status = 'menunggu';
@@ -234,8 +277,10 @@ class Pinjam_Mobil_Controller extends Controller
                 $pinjamMobil->kegiatan = $request->input('kegiatan');
                 $pinjamMobil->tipe = $request->input('tipe');
 
+                $pinjamMobil->tanggal = null;
                 $pinjamMobil->berulang_tanggal_awal = $request->input('tanggal_awal');
                 $pinjamMobil->berulang_tanggal_akhir = $request->input('tanggal_akhir');
+
                 $pinjamMobil->waktu_awal = $request->input('waktu_awal');
                 $pinjamMobil->waktu_akhir = $request->input('waktu_akhir');
                 $pinjamMobil->status = 'menunggu';
@@ -310,6 +355,14 @@ class Pinjam_Mobil_Controller extends Controller
             throw ValidationException::withMessages([
                 '_status' => 'Gagal approval peminjaman mobil!',
             ]);
+        }
+
+         if($have_mobil_peran){
+           if($pinjamMobil->checkClash()){
+                throw ValidationException::withMessages([
+                    'error_clash' => 'Sudah terdapat peminjaman di tanggal dan waktu tersebut',
+                ]);
+            }
         }
 
 

@@ -4,11 +4,15 @@ namespace App\Model\Lopi;
 
 use App\Http\Traits\Zoom_Traits;
 use App\Model\Umum\User;
-use Exception;
+
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
+
+use Illuminate\Database\Eloquent\Builder;
+use Carbon\Carbon;
+use Exception;
 
 class Pinjam_Zoom extends Model
 {
@@ -113,14 +117,27 @@ class Pinjam_Zoom extends Model
     )
     {
         $this->define_config();
+
+        $berubahInti = true;
+        if($this->tipe == $tipe &&  $this->tanggal == $tanggal
+            && $this->berulang_tanggal_awal == $tanggal_awal
+            && $this->berulang_tanggal_akhir == $tanggal_akhir
+            && $this->waktu_awal == $waktu_awal
+            && $this->waktu_akhir == $waktu_akhir){
+             $berubahInti = false;
+        }
+
         $this->kegiatan = $kegiatah;
         $this->tipe = $tipe;
         $this->password = $password;
         if($tipe == 'sekali'){
             $this->tanggal = $tanggal;
+            $this->berulang_tanggal_awal = null;
+            $this->berulang_tanggal_akhir = null;
             $this->waktu_awal = $waktu_awal;
             $this->waktu_akhir = $waktu_akhir;
         }else if($tipe == 'berulang'){
+            $this->tanggal = null;
             $this->berulang_tanggal_awal = $tanggal_awal;
             $this->berulang_tanggal_akhir = $tanggal_akhir;
             $this->waktu_awal = $waktu_awal;
@@ -145,7 +162,11 @@ class Pinjam_Zoom extends Model
             }
         }else{
             if($this->zoom_meeting_id){
-                $this->zoom_meta_deleteMeeting($this->zoom_akun, $this);
+                if($berubahInti){
+                    $this->zoom_meta_deleteMeeting($this->zoom_akun, $this);
+                }else{
+                     $this->zoom_meta_updateMeeting($zoom_akun, $this);
+                }
             }
         }
         $this->save();
@@ -184,6 +205,55 @@ class Pinjam_Zoom extends Model
         $this->status = $status;
         $this->confirm_username = Auth::user()->username;
         $this->save();
+    }
+
+    public function checkClash($zoom_akun){
+        if($this->type == 'sekali'){
+            return Pinjam_Zoom::staticCheckClash($zoom_akun, $this->tanggal, $this->tanggal, $this->waktu_awal, $this->waktu_akhir);
+        }else if($this->type == 'berulang'){
+            return Pinjam_Zoom::staticCheckClash($zoom_akun, $this->berulang_tanggal_awal, $this->berulang_tanggal_akhir, $this->waktu_awal, $this->waktu_akhir);
+        }
+    }
+
+    public static function staticCheckClash($zoom_akun, $tanggal_awal, $tanggal_akhir, $waktu_awal, $waktu_akhir){
+        $jadwal_daftar = Pinjam_Zoom::where('zoom_akun', $zoom_akun)
+                ->where('status', 'disetujui')
+                ->where(function ($query0) use($tanggal_awal, $tanggal_akhir) {
+                    $query0->orWhere(function (Builder $query) use ($tanggal_awal, $tanggal_akhir){
+                                $query->where('tipe', 'sekali')
+                                    ->whereBetween('tanggal', [$tanggal_awal, $tanggal_akhir]);
+                            })
+                            ->orWhere(function (Builder $query) use ($tanggal_awal, $tanggal_akhir) {
+                                $query->where('tipe', 'berulang')
+                                    ->where('berulang_tanggal_awal', '<=', $tanggal_akhir)
+                                    ->where('berulang_tanggal_akhir', '>=', $tanggal_awal);
+                            });
+                })
+                ->get();
+
+
+        $awalCarrbon = Carbon::createFromFormat('Y-m-d H:i:s',  $tanggal_awal . ' ' . $waktu_awal);
+        $akhirCarrbon = Carbon::createFromFormat('Y-m-d H:i:s',  $tanggal_akhir . ' ' . $waktu_akhir);
+
+        $isClash = false;
+
+        foreach($jadwal_daftar as $item){
+            if($item->tipe == 'sekali'){
+                if( ( $awalCarrbon < Carbon::createFromFormat('Y-m-d H:i:s', $item->tanggal. ' ' .$item->waktu_akhir)
+                    && $akhirCarrbon > Carbon::createFromFormat('Y-m-d H:i:s', $item->tanggal. ' ' .$item->waktu_awal)))
+                {
+                    $isClash=true;
+                }
+            }else if($item->tipe == 'berulang'){
+                if( ( $awalCarrbon < Carbon::createFromFormat('Y-m-d H:i:s', $item->tanggal_akhir. ' ' .$item->waktu_akhir)
+                    && $akhirCarrbon > Carbon::createFromFormat('Y-m-d H:i:s', $item->tanggal_awal. ' ' .$item->waktu_awal)))
+                {
+                    $isClash=true;
+                }
+            }
+        }
+
+        return $isClash;
     }
 
 }

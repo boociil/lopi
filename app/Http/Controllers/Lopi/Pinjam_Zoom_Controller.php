@@ -156,6 +156,26 @@ class Pinjam_Zoom_Controller extends Controller
             ->where('peran', 'zoom')
             ->first();
 
+        if($have_zoom_peran && in_array($request->input('zoom_akun'), ['statsulbar', 'sp2020'])){
+             if($request->input('tipe') == 'sekali'){
+                if(Pinjam_Zoom::staticCheckClash($request->input('zoom_akun'), $request->input('tanggal'), $request->input('tanggal')
+                    , $request->input('waktu_awal').':00', $request->input('waktu_akhir').':00'))
+                {
+                    throw ValidationException::withMessages([
+                        'error_clash' => 'Sudah terdapat peminjaman di tanggal dan waktu tersebut',
+                    ]);
+                }
+             }else{
+                if(Pinjam_Zoom::staticCheckClash($request->input('zoom_akun'), $request->input('tanggal_awal'), $request->input('tanggal_akhir')
+                    , $request->input('waktu_awal').':00', $request->input('waktu_akhir').':00'))
+                {
+                    throw ValidationException::withMessages([
+                        'error_clash' => 'Sudah terdapat peminjaman di tanggal dan waktu tersebut',
+                    ]);
+                }
+             }
+        }
+
         DB::beginTransaction();
         try
         {
@@ -209,6 +229,26 @@ class Pinjam_Zoom_Controller extends Controller
         $have_zoom_peran =  Peran::where('pemilik_username', Auth::user()->username)
             ->where('peran', 'zoom')
             ->first();
+
+        if($have_zoom_peran && in_array($request->input('zoom_akun'), ['statsulbar', 'sp2020'])){
+             if($request->input('tipe') == 'sekali'){
+                if(Pinjam_Zoom::staticCheckClash($request->input('zoom_akun'), $request->input('tanggal'), $request->input('tanggal')
+                    , $request->input('waktu_awal').':00', $request->input('waktu_akhir').':00'))
+                {
+                    throw ValidationException::withMessages([
+                        'error_clash' => 'Sudah terdapat peminjaman di tanggal dan waktu tersebut',
+                    ]);
+                }
+             }else{
+                if(Pinjam_Zoom::staticCheckClash($request->input('zoom_akun'), $request->input('tanggal_awal'), $request->input('tanggal_akhir')
+                    , $request->input('waktu_awal').':00', $request->input('waktu_akhir').':00'))
+                {
+                    throw ValidationException::withMessages([
+                        'error_clash' => 'Sudah terdapat peminjaman di tanggal dan waktu tersebut',
+                    ]);
+                }
+             }
+        }
 
         if(! ($have_zoom_peran || $pinjamZoom->pembuat_username == Auth::user()->username) ){
             throw ValidationException::withMessages([
@@ -289,6 +329,14 @@ class Pinjam_Zoom_Controller extends Controller
             throw ValidationException::withMessages([
                 '_status' => 'Gagal approval peminjaman zoom!',
             ]);
+        }
+
+        if($have_zoom_peran && $request->input('status') == 'disetujui'){
+           if($pinjamZoom->checkClash($request->input('zoom_akun'))){
+                throw ValidationException::withMessages([
+                    'error_clash' => 'Sudah terdapat peminjaman di tanggal dan waktu tersebut',
+                ]);
+            }
         }
 
 

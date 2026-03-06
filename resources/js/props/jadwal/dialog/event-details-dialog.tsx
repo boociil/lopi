@@ -60,7 +60,7 @@ export function EventDetailsDialog({ _event, children }: Event_Details_Dialog_IP
 
     const deleteEvent = (event_id: string) => {
         progressIndikator.start()
-        axiosClient.post(route("jadwal-hapus", {pinjamZoom: event_id}))
+        axiosClient.post(route("jadwal-hapus", {jadwal: event_id}))
             .then(function (response) {
                 removeEvent(event_id);
                 progressIndikator.finish()
@@ -124,7 +124,7 @@ export function EventDetailsDialog({ _event, children }: Event_Details_Dialog_IP
 
     const approvalEvent = (event_id: string, status: 'disetujui'|'ditolak') => {
         progressIndikator.start()
-        axiosClient.post(route("pinjam-zoom-approval", {pinjamZoom: event_id}), {status: status, zoom_akun: ""})
+        axiosClient.post(route("pinjam-zoom-approval", {jadwal: event_id}), {status: status, zoom_akun: ""})
             .then(function (response) {
                  try {
                     const return_data: IEvent[] = produceJadwalIEvent([response.data.data] as jadwal[]);
