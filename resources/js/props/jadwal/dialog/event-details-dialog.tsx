@@ -38,7 +38,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useCalendar } from "@/components/calender_modules/contexts/calendar-context";
 import {
     capitalizeWords,
-    formatDate,
+    formatRangeDate,
+    formatTanggal,
     formatTime,
 } from "@/components/calender_modules/helpers";
 import { Event_Details_Dialog_IProps } from "@/components/calender_modules/dialogs/props-dialog";
@@ -301,7 +302,7 @@ export function EventDetailsDialog({
                                             Jadwal
                                         </p>
                                     </div>
-                                    <div className="flex items-center gap-2">
+                                    <div className="flex items-center gap-1">
                                         <Calendar
                                             className="text-blue-600"
                                             size={18}
@@ -309,25 +310,19 @@ export function EventDetailsDialog({
                                         <span className="flex items-start gap-1.5 bg-slate-50  rounded-xl border border-slate-100 w-fit text-sm text-slate-700 font-medium">
                                             {event._startDate ==
                                             event._endDate ? (
-                                                formatDate(event.startDate)
+                                                formatTanggal(event.startDate)
                                             ) : (
-                                                <>
-                                                    {formatDate(
-                                                        event.startDate,
-                                                    )}
-                                                    -{formatDate(event.endDate)}
-                                                </>
+                                                formatRangeDate(event._startDate, event._endDate)
                                             )}
                                         </span>
                                     </div>
-                                    <div className="flex items-center gap-2">
+                                    <div className="flex items-center gap-1">
                                         <Clock
                                             className="text-blue-600"
                                             size={18}
                                         />
                                         <span className="flex items-start gap-1.5 bg-slate-50  rounded-xl border border-slate-100 w-fit text-sm text-slate-700 font-medium">
-                                            {formatTime(event.startDate, true)}{" "}
-                                            - {formatTime(event.endDate, true)}
+                                            {formatTime(event.startDate, true)+ '–'+formatTime(event.endDate, true)}
                                         </span>
                                     </div>
                                 </div>
@@ -348,7 +343,7 @@ export function EventDetailsDialog({
                                             />
                                         )}
                                     </div>
-                                    <div className="flex items-center gap-3">
+                                    <div className="flex items-center gap-1">
                                         <MapPin
                                             className={`${event.jadwal_ori.ruang_status !== "tidak" ? "text-amber-600" : "text-slate-400"}`}
                                             size={18}
@@ -367,8 +362,8 @@ export function EventDetailsDialog({
                                         event.jadwal_ori.ruang_status !==
                                         "tidak"
                                     ) && (
-                                        <p className="flex items-start gap-1.5 bg-slate-50  rounded-xl border border-slate-100 w-fit text-sm text-slate-700 font-medium italic">
-                                            *Tidak menggunakan fasilitas gedung
+                                        <p className="flex items-start gap-1.5 bg-slate-50  rounded-xl border border-slate-100 w-fit text-xs text-slate-700 font-medium italic">
+                                            *Tidak menggunakan fasilitas ruang
                                         </p>
                                     )}
                                 </div>
@@ -498,36 +493,33 @@ export function EventDetailsDialog({
                                         Jadwal
                                     </p>
                                 </div>
-                                <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-1">
                                     <Calendar
                                         className="text-blue-600"
                                         size={18}
                                     />
                                     <span className="flex items-start gap-1.5 bg-slate-50  rounded-xl border border-slate-100 w-fit text-sm text-slate-700 font-medium">
-                                        {event._startDate == event._endDate ? (
-                                            formatDate(event.startDate)
+                                        {event._startDate ==
+                                        event._endDate ? (
+                                            formatTanggal(event.startDate)
                                         ) : (
-                                            <>
-                                                {formatDate(event.startDate)}-
-                                                {formatDate(event.endDate)}
-                                            </>
+                                            formatRangeDate(event._startDate, event._endDate)
                                         )}
                                     </span>
                                 </div>
-                                <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-1">
                                     <Clock
                                         className="text-blue-600"
                                         size={18}
                                     />
                                     <span className="flex items-start gap-1.5 bg-slate-50  rounded-xl border border-slate-100 w-fit text-sm text-slate-700 font-medium">
-                                        {formatTime(event.startDate, true)} -{" "}
-                                        {formatTime(event.endDate, true)}
+                                        {formatTime(event.startDate, true)+ '–'+formatTime(event.endDate, true)}
                                     </span>
                                 </div>
                             </div>
 
-                            <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
-                                <div className="flex justify-between items-start mb-2">
+                        <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
+                            <div className="flex justify-between items-start mb-2">
                                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">
                                         Lokasi Utama
                                     </p>
@@ -535,13 +527,14 @@ export function EventDetailsDialog({
                                         "tidak" && (
                                         <StatusBadge
                                             status={
-                                                event.jadwal_ori.ruang_status ||
+                                                event.jadwal_ori
+                                                    .ruang_status ||
                                                 "menunggu"
                                             }
                                         />
                                     )}
                                 </div>
-                                <div className="flex items-center gap-3">
+                                <div className="flex items-center gap-1">
                                     <MapPin
                                         className={`${event.jadwal_ori.ruang_status !== "tidak" ? "text-amber-600" : "text-slate-400"}`}
                                         size={18}
@@ -550,17 +543,18 @@ export function EventDetailsDialog({
                                         {event.jadwal_ori.ruang_status !==
                                         "tidak"
                                             ? capitalizeWords(
-                                                  event.jadwal_ori
-                                                      .ruang as string,
-                                              )
+                                                    event.jadwal_ori
+                                                        .ruang as string,
+                                                )
                                             : "Hanya Online"}
                                     </span>
                                 </div>
                                 {!(
-                                    event.jadwal_ori.ruang_status !== "tidak"
+                                    event.jadwal_ori.ruang_status !==
+                                    "tidak"
                                 ) && (
-                                    <p className="flex items-start gap-1.5 bg-slate-50  rounded-xl border border-slate-100 w-fit text-sm text-slate-700 font-medium italic">
-                                        *Tidak menggunakan fasilitas gedung
+                                    <p className="flex items-start gap-1.5 bg-slate-50  rounded-xl border border-slate-100 w-fit text-xs text-slate-700 font-medium italic">
+                                        *Tidak menggunakan fasilitas ruang
                                     </p>
                                 )}
                             </div>

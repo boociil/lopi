@@ -48,7 +48,7 @@ Route::get('/maintenance', function(){
 Route::get('/', [Beranda_Controller::class, 'redirect_func'])->middleware('auth');
 
 Route::group([
-    'middleware' => ['auth', 'check_maintenance', 'statistik'],
+    'middleware' => ['auth', 'check_maintenance', 'statistik', 'auth_admin:global'],
     'prefix' => 'admin'
 ], function ($router) {
     Route::group(
@@ -157,7 +157,7 @@ Route::group(
 Route::group(
 [
     'prefix' => 'peran',
-    'middleware' => ['auth', 'check_maintenance', 'statistik'],
+    'middleware' => ['auth', 'check_maintenance', 'statistik', 'auth_admin:global'],
 ], function () {
     Route::get('/', [Lopi_Controller::class, 'index'])->name('peran-index');
     Route::post('/tambah', [Lopi_Controller::class, 'tambah'])->name('peran-tambah');
@@ -214,7 +214,7 @@ Route::group(
 Route::group(
 [
     'prefix' => 'kesehatan',
-    'middleware' => ['auth', 'check_maintenance', 'statistik'],
+    'middleware' => ['auth', 'check_maintenance', 'statistik', 'check_satuan_kerja:7600'],
 ], function () {
     Route::get('/', [Kesehatan_Controller::class, 'index'])->name('kesehatan-index');
     Route::post('/tambah', [Kesehatan_Controller::class, 'tambah'])->name('kesehatan-tambah');
@@ -224,7 +224,7 @@ Route::group(
 Route::group(
 [
     'prefix' => 'pinjam',
-    'middleware' => ['auth', 'check_maintenance', 'statistik'],
+    'middleware' => ['auth', 'check_maintenance', 'statistik', 'check_satuan_kerja:7600'],
 ], function () {
     Route::group(
     [

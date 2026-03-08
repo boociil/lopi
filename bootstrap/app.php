@@ -47,7 +47,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'redirect_guard' => \App\Http\Middleware\Redirect_Guard::class,
             'check_maintenance' => \App\Http\Middleware\Check_Maintenance::class,
             'api_persiapan' => \App\Http\Middleware\API_Persiapan::class,
-
+            'check_satuan_kerja' => \App\Http\Middleware\Check_Satuan_Kerja_Tahun::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

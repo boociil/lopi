@@ -10,7 +10,7 @@ class Appreciate_Master extends Model
     protected $table = 'siakip2_appreciate_master';
 
     protected $fillable = [
-        'nama', 'isi_awal', 'isi_akhir'
+        'satuan_kerja_tahun_id', 'nama', 'isi_awal', 'isi_akhir'
     ];
 
     public $timestamps = false;

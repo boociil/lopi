@@ -130,7 +130,7 @@ export function JadwalCalender({
         if(!event_.jadwal_ori){
             return false
         }
-        if(have_zoom_peran || event_.jadwal_ori.pembuat_username == auth.user.username){
+        if(event_.jadwal_ori.pembuat_username == auth.user.username){
             return true
         }else{
             return false

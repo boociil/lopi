@@ -6,12 +6,14 @@ use App\Http\Controllers\Controller;
 use App\Model\Lopi\Appreciate_Data;
 use App\Model\Lopi\Appreciate_Master;
 use App\Model\Umum\Peran;
+use App\Model\Umum\Satuan_Kerja_Tahun;
 use App\Model\Umum\User;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Inertia\Inertia;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -21,8 +23,13 @@ use Illuminate\Validation\ValidationException;
 class Appreciate_Controller extends Controller
 {
 
-   public function index()
+    public function index()
     {
+        $satuan_kerja_tahun_kode = [];
+        $satuan_kerja_tahun = Satuan_Kerja_Tahun::where('tahun', session('tahun_active'))->get();
+        foreach($satuan_kerja_tahun as $item){
+            array_push($satuan_kerja_tahun_kode, $item->id);
+        }
         $master_id = [];
         $master = Appreciate_Master::with('target')
                 ->where('isi_awal', "<=", Carbon::today()->format('Y-m-d'))
@@ -32,7 +39,10 @@ class Appreciate_Controller extends Controller
             array_push($master_id, $item->id);
         }
         return Inertia::render('appreciate/tambah', [
-            "user" => User::all(),
+            "user" => User::whereHas('peran', function (Builder $query) use ($satuan_kerja_tahun_kode) {
+                        $query->where('tipe_peran', 'satuan_kerja_tahun');
+                        $query->whereIn('parent_id', $satuan_kerja_tahun_kode);
+                    })->get(),
             "master" => $master,
             "data" => Appreciate_Data::whereIn('master_id', $master_id)->where('dari', Auth::user()->username)->get(),
         ]);
@@ -45,6 +55,17 @@ class Appreciate_Controller extends Controller
             'tujuan' => 'required',
             'pesan' => 'required|string',
         ]);
+
+           $satuan_kerja_tahun_kode = [];
+        $peran_satuan_kerja = Peran::get_my_peran_satuan_kerja_kerja_tahun();
+        foreach($peran_satuan_kerja as $item){
+            array_push($satuan_kerja_tahun_kode, $item->parent_id);
+        }
+
+        Log::alert($satuan_kerja_tahun_kode);
+        if(count($satuan_kerja_tahun_kode) != 1){
+            return abort(401);
+        }
 
         DB::beginTransaction();
         try

@@ -454,3 +454,23 @@ export const capitalizeWords = (str: string): string => {
     .map(word => word.charAt(0).toUpperCase() + word.slice(1)) // Capitalize the first letter of each word
     .join(' '); // Join the capitalized words back into a string
 }
+
+export function formatRangeDate(start: string, end: string) : string {
+  const formatter = new Intl.DateTimeFormat('id-ID', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric'
+  });
+
+  return formatter.formatRange(new Date(start), new Date(end));
+}
+
+export function formatTanggal(date: string) {
+  return new Intl.DateTimeFormat('id-ID', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric'
+  }).format(new Date(date));
+}
+
+

@@ -249,4 +249,9 @@ class User extends Authenticatable
         return $return_data;
     }
 
+    public function peran()
+    {
+        return $this->hasMany(Peran::class,'pemilik_username','username');
+    }
+
 }

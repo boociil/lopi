@@ -9,6 +9,7 @@ use App\Model\Lopi\Appreciate_Target;
 use App\Model\Lopi\AppreciateTarget;
 use App\Model\Lopi\Jadwal;
 use App\Model\Umum\Peran;
+use App\Model\Umum\Satuan_Kerja_Tahun;
 use App\Model\Umum\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -16,6 +17,7 @@ use Inertia\Inertia;
 
 use App\Traits\Menu;
 use Exception;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -35,10 +37,26 @@ class Appreciate_Admin_Controller extends Controller
             abort(401);
         }
 
+        $satuan_kerja_tahun_kode = [];
+        $peran_satuan_kerja = Peran::get_my_peran_satuan_kerja_kerja_tahun();
+
+        foreach($peran_satuan_kerja as $item){
+            if(!in_array($item->parent_id, $satuan_kerja_tahun_kode)){
+                array_push($satuan_kerja_tahun_kode, $item->parent_id);
+            }
+        }
+
+        if(count($satuan_kerja_tahun_kode) != 1){
+            return abort(401);
+        }
+
         return Inertia::render('appreciate/master', [
-            "user" => User::all(),
+            "user" => User::whereHas('peran', function (Builder $query) use ($satuan_kerja_tahun_kode) {
+                        $query->where('tipe_peran', 'satuan_kerja_tahun');
+                        $query->whereIn('parent_id', $satuan_kerja_tahun_kode);
+                    })->get(),
             'have_appreciate_peran' => $have_appreciate_peran,
-            "data" =>  Appreciate_Master::with('target')->get(),
+            "data" =>  Appreciate_Master::with('target')->whereIn('satuan_kerja_tahun_id', $satuan_kerja_tahun_kode)->get(),
         ]);
     }
 
@@ -58,6 +76,19 @@ class Appreciate_Admin_Controller extends Controller
             'isi_akhir' => 'required|date|after_or_equal:isi_awal',
         ]);
 
+        $satuan_kerja_tahun_kode = [];
+        $peran_satuan_kerja = Peran::get_my_peran_satuan_kerja_kerja_tahun();
+
+        foreach($peran_satuan_kerja as $item){
+            if(!in_array($item->parent_id, $satuan_kerja_tahun_kode)){
+                array_push($satuan_kerja_tahun_kode, $item->parent_id);
+            }
+        }
+
+        if(count($satuan_kerja_tahun_kode) != 1){
+            return abort(401);
+        }
+
         DB::beginTransaction();
         try
         {
@@ -65,6 +96,7 @@ class Appreciate_Admin_Controller extends Controller
             $master->nama = $request->input('nama');
             $master->isi_awal = $request->input('isi_awal');
             $master->isi_akhir = $request->input('isi_akhir');
+            $master->satuan_kerja_tahun_id = $satuan_kerja_tahun_kode[0];
             $master->save();
 
             foreach($request->target as $username){
@@ -105,6 +137,23 @@ class Appreciate_Admin_Controller extends Controller
             'isi_awal' => 'required|date',
             'isi_akhir' => 'required|date|after_or_equal:isi_awal',
         ]);
+
+        $satuan_kerja_tahun_kode = [];
+        $peran_satuan_kerja = Peran::get_my_peran_satuan_kerja_kerja_tahun();
+
+        foreach($peran_satuan_kerja as $item){
+            if(!in_array($item->parent_id, $satuan_kerja_tahun_kode)){
+                array_push($satuan_kerja_tahun_kode, $item->parent_id);
+            }
+        }
+
+        if(count($satuan_kerja_tahun_kode) != 1){
+            return abort(403);
+        }
+
+        if(!in_array($master->satuan_kerja_tahun_id, $satuan_kerja_tahun_kode)){
+            return abort(403);
+        }
 
         DB::beginTransaction();
         try
@@ -149,6 +198,19 @@ class Appreciate_Admin_Controller extends Controller
             abort(401);
         }
 
+        $satuan_kerja_tahun_kode = [];
+        $peran_satuan_kerja = Peran::get_my_peran_satuan_kerja_kerja_tahun();
+
+        foreach($peran_satuan_kerja as $item){
+            if(!in_array($item->parent_id, $satuan_kerja_tahun_kode)){
+                array_push($satuan_kerja_tahun_kode, $item->parent_id);
+            }
+        }
+
+        if(count($satuan_kerja_tahun_kode) != 1){
+            return abort(401);
+        }
+
         DB::beginTransaction();
         try
         {
@@ -180,6 +242,16 @@ class Appreciate_Admin_Controller extends Controller
             abort(401);
         }
 
+        $satuan_kerja_tahun_kode = [];
+        $peran_satuan_kerja = Peran::get_my_peran_satuan_kerja_kerja_tahun();
+        foreach($peran_satuan_kerja as $item){
+            array_push($satuan_kerja_tahun_kode, $item->parent_id);
+        }
+
+        if(count($satuan_kerja_tahun_kode) != 1){
+            return abort(401);
+        }
+
         return Inertia::render('appreciate/aproval', [
             "user" => User::all(),
             'have_appreciate_peran' => $have_appreciate_peran,
@@ -200,6 +272,16 @@ class Appreciate_Admin_Controller extends Controller
         $validated = $request->validate([
             'status' => Rule::in(['1', '2']),
         ]);
+
+        $satuan_kerja_tahun_kode = [];
+        $peran_satuan_kerja = Peran::get_my_peran_satuan_kerja_kerja_tahun();
+        foreach($peran_satuan_kerja as $item){
+            array_push($satuan_kerja_tahun_kode, $item->parent_id);
+        }
+
+        if(count($satuan_kerja_tahun_kode) != 1){
+            return abort(401);
+        }
 
         $appreciation->status = $request->status;
         $appreciation->save();

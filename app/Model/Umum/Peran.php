@@ -131,4 +131,20 @@ class Peran extends Model
                 })->where('pemilik_username', Auth::user()->username)->get();
     }
 
+    public static function get_my_peran_satuan_kerja_kerja_tahun()
+    {
+        if(!Auth::check()){
+            return [];
+        }
+        return Peran::where('tipe_peran', 'satuan_kerja_tahun')
+            ->where('tahun', session('tahun_active'))
+            ->where('pemilik_username', Auth::user()->username)
+            ->get();
+    }
+
+    public function parent_satuan_kerja_tahu()
+    {
+        return $this->hasOne(Satuan_Kerja_Tahun::class,'id','parent_id');
+    }
+
 }

@@ -32,6 +32,8 @@ import {
     capitalizeWords,
     formatDate,
     formatTime,
+    formatRangeDate,
+    formatTanggal,
 } from "@/components/calender_modules/helpers";
 import { Event_Details_Dialog_IProps } from "@/components/calender_modules/dialogs/props-dialog";
 import { progress as progressIndikator } from "@inertiajs/react";
@@ -145,12 +147,12 @@ export function EventDetailsDialog({
                 <TooltipContent className="bg-background p-1 m-1 shadow-2xl rounded-2xl">
                     <div className="p-4">
                         <div className="mb-1">
-                            <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">
                                 Nama Kegiatan
                             </label>
-                            <h3 className="text-sm font-bold text-slate-800">
+                           <p className="font-bold text-lg text-slate-800 leading-tight">
                                 {event.title}
-                            </h3>
+                            </p>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
@@ -174,13 +176,11 @@ export function EventDetailsDialog({
                                                 : "-"}
                                         </div>
                                         <div>
-                                            <p className="text-sm font-bold text-slate-800 ml-1">
-                                                <p className="text-sm font-bold text-emerald-800">
-                                                    {( (event as PinjamMobilIEvent).pinjam_mobil_ori.pembuat_username && userDict.has((event as PinjamMobilIEvent).pinjam_mobil_ori.pembuat_username as string) )
-                                                        ? userDict.get((event as PinjamMobilIEvent).pinjam_mobil_ori.pembuat_username as string)?.name
-                                                        : (event as PinjamMobilIEvent).pinjam_mobil_ori.pembuat_username
-                                                    }
-                                                </p>
+                                            <p className="text-sm font-bold text-slate-500 ml-1">
+                                                {( (event as PinjamMobilIEvent).pinjam_mobil_ori.pembuat_username && userDict.has((event as PinjamMobilIEvent).pinjam_mobil_ori.pembuat_username as string) )
+                                                    ? userDict.get((event as PinjamMobilIEvent).pinjam_mobil_ori.pembuat_username as string)?.name
+                                                    : (event as PinjamMobilIEvent).pinjam_mobil_ori.pembuat_username
+                                                }
                                             </p>
                                         </div>
                                     </div>
@@ -207,7 +207,7 @@ export function EventDetailsDialog({
                                                     : "-"}
                                             </div>
                                             <div>
-                                                <p className="text-sm font-bold text-emerald-800">
+                                                <p className="text-sm font-bold text-emerald-500">
                                                     {( (event as PinjamMobilIEvent).pinjam_mobil_ori.confirm_username && userDict.has((event as PinjamMobilIEvent).pinjam_mobil_ori.confirm_username as string) )
                                                         ? userDict.get((event as PinjamMobilIEvent).pinjam_mobil_ori.confirm_username as string)?.name
                                                         : (event as PinjamMobilIEvent).pinjam_mobil_ori.confirm_username
@@ -227,15 +227,15 @@ export function EventDetailsDialog({
                                         </span>
                                     </div>
                                     <div className="bg-slate-50 p-2 rounded-2xl border border-slate-100">
-                                        <p className="text-sm font-bold text-slate-800">
-                                            {event._startDate == event._endDate
-                                                ? formatDate(event._startDate)
-                                                : `${formatDate(event._startDate)} s/d ${event._endDate}`}
+                                        <p className="text-sm font-bold text-slate-500">
+                                            {event._startDate == event._endDate ? (
+                                                formatTanggal(event.startDate)
+                                            ) : (
+                                                formatRangeDate(event._startDate, event._endDate)
+                                            )}
                                         </p>
-                                        <p className="text-xs text-slate-500 mt-1">
-                                            {formatTime(event.startDate, true)}{" "}
-                                            sampai{" "}
-                                            {formatTime(event.endDate, true)}
+                                        <p className="text-sm font-bold text-slate-500">
+                                            {formatTime(event.startDate, true)+ '–'+formatTime(event.endDate, true)}
                                         </p>
                                     </div>
                                 </div>
@@ -261,15 +261,15 @@ export function EventDetailsDialog({
                 <div className="w-full max-w-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
                     <div className="p-2">
                         <div className="mb-1">
-                            <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">
                                 Nama Kegiatan
                             </label>
-                            <h3 className="text-sm font-bold text-slate-800">
+                           <p className="font-bold text-lg text-slate-800 leading-tight">
                                 {event.title}
-                            </h3>
+                            </p>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 mt-2">
                             <div className="space-y-3">
                                 <div>
                                     <div className="flex items-center gap-2 text-slate-400 mb-2">
@@ -290,19 +290,17 @@ export function EventDetailsDialog({
                                                 : "-"}
                                         </div>
                                         <div>
-                                            <p className="text-sm font-bold text-slate-800 ml-1">
-                                                <p className="text-sm font-bold text-emerald-800">
-                                                    {( (event as PinjamMobilIEvent).pinjam_mobil_ori.pembuat_username && userDict.has((event as PinjamMobilIEvent).pinjam_mobil_ori.pembuat_username as string) )
-                                                        ? userDict.get((event as PinjamMobilIEvent).pinjam_mobil_ori.pembuat_username as string)?.name
-                                                        : (event as PinjamMobilIEvent).pinjam_mobil_ori.pembuat_username
-                                                    }
-                                                </p>
+                                            <p className="text-sm font-bold text-slate-500 ml-1">
+                                                {( (event as PinjamMobilIEvent).pinjam_mobil_ori.pembuat_username && userDict.has((event as PinjamMobilIEvent).pinjam_mobil_ori.pembuat_username as string) )
+                                                    ? userDict.get((event as PinjamMobilIEvent).pinjam_mobil_ori.pembuat_username as string)?.name
+                                                    : (event as PinjamMobilIEvent).pinjam_mobil_ori.pembuat_username
+                                                }
                                             </p>
                                         </div>
                                     </div>
                                 </div>
 
-                                {(event as PinjamMobilIEvent).pinjam_mobil_ori
+                               {(event as PinjamMobilIEvent).pinjam_mobil_ori
                                     .status == "disetujui" && (
                                     <div>
                                         <div className="flex items-center gap-2 text-slate-400 mb-2">
@@ -323,7 +321,7 @@ export function EventDetailsDialog({
                                                     : "-"}
                                             </div>
                                             <div>
-                                                <p className="text-sm font-bold text-emerald-800">
+                                                <p className="text-sm font-bold text-emerald-500">
                                                     {( (event as PinjamMobilIEvent).pinjam_mobil_ori.confirm_username && userDict.has((event as PinjamMobilIEvent).pinjam_mobil_ori.confirm_username as string) )
                                                         ? userDict.get((event as PinjamMobilIEvent).pinjam_mobil_ori.confirm_username as string)?.name
                                                         : (event as PinjamMobilIEvent).pinjam_mobil_ori.confirm_username
@@ -343,15 +341,15 @@ export function EventDetailsDialog({
                                         </span>
                                     </div>
                                     <div className="bg-slate-50 p-2 rounded-2xl border border-slate-100">
-                                        <p className="text-sm font-bold text-slate-800">
-                                            {event._startDate == event._endDate
-                                                ? formatDate(event._startDate)
-                                                : `${formatDate(event._startDate)} s/d ${event._endDate}`}
+                                        <p className="text-sm font-bold text-slate-500">
+                                            {event._startDate == event._endDate ? (
+                                                formatTanggal(event.startDate)
+                                            ) : (
+                                                formatRangeDate(event._startDate, event._endDate)
+                                            )}
                                         </p>
-                                        <p className="text-xs text-slate-500 mt-1">
-                                            {formatTime(event.startDate, true)}{" "}
-                                            sampai{" "}
-                                            {formatTime(event.endDate, true)}
+                                        <p className="text-sm font-bold text-slate-500">
+                                            {formatTime(event.startDate, true)+ '–'+formatTime(event.endDate, true)}
                                         </p>
                                     </div>
                                 </div>
