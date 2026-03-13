@@ -1,7 +1,7 @@
 import Heading from "@/components/heading";
 import AppLayout from "@/layouts/app-layout";
-import { type BreadcrumbItem } from "@/types";
-import { Head, Link } from "@inertiajs/react";
+import { SharedData, type BreadcrumbItem } from "@/types";
+import { Head, Link, usePage } from "@inertiajs/react";
 import {
     ArrowRight,
     Award,
@@ -13,6 +13,8 @@ import {
     Video,
     Zap,
 } from "lucide-react";
+import { useState } from "react";
+import { LucideIcon } from 'lucide-react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -21,49 +23,84 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
+interface Modules {
+    id: string; //group | item
+    label: string;
+    url: string;
+    color: string;
+    icon: LucideIcon;
+    desc: string;
+}
+
 export default function Beranda() {
-    const modules = [
-        {
-            id: "jadwal",
-            label: "Jadwal Kegiatan",
-            icon: Calendar,
-            color: "blue",
-            url: "/lopi/jadwal",
-            desc: "Modul sentral untuk memantau seluruh agenda pelatihan, pembinaan, dan rapat internal. Memastikan sinkronisasi antara zoom, ruang, dan pegawai.",
-        },
-        {
-            id: "zoom",
-            label: "Peminjaman Zoom",
-            icon: Video,
-            color: "purple",
-            url: "/lopi/pinjam/zoom",
-            desc: "Fasilitas reservasi akun Zoom BPS Sulawesi Barat untuk kelas daring. Menghindari tabrakan jadwal antar sesi pelatihan online.",
-        },
-        {
-            id: "mobil",
-            label: "Peminjaman Mobil",
-            icon: Car,
-            color: "orange",
-            url: "/lopi/pinjam/mobil",
-            desc: "Sistem peminjaman kendaraan operasional untuk keperluan internal.",
-        },
-        {
-            id: "kesehatan",
-            label: "Monitoring Kesehatan",
-            icon: HeartPulse,
-            color: "green",
-            url: "/lopi/kesehatan",
-            desc: "Fitur pelaporan kondisi kesehatan harian bagi seluruh pegawai memastikan lingkungan kerja dan belajar yang aman.",
-        },
-        {
+
+    const auth = usePage<SharedData>().props.auth;
+    const peran = auth.peran;
+
+    let satuan_kerja_tahun_7600 = auth.satuan_kerja_tahun.find(item => item.kode_satuan_kerja == '7600')
+    let have_7600 = false
+
+    if(satuan_kerja_tahun_7600){
+        if(peran.find(item => item.parent_id == satuan_kerja_tahun_7600.id)){
+            have_7600 = true
+        }
+    }
+
+    const modules: Modules[] = [];
+
+    if(!have_7600){
+        modules.push(...[{
             id: "apresiasi",
             label: "Apresiasi & Prestasi",
             icon: Award,
             color: "yellow",
             url: "/lopi/appreciate/baca",
             desc: "Ruang apresiasi untuk mengakui dedikasi pegawai.",
-        },
-    ];
+        }])
+    }else{
+        modules.push(...[
+            {
+                id: "jadwal",
+                label: "Jadwal Kegiatan",
+                icon: Calendar,
+                color: "blue",
+                url: "/lopi/jadwal",
+                desc: "Modul sentral untuk memantau seluruh agenda pelatihan, pembinaan, dan rapat internal. Memastikan sinkronisasi antara zoom, ruang, dan pegawai.",
+            },
+            {
+                id: "zoom",
+                label: "Peminjaman Zoom",
+                icon: Video,
+                color: "purple",
+                url: "/lopi/pinjam/zoom",
+                desc: "Fasilitas reservasi akun Zoom BPS Sulawesi Barat untuk kelas daring. Menghindari tabrakan jadwal antar sesi pelatihan online.",
+            },
+            {
+                id: "mobil",
+                label: "Peminjaman Mobil",
+                icon: Car,
+                color: "orange",
+                url: "/lopi/pinjam/mobil",
+                desc: "Sistem peminjaman kendaraan operasional untuk keperluan internal.",
+            },
+            {
+                id: "kesehatan",
+                label: "Monitoring Kesehatan",
+                icon: HeartPulse,
+                color: "green",
+                url: "/lopi/kesehatan",
+                desc: "Fitur pelaporan kondisi kesehatan harian bagi seluruh pegawai memastikan lingkungan kerja dan belajar yang aman.",
+            },
+            {
+                id: "apresiasi",
+                label: "Apresiasi & Prestasi",
+                icon: Award,
+                color: "yellow",
+                url: "/lopi/appreciate/baca",
+                desc: "Ruang apresiasi untuk mengakui dedikasi pegawai.",
+            },
+        ])
+    }
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>

@@ -31,6 +31,7 @@ export interface ICalendarCell {
 }
 
 export interface SettingCalender {
+    showTime: boolean;
 	name_event: string;
 	calender_show: string[];
 	show_filter: boolean;

@@ -31,6 +31,7 @@ class Appreciate_Admin_Controller extends Controller
     {
         $have_appreciate_peran =  Peran::where('pemilik_username', Auth::user()->username)
             ->where('peran', 'appreciate')
+            ->where('tahun', session('tahun_active'))
             ->first();
 
         if(!$have_appreciate_peran){
@@ -64,6 +65,7 @@ class Appreciate_Admin_Controller extends Controller
     {
         $have_appreciate_peran =  Peran::where('pemilik_username', Auth::user()->username)
             ->where('peran', 'appreciate')
+            ->where('tahun', session('tahun_active'))
             ->first();
 
         if(!$have_appreciate_peran){
@@ -126,6 +128,7 @@ class Appreciate_Admin_Controller extends Controller
     {
         $have_appreciate_peran =  Peran::where('pemilik_username', Auth::user()->username)
             ->where('peran', 'appreciate')
+            ->where('tahun', session('tahun_active'))
             ->first();
 
         if(!$have_appreciate_peran){
@@ -148,7 +151,7 @@ class Appreciate_Admin_Controller extends Controller
         }
 
         if(count($satuan_kerja_tahun_kode) != 1){
-            return abort(403);
+            return abort(401);
         }
 
         if(!in_array($master->satuan_kerja_tahun_id, $satuan_kerja_tahun_kode)){
@@ -192,6 +195,7 @@ class Appreciate_Admin_Controller extends Controller
     {
         $have_appreciate_peran =  Peran::where('pemilik_username', Auth::user()->username)
             ->where('peran', 'appreciate')
+            ->where('tahun', session('tahun_active'))
             ->first();
 
         if(!$have_appreciate_peran){
@@ -236,6 +240,7 @@ class Appreciate_Admin_Controller extends Controller
     {
         $have_appreciate_peran =  Peran::where('pemilik_username', Auth::user()->username)
             ->where('peran', 'appreciate')
+            ->where('tahun', session('tahun_active'))
             ->first();
 
         if(!$have_appreciate_peran){
@@ -244,18 +249,23 @@ class Appreciate_Admin_Controller extends Controller
 
         $satuan_kerja_tahun_kode = [];
         $peran_satuan_kerja = Peran::get_my_peran_satuan_kerja_kerja_tahun();
+
         foreach($peran_satuan_kerja as $item){
-            array_push($satuan_kerja_tahun_kode, $item->parent_id);
+            if(!in_array($item->parent_id, $satuan_kerja_tahun_kode)){
+                array_push($satuan_kerja_tahun_kode, $item->parent_id);
+            }
         }
 
         if(count($satuan_kerja_tahun_kode) != 1){
             return abort(401);
         }
 
+        $master_id = Appreciate_Master::whereIn('satuan_kerja_tahun_id', $satuan_kerja_tahun_kode)->get()->pluck('id')->toArray();
+
         return Inertia::render('appreciate/aproval', [
             "user" => User::all(),
             'have_appreciate_peran' => $have_appreciate_peran,
-            "data" =>  Appreciate_Data::where('status', '0')->get(),
+            "data" =>  Appreciate_Data::whereIn('master_id', $master_id)->where('status', '0')->get(),
         ]);
     }
 
@@ -263,6 +273,7 @@ class Appreciate_Admin_Controller extends Controller
     {
         $have_appreciate_peran =  Peran::where('pemilik_username', Auth::user()->username)
             ->where('peran', 'appreciate')
+            ->where('tahun', session('tahun_active'))
             ->first();
 
         if(!$have_appreciate_peran){
@@ -275,11 +286,18 @@ class Appreciate_Admin_Controller extends Controller
 
         $satuan_kerja_tahun_kode = [];
         $peran_satuan_kerja = Peran::get_my_peran_satuan_kerja_kerja_tahun();
+
         foreach($peran_satuan_kerja as $item){
-            array_push($satuan_kerja_tahun_kode, $item->parent_id);
+            if(!in_array($item->parent_id, $satuan_kerja_tahun_kode)){
+                array_push($satuan_kerja_tahun_kode, $item->parent_id);
+            }
         }
 
         if(count($satuan_kerja_tahun_kode) != 1){
+            return abort(401);
+        }
+
+        if(!Appreciate_Master::whereIn('satuan_kerja_tahun_id', $satuan_kerja_tahun_kode)->where('id',$appreciation->master_id)->first()){
             return abort(401);
         }
 
@@ -292,14 +310,29 @@ class Appreciate_Admin_Controller extends Controller
     {
         $have_appreciate_peran =  Peran::where('pemilik_username', Auth::user()->username)
             ->where('peran', 'appreciate')
+            ->where('tahun', session('tahun_active'))
             ->first();
 
         if(!$have_appreciate_peran){
             abort(401);
         }
 
+        $satuan_kerja_tahun_kode = [];
+        $peran_satuan_kerja = Peran::get_my_peran_satuan_kerja_kerja_tahun();
+
+        foreach($peran_satuan_kerja as $item){
+            if(!in_array($item->parent_id, $satuan_kerja_tahun_kode)){
+                array_push($satuan_kerja_tahun_kode, $item->parent_id);
+            }
+        }
+
+        if(count($satuan_kerja_tahun_kode) != 1){
+            return abort(401);
+        }
+
         $master_id = [];
         $master = Appreciate_Master::where('isi_awal', "<=", Carbon::today()->format('Y-m-d'))
+                ->whereIn('satuan_kerja_tahun_id', $satuan_kerja_tahun_kode)
                 ->orderBy('isi_awal', 'desc')
                 ->limit(1)
                 ->get();
@@ -335,6 +368,52 @@ class Appreciate_Admin_Controller extends Controller
         return Inertia::render('appreciate/baca', [
             "user" => User::all(),
             "data" => $return_data,
+        ]);
+    }
+
+    public function rekap(Request $request)
+    {
+        $have_appreciate_peran =  Peran::where('pemilik_username', Auth::user()->username)
+            ->where('peran', 'appreciate')
+            ->where('tahun', session('tahun_active'))
+            ->first();
+
+        if(!$have_appreciate_peran){
+            abort(401);
+        }
+
+        $satuan_kerja_tahun_kode = [];
+        $peran_satuan_kerja = Peran::get_my_peran_satuan_kerja_kerja_tahun();
+
+        foreach($peran_satuan_kerja as $item){
+            if(!in_array($item->parent_id, $satuan_kerja_tahun_kode)){
+                array_push($satuan_kerja_tahun_kode, $item->parent_id);
+            }
+        }
+
+        if(count($satuan_kerja_tahun_kode) != 1){
+            return abort(401);
+        }
+
+        $master_id = [];
+        $master = Appreciate_Master::with(['target'])
+                    ->whereIn('satuan_kerja_tahun_id', $satuan_kerja_tahun_kode)
+                    ->get();
+
+        foreach($master as $item){
+            array_push($master_id, $item->id);
+        }
+
+        $data =  Appreciate_Data::whereIn('master_id', $master_id)->where('status', "2")
+                    ->select('master_id', 'dari', DB::raw("count(*) as jumlah"))->groupBy('master_id', 'dari')->get();
+
+        return Inertia::render('appreciate/rekap', [
+            "user" => User::whereHas('peran', function (Builder $query) use ($satuan_kerja_tahun_kode) {
+                    $query->where('tipe_peran', 'satuan_kerja_tahun');
+                    $query->whereIn('parent_id', $satuan_kerja_tahun_kode);
+                })->get(),
+            "data" => $data,
+            "master" => $master,
         ]);
     }
 

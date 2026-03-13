@@ -4,6 +4,7 @@ import type { Config } from 'ziggy-js';
 export interface Auth {
     user: User;
     peran: Peran[];
+    satuan_kerja_tahun: Satuan_Kerja_Tahun[];
 }
 
 export interface BreadcrumbItem {
@@ -64,4 +65,14 @@ export interface Peran {
     pemilik_satuan_kerja_tahun_id: string?;
     tahun: string;
     peran: string;
+}
+
+export interface Satuan_Kerja_Tahun {
+    id: string;
+    nama: string;
+    tahun: number;
+    satuan_kerja_id: string;
+    kode_satuan_kerja: string;
+    type: string;
+    parent_id: string?;
 }

@@ -21,7 +21,7 @@ import {
 import {EventBullet} from "@/components/calender_modules/views/month-view/event-bullet";
 
 export const AgendaEvents: FC = () => {
-    const {events, use24HourFormat, badgeVariant, agendaModeGroupBy, selectedDate, EventDetailsDialog} =
+    const {events, use24HourFormat, badgeVariant, agendaModeGroupBy, selectedDate, EventDetailsDialog, settingCalender} =
         useCalendar();
 
     const monthEvents = getEventsForMonth(events, selectedDate)
@@ -86,34 +86,45 @@ export const AgendaEvents: FC = () => {
                                                 >
                                                     {event.title}
                                                 </p>
-                                                <p className="text-muted-foreground text-sm line-clamp-1 text-ellipsis md:text-clip w-1/3">
+                                                <p className="text-muted-foreground text-sm line-clamp-1 text-ellipsis md:text-clip">
                                                     {event.description}
                                                 </p>
                                             </div>
                                         </div>
-                                        <div className="w-40 flex justify-center items-center gap-1">
-                                            {agendaModeGroupBy === "date" ? (
-                                                <>
-                                                    <p className="text-sm">
-                                                        {formatTime(event.startDate, use24HourFormat)}
-                                                    </p>
-                                                    <span className="text-muted-foreground">-</span>
-                                                    <p className="text-sm">
-                                                        {formatTime(event.endDate, use24HourFormat)}
-                                                    </p>
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <p className="text-sm">
-                                                        {format(event.startDate, "MM/dd/yyyy")}
-                                                    </p>
-                                                    <span className="text-sm">at</span>
-                                                    <p className="text-sm">
-                                                        {formatTime(event.startDate, use24HourFormat)}
-                                                    </p>
-                                                </>
-                                            )}
-                                        </div>
+                                        {(agendaModeGroupBy != "date" || (agendaModeGroupBy === "date" && settingCalender.showTime) ) &&
+                                            <div className="w-40 flex justify-center items-center gap-1">
+                                                { (agendaModeGroupBy === "date") ? (
+                                                    <>
+                                                        {settingCalender.showTime && <>
+                                                            <p className="text-sm">
+                                                                {formatTime(event.startDate, use24HourFormat)}
+                                                            </p>
+                                                            <span className="text-muted-foreground">-</span>
+                                                            <p className="text-sm">
+                                                                {formatTime(event.endDate, use24HourFormat)}
+                                                            </p>
+                                                        </>
+                                                        }
+
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <p className="text-sm">
+                                                            {format(event.startDate, "MM/dd/yyyy")}
+                                                        </p>
+                                                        {settingCalender.showTime && <>
+                                                            <span className="text-sm">at</span>
+                                                            <p className="text-sm">
+                                                                {formatTime(event.startDate, use24HourFormat)}
+                                                            </p>
+                                                        </>}
+
+                                                    </>
+                                                )}
+                                            </div>
+
+                                        }
+
                                     </div>
                                 </EventDetailsDialog>
                             </CommandItem>

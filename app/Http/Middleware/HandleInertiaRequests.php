@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Model\Umum\Peran;
+use App\Model\Umum\Satuan_Kerja_Tahun;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 use Tighten\Ziggy\Ziggy;
@@ -44,6 +45,7 @@ class HandleInertiaRequests extends Middleware
                 'auth' => [
                     'user' => $request->user(),
                     'peran' => Peran::get_my_peran(),
+                    'satuan_kerja_tahun' => Satuan_Kerja_Tahun::where('tahun', session('tahun_active'))->get(),
                 ],
                 'tahun_active' => session('tahun_active'),
                 'flash' => [

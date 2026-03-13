@@ -147,4 +147,9 @@ class Peran extends Model
         return $this->hasOne(Satuan_Kerja_Tahun::class,'id','parent_id');
     }
 
+     public function user()
+    {
+        return $this->hasOne(User::class,'username','pemilik_username');
+    }
+
 }

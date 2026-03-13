@@ -33,7 +33,14 @@ export function PinjamMobilCalender({
     const axiosClient = useApi();
     const auth = usePage<SharedData>().props.auth;
 
-    const settingCalender: SettingCalender = {name_event: 'kegiatan', calender_show: ["week", "month","agenda"], show_filter: false, filter_name: [], show_filter_user: false}
+    const settingCalender: SettingCalender = {
+        showTime: true,
+        name_event: 'kegiatan',
+        calender_show: ["week", "month","agenda"],
+        show_filter: false,
+        filter_name: [],
+        show_filter_user: false
+    }
     const _user: IUser[] = produceCalenderUser(user);
     const _allEvents: IEvent[] = producePinjamMobilIEvent(pinjam_mobil_data);
     pairIEventDenganUser(_allEvents as PinjamMobilIEvent[], _user as CalenderUser[])

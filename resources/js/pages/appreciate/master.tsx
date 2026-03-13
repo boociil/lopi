@@ -229,5 +229,5 @@ export default function Index({
                 </div>
             </AppreciateMaterProvider>
         </AppLayout>
-    );
+    )
 }

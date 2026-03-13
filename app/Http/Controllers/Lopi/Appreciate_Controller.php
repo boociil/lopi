@@ -26,14 +26,19 @@ class Appreciate_Controller extends Controller
     public function index()
     {
         $satuan_kerja_tahun_kode = [];
-        $satuan_kerja_tahun = Satuan_Kerja_Tahun::where('tahun', session('tahun_active'))->get();
-        foreach($satuan_kerja_tahun as $item){
-            array_push($satuan_kerja_tahun_kode, $item->id);
+        $peran_satuan_kerja = Peran::get_my_peran_satuan_kerja_kerja_tahun();
+
+        foreach($peran_satuan_kerja as $item){
+            if(!in_array($item->parent_id, $satuan_kerja_tahun_kode)){
+                array_push($satuan_kerja_tahun_kode, $item->parent_id);
+            }
         }
+
         $master_id = [];
         $master = Appreciate_Master::with('target')
                 ->where('isi_awal', "<=", Carbon::today()->format('Y-m-d'))
                 ->where('isi_akhir', ">=", Carbon::today()->format('Y-m-d'))
+                ->whereIn('satuan_kerja_tahun_id', $satuan_kerja_tahun_kode)
                 ->get();
         foreach($master as $item){
             array_push($master_id, $item->id);
@@ -56,15 +61,13 @@ class Appreciate_Controller extends Controller
             'pesan' => 'required|string',
         ]);
 
-           $satuan_kerja_tahun_kode = [];
+        $satuan_kerja_tahun_kode = [];
         $peran_satuan_kerja = Peran::get_my_peran_satuan_kerja_kerja_tahun();
-        foreach($peran_satuan_kerja as $item){
-            array_push($satuan_kerja_tahun_kode, $item->parent_id);
-        }
 
-        Log::alert($satuan_kerja_tahun_kode);
-        if(count($satuan_kerja_tahun_kode) != 1){
-            return abort(401);
+        foreach($peran_satuan_kerja as $item){
+            if(!in_array($item->parent_id, $satuan_kerja_tahun_kode)){
+                array_push($satuan_kerja_tahun_kode, $item->parent_id);
+            }
         }
 
         DB::beginTransaction();
@@ -72,8 +75,10 @@ class Appreciate_Controller extends Controller
         {
             $target_master = [];
             $target_username = [];
-            $appreciate_master = Appreciate_Master::with('target')->where('isi_awal', "<=", Carbon::today()->format('Y-m-d'))
+            $appreciate_master = Appreciate_Master::with('target')
+                    ->where('isi_awal', "<=", Carbon::today()->format('Y-m-d'))
                     ->where('isi_akhir', ">=", Carbon::today()->format('Y-m-d'))
+                    ->whereIn('satuan_kerja_tahun_id', $satuan_kerja_tahun_kode)
                     ->get();
 
             foreach($appreciate_master as $item){

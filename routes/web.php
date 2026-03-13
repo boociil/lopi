@@ -17,7 +17,11 @@ use App\Http\Controllers\Lopi\Kesehatan_Controller;
 use App\Http\Controllers\Lopi\Notif_Controller;
 use App\Http\Controllers\Lopi\Pinjam_Mobil_Controller;
 use App\Http\Controllers\Lopi\Pinjam_Zoom_Controller;
+use App\Http\Controllers\Lopi\Cek_Cuti_Controller;
 use App\Http\Controllers\WebController;
+use App\Model\Umum\User;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 
 /*
@@ -39,6 +43,13 @@ use Inertia\Inertia;
 Route::get('/login', [SSO_Controller::class, 'showLoginForm'])->name('login');
 Route::get('/sso', [SSO_Controller::class, 'sso'])->name('sso');
 Route::get('/logout', [SSO_Controller::class, 'logout'])->name('logout');
+
+// Route::get('/login_dev', function(){
+//     Auth::logout();
+//     Auth::login(User::where('username', 'anisa.rahma')->first(),true);
+//     session()->put('tahun_active', env("TAHUN_DEFAULT"));
+//     return redirect('/');
+// });
 
 Route::get('/maintenance', function(){
     return view("maintenance");
@@ -195,12 +206,14 @@ Route::group(
         Route::post('/{appreciation}/approval', [Appreciate_Admin_Controller::class, 'aproval_data'])->name('appreciation-aproval-ubah');
     });
 
+    Route::get('/rekap', [Appreciate_Admin_Controller::class, 'rekap'])->name('appreciation-buka');
+
 });
 
 Route::group(
 [
     'prefix' => 'jadwal',
-    'middleware' => ['auth', 'check_maintenance', 'statistik'],
+    'middleware' => ['auth', 'check_maintenance', 'statistik', 'check_satuan_kerja:7600'],
 ], function () {
     Route::get('/', [Jadwal_Controller::class, 'index'])->name('jadwal-index');
     Route::post('/', [Jadwal_Controller::class, 'index'])->name('jadwal-index');
@@ -251,6 +264,13 @@ Route::group(
     });
 });
 
+Route::group(
+[
+    'prefix' => 'cek_cuti',
+    'middleware' => ['auth', 'check_maintenance', 'statistik', 'check_satuan_kerja:7600'],
+], function () {
+    Route::get('/', [Cek_Cuti_Controller::class, 'index']);
+});
 
 
 

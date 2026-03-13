@@ -310,7 +310,7 @@ export default function Index({
                                 <Card className="lg:col-span-4 border" >
                                     <CardHeader>
                                         <CardTitle className="font-semibold text-accent-foreground">Analisis Metabolik</CardTitle>
-                                        <CardDescription>Tren gula darah dan asam urat dalam 3 bulan terakhir.</CardDescription>
+                                        <CardDescription>Tren gula darah dan asam urat dalam beberapa bulan terakhir.</CardDescription>
                                     </CardHeader>
                                     <CardContent className="h-[300px]">
                                     <ResponsiveContainer width="100%" height="100%">

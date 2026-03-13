@@ -44,7 +44,7 @@ import {
     PinjamMobilIEvent,
     producePinjamMobilIEvent,
 } from "../types";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
     Tooltip,
     TooltipContent,
@@ -55,7 +55,7 @@ export function EventDetailsDialog({
     _event,
     children,
 }: Event_Details_Dialog_IProps) {
-    const [event, setEvent] = useState(_event);
+    const [event, setEvent] = useState<PinjamMobilIEvent>(_event as PinjamMobilIEvent);
     const {
         settingCalender,
         updateEvent,
@@ -65,8 +65,16 @@ export function EventDetailsDialog({
         canApprove,
         axiosClient,
         users,
-        userDict
+        userDict,
+        events,
     } = useCalendar();
+
+    useEffect(() => {
+            const itemSelect = events.find((item) => item.id == _event.id);
+            if (itemSelect) {
+                setEvent(itemSelect as PinjamMobilIEvent);
+            }
+        }, [_event, events]);
 
     const deleteEvent = (event_id: string) => {
         progressIndikator.start();
@@ -408,7 +416,7 @@ export function EventDetailsDialog({
                         <AddEditEventDialog
                             event={event}
                             onUpdateOpenChange={(_event: IEvent) =>
-                                setEvent(_event)
+                                setEvent(_event as PinjamMobilIEvent)
                             }
                         >
                             <Button
@@ -432,7 +440,7 @@ export function EventDetailsDialog({
                     <DialogClose asChild>
                         <Button
                             variant="outline"
-                            className="px-6 py-2 text-sm font-bold text-slate-500 hover:text-slate-800 transition-colors uppercase tracking-widest"
+                            className="text-secondary"
                         >
                             Tutup
                         </Button>

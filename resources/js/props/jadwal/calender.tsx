@@ -36,6 +36,7 @@ export function JadwalCalender({
     const auth = usePage<SharedData>().props.auth;
 
     const settingCalender: SettingCalenderJadwal = {
+        showTime: true,
         name_event: 'kegiatan',
         calender_show: ["week", "month","agenda"],
         show_filter: true,
