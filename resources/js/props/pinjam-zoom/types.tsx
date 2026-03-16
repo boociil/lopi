@@ -71,6 +71,7 @@ export interface pinjam_zoom_req {
 export interface PinjamZoomIEvent extends IEvent {
     pinjam_zoom_ori: pinjam_zoom | null;
     zoom_akun: 'statsulbar' | 'sp2020' | null;
+    zoom_meeting_id: number | null;
     join_url: string | null;
     start_url: string | null;
 }
@@ -119,6 +120,7 @@ export function producePinjamZoomIEvent(
                 description: "Peminjaman Zoom",
                 user: null,
                 zoom_akun: element.zoom_akun as 'statsulbar' | 'sp2020' | null,
+                zoom_meeting_id: element.zoom_meeting_id,
                 pinjam_zoom_ori: element,
                 join_url: element.zoom_join_url,
                 start_url: element.zoom_start_url,
@@ -194,6 +196,7 @@ export function producePinjamZoomIEventFromZoomApp(
                     description: "Peminjaman Zoom",
                     user: null,
                     zoom_akun: zoom_akun,
+                    zoom_meeting_id: element.id,
                     pinjam_zoom_ori: null,
                     join_url: element.join_url,
                     start_url: null,
@@ -219,6 +222,7 @@ export function producePinjamZoomIEventFromZoomApp(
                     description: "Peminjaman Zoom",
                     user: null,
                     zoom_akun: zoom_akun,
+                    zoom_meeting_id: element.id,
                     pinjam_zoom_ori: null,
                     join_url: element.join_url,
                     start_url: null,
@@ -239,6 +243,7 @@ export function producePinjamZoomIEventFromZoomApp(
                     description: "Peminjaman Zoom",
                     user: null,
                     zoom_akun: zoom_akun,
+                    zoom_meeting_id: element.id,
                     pinjam_zoom_ori: null,
                     join_url: element.join_url,
                     start_url: null,

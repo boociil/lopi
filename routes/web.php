@@ -19,6 +19,9 @@ use App\Http\Controllers\Lopi\Pinjam_Mobil_Controller;
 use App\Http\Controllers\Lopi\Pinjam_Zoom_Controller;
 use App\Http\Controllers\Lopi\Cek_Cuti_Controller;
 use App\Http\Controllers\Lopi\Rumah_Link_Controller;
+use App\Http\Controllers\Lopi\KMS_Controller;
+use App\Http\Controllers\Lopi\Monica_Controller;
+use App\Http\Controllers\Lopi\ITValet_Controller;
 use App\Http\Controllers\WebController;
 use App\Model\Umum\User;
 use Illuminate\Support\Facades\Auth;
@@ -262,6 +265,7 @@ Route::group(
         Route::post('/{pinjamZoom}/ubah', [Pinjam_Zoom_Controller::class, 'ubah'])->name('pinjam-zoom-ubah');
         Route::post('/{pinjamZoom}/hapus', [Pinjam_Zoom_Controller::class, 'hapus'])->name('pinjam-zoom-hapus');
         Route::post('/{pinjamZoom}/approval', [Pinjam_Zoom_Controller::class, 'approval'])->name('pinjam-zoom-approval');
+        Route::post('/get_mmeting', [Pinjam_Zoom_Controller::class, 'get_mmeting'])->name('pinjam-zoom-get-mmeting');
     });
 });
 
@@ -282,6 +286,39 @@ Route::group(
     Route::get('/', [Rumah_Link_Controller::class, 'index']);
 });
 
+Route::group(
+[
+    'prefix' => 'kms',
+    'middleware' => ['auth', 'check_maintenance', 'statistik', 'check_satuan_kerja:7600'],
+], function () {
+    Route::get('/', [KMS_Controller::class, 'index'])->name('kms-index');
+    Route::post('/', [KMS_Controller::class, 'index'])->name('kms-index');
+    Route::post('/tambah', [KMS_Controller::class, 'tambah'])->name('kms-tambah');
+    Route::post('/{kms}/ubah', [KMS_Controller::class, 'ubah'])->name('kms-ubah');
+    Route::post('/{kms}/hapus', [KMS_Controller::class, 'hapus'])->name('kms-hapus');
+});
 
+Route::group(
+[
+    'prefix' => 'monica',
+    'middleware' => ['auth', 'check_maintenance', 'statistik', 'check_satuan_kerja:7600'],
+], function () {
+    Route::get('/', [Monica_Controller::class, 'index'])->name('monica-index');
+    Route::post('/', [Monica_Controller::class, 'index'])->name('monica-index');
+    Route::post('/tambah', [Monica_Controller::class, 'tambah'])->name('monica-tambah');
+    Route::post('/{monica}/ubah', [Monica_Controller::class, 'ubah'])->name('monica-ubah');
+    Route::post('/{monica}/hapus', [Monica_Controller::class, 'hapus'])->name('monica-hapus');
+});
 
+Route::group(
+[
+    'prefix' => 'it-valet',
+    'middleware' => ['auth', 'check_maintenance', 'statistik', 'check_satuan_kerja:7600'],
+], function () {
+    Route::get('/', [ITValet_Controller::class, 'index'])->name('itvalet-index');
+    Route::post('/', [ITValet_Controller::class, 'index'])->name('itvalet-index');
+    Route::post('/tambah', [ITValet_Controller::class, 'tambah'])->name('itvalet-tambah');
+    Route::post('/{monica}/ubah', [ITValet_Controller::class, 'ubah'])->name('itvalet-ubah');
+    Route::post('/{monica}/hapus', [ITValet_Controller::class, 'hapus'])->name('itvalet-hapus');
+});
 

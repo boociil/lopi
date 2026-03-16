@@ -84,8 +84,6 @@ class Jadwal_Controller extends Controller
             ->where('peran', 'ruang')
             ->first();
 
-        $tanggal_carbon = Carbon::today();
-
         $jadwal_daftar = Jadwal::with(['peserta', 'zoom_pinjam'])-> orWhere(function (Builder $query) use ($tanggal_awal, $tanggal_akhir){
                     $query->where('tipe', 'sekali')
                         ->whereBetween('tanggal', [$tanggal_awal->format('Y-m-d'), $tanggal_akhir->format('Y-m-d')]);
@@ -97,19 +95,9 @@ class Jadwal_Controller extends Controller
                 })
                 ->get();
 
-        // $jadwal_statsulbar = ['status' => false, 'data' => []];
-        // $jadwal_sp2020 = ['status' => false, 'data' => []];
-
-        for($i=0; $i<count($jadwal_daftar); $i++){
-            if($jadwal_daftar[$i]->tanggal){
-                 if (!Carbon::parse($jadwal_daftar[$i]->tanggal)->eq($tanggal_carbon)) {
-                    $jadwal_daftar[$i]->zoom_start_url = null;
-                }
-            }
-             if($jadwal_daftar[$i]->berulang_tanggal_awal){
-                 if (!$tanggal_carbon->between(Carbon::parse($jadwal_daftar[$i]->berulang_tanggal_awal), Carbon::parse($jadwal_daftar[$i]->berulang_tanggal_akhir))) {
-                    $jadwal_daftar[$i]->zoom_start_url = null;
-                }
+        foreach($jadwal_daftar as $item){
+            if($item->zoom_pinjam){
+                $item->zoom_pinjam->zoom_start_url = null;
             }
         }
 

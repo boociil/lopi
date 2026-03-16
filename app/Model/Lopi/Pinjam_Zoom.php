@@ -256,4 +256,15 @@ class Pinjam_Zoom extends Model
         return $isClash;
     }
 
+    public function getMeeting(){
+        $this->define_config();
+        if ($this->zoom_meeting_id){
+            return $this->zoom_getMeeting($this->zoom_akun, $this->zoom_meeting_id);
+        }else{
+            return [
+                'status' => false,
+            ];
+        }
+    }
+
 }

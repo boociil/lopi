@@ -45,7 +45,6 @@ export function EventDetailsDialog({ _event, children }: Event_Details_Dialog_IP
     const [event, setEvent] = useState<PinjamZoomIEvent>(_event as PinjamZoomIEvent)
 	const { events, updateEvent, removeEvent, AddEditEventDialog, canChange, canApprove, axiosClient, users, settingCalender } = useCalendar();
 
-
     const [approval, setApproval] = useState<'statsulbar' | 'sp2020' | undefined>(undefined)
 
     useEffect(() => {
@@ -144,9 +143,43 @@ export function EventDetailsDialog({ _event, children }: Event_Details_Dialog_IP
             });
     };
 
+    const [startUrl, setStartUrl] = useState<string|undefined>(undefined)
+
+    const get_startUrl = () => {
+        axiosClient.post(route("pinjam-zoom-get-mmeting"), {zoom_meeting_id: event.zoom_meeting_id, zoom_akun: event.zoom_akun})
+            .then(function (response) {
+                 try {
+                    const return_data: {
+                            status:  boolean,
+                            data:  {start_url: string}
+                        }
+                        = response.data  as  {
+                            status:  boolean,
+                            data:  {start_url: string}
+                        }
+                        setStartUrl(return_data.data.start_url)
+                } catch (error) {
+                    console.log(error)
+                }
+            })
+            .catch(function (error) {
+            });
+    };
+
+    const [openDialog, setOpenDialog] = useState<boolean>(false)
+    const [openToolbox, setOpenToolbox] = useState<boolean>(false)
+
+    useEffect(() => {
+      if(openDialog || openToolbox){
+        get_startUrl()
+      }else{
+        setStartUrl(undefined)
+      }
+    }, [openDialog, openToolbox]);
+
 	return (
-		<Dialog>
-             <Tooltip>
+		<Dialog open={openDialog} onOpenChange={setOpenDialog}>
+             <Tooltip open={openToolbox} onOpenChange={setOpenToolbox}>
                 <TooltipTrigger asChild>
                     <DialogTrigger asChild>{children}</DialogTrigger>
                 </TooltipTrigger>
@@ -206,16 +239,16 @@ export function EventDetailsDialog({ _event, children }: Event_Details_Dialog_IP
 
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4 pt-3 border-t border-blue-200">
                                             <a
-                                            href={event.start_url? event.start_url : '#'}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className={`flex items-center justify-center gap-2 px-2 py-2 rounded-xl text-sm font-bold transition-all shadow-md active:scale-95 ${
-                                                (event.start_url )
-                                                ? "bg-green-600 text-white hover:bg-green-700 hover:shadow-green-200"
-                                                : "bg-slate-200 text-slate-400 cursor-not-allowed"
-                                            }`}
-                                            >
-                                            <Play size={18} fill="currentColor" /> Mulai Rapat
+                                                href={startUrl? startUrl : '#'}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className={`flex items-center justify-center gap-2 px-2 py-2 rounded-xl text-sm font-bold transition-all shadow-md active:scale-95 ${
+                                                    (startUrl )
+                                                    ? "bg-green-600 text-white hover:bg-green-700 hover:shadow-green-200"
+                                                    : "bg-slate-200 text-slate-400 cursor-not-allowed"
+                                                }`}
+                                                >
+                                                <Play size={18} fill="currentColor" /> Mulai Rapat
                                             </a>
 
                                             <a
@@ -315,16 +348,16 @@ export function EventDetailsDialog({ _event, children }: Event_Details_Dialog_IP
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4 pt-3 border-t border-blue-200">
                         <a
-                        href={event.start_url? event.start_url : '#'}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className={`flex items-center justify-center gap-2 px-2 py-2 rounded-xl text-sm font-bold transition-all shadow-md active:scale-95 ${
-                            (event.start_url )
-                            ? "bg-green-600 text-white hover:bg-green-700 hover:shadow-green-200"
-                            : "bg-slate-200 text-slate-400 cursor-not-allowed"
-                        }`}
-                        >
-                        <Play size={18} fill="currentColor" /> Mulai Rapat
+                            href={startUrl? startUrl : '#'}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className={`flex items-center justify-center gap-2 px-2 py-2 rounded-xl text-sm font-bold transition-all shadow-md active:scale-95 ${
+                                (startUrl )
+                                ? "bg-green-600 text-white hover:bg-green-700 hover:shadow-green-200"
+                                : "bg-slate-200 text-slate-400 cursor-not-allowed"
+                            }`}
+                            >
+                            <Play size={18} fill="currentColor" /> Mulai Rapat
                         </a>
 
                         <a

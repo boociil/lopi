@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Lopi;
 
 use App\Http\Controllers\Controller;
 use App\Http\Traits\Zoom_Traits;
+use App\Model\Lopi\Jadwal;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Builder;
@@ -80,8 +81,6 @@ class Pinjam_Zoom_Controller extends Controller
             ->where('peran', 'zoom')
             ->first();
 
-        $tanggal_carbon = Carbon::today();
-
         $pinjam_zoom_bulan_daftar = Pinjam_Zoom::orWhere(function (Builder $query) use ($tanggal_awal, $tanggal_akhir){
                     $query->where('tipe', 'sekali')
                         ->whereBetween('tanggal', [$tanggal_awal->format('Y-m-d'), $tanggal_akhir->format('Y-m-d')]);
@@ -100,17 +99,8 @@ class Pinjam_Zoom_Controller extends Controller
         // $pinjam_zoom_statsulbar = ['status' => false, 'data' => []];
         // $pinjam_zoom_sp2020 = ['status' => false, 'data' => []];
 
-        for($i=0; $i<count($pinjam_zoom_bulan_daftar); $i++){
-            if($pinjam_zoom_bulan_daftar[$i]->tanggal){
-                 if (!Carbon::parse($pinjam_zoom_bulan_daftar[$i]->tanggal)->eq($tanggal_carbon)) {
-                    $pinjam_zoom_bulan_daftar[$i]->zoom_start_url = null;
-                }
-            }
-             if($pinjam_zoom_bulan_daftar[$i]->berulang_tanggal_awal){
-                 if (!$tanggal_carbon->between(Carbon::parse($pinjam_zoom_bulan_daftar[$i]->berulang_tanggal_awal), Carbon::parse($pinjam_zoom_bulan_daftar[$i]->berulang_tanggal_akhir))) {
-                    $pinjam_zoom_bulan_daftar[$i]->zoom_start_url = null;
-                }
-            }
+        foreach($pinjam_zoom_bulan_daftar as $item){
+            $item->zoom_start_url = null;
         }
 
         if($request->isMethod('get')){
@@ -346,6 +336,17 @@ class Pinjam_Zoom_Controller extends Controller
             $pinjamZoom->status = $request->input('status');
             $pinjamZoom->zoom_akun = $request->input('zoom_akun');
             $pinjamZoom->helper_approval($request->input('status'), $request->input('zoom_akun'));
+
+            $jadwal = Jadwal::where('zoom_pinjam_id', $pinjamZoom->id)->first();
+            if($jadwal){
+                $jadwal->zoom_status = $pinjamZoom->status;
+                if($jadwal->ruang_status == 'disetujui' && in_array($jadwal->zoom_status, ['langsung', 'disetujui'])){
+                    $jadwal->status = 'disetujui';
+                }else{
+                    $jadwal->status = 'menunggu';
+                }
+                $jadwal->save();
+            }
             DB::commit();
             return [
                 "_status" => 'Berhasil approval peminjaman zoom!',
@@ -357,6 +358,54 @@ class Pinjam_Zoom_Controller extends Controller
             throw ValidationException::withMessages([
                 '_status' => 'Gagal approval peminjaman zoom!',
             ]);
+        }
+    }
+
+    public function get_mmeting(Request $request)
+    {
+        $have_zoom_peran =  Peran::where('pemilik_username', Auth::user()->username)
+            ->where('peran', 'zoom')
+            ->first();
+
+        $pinjamZoom = Pinjam_Zoom::where('zoom_meeting_id', $request->zoom_meeting_id)->first();
+
+        if($pinjamZoom){
+            if(!$pinjamZoom->zoom_meeting_id){
+                throw ValidationException::withMessages([
+                    '_status' => 'Gagal mendapatkan zoom!',
+                ]);
+            }
+
+            if(! ($have_zoom_peran || $pinjamZoom->pembuat_username == Auth::user()->username) ){
+                throw ValidationException::withMessages([
+                    '_status' => 'Gagal mendapatkan zoom!',
+                ]);
+            }
+
+            return $pinjamZoom->getMeeting();
+        }else{
+            if(! ($have_zoom_peran) ){
+                throw ValidationException::withMessages([
+                    '_status' => 'Gagal mendapatkan zoom!',
+                ]);
+            }
+
+            if($request->zoom_meeting_id && $request->zoom_akun){
+                Log::alert($request->zoom_meeting_id);
+                Log::alert($request->zoom_akun);
+
+                $pinjamZoom = new Pinjam_Zoom();
+                $pinjamZoom->zoom_meeting_id = $request->zoom_meeting_id;
+                $pinjamZoom->zoom_akun = $request->zoom_akun;
+
+                return $pinjamZoom->getMeeting();
+            }else{
+                throw ValidationException::withMessages([
+                    '_status' => 'Gagal mendapatkan zoom!',
+                ]);
+            }
+
+
         }
     }
 }

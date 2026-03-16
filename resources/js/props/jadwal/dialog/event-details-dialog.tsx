@@ -203,44 +203,6 @@ export function EventDetailsDialog({
             });
     };
 
-    const approvalEvent = (
-        event_id: string,
-        status: "disetujui" | "ditolak",
-    ) => {
-        progressIndikator.start();
-        axiosClient
-            .post(route("pinjam-zoom-approval", { jadwal: event_id }), {
-                status: status,
-                zoom_akun: "",
-            })
-            .then(function (response) {
-                try {
-                    const return_data: IEvent[] = produceJadwalIEvent([
-                        response.data.data,
-                    ] as jadwal[]);
-                    pairIEventDenganUser(
-                        return_data as JadwalIEvent[],
-                        users as CalenderUser[],
-                    );
-                    updateEvent(return_data[0]);
-
-                    progressIndikator.finish();
-                    toast.success("Berhasil mengubah data");
-                } catch (error) {
-                    console.log(error);
-                    progressIndikator.finish();
-                    toast.error("Gagal mengubah data");
-                }
-            })
-            .catch(function (error) {
-                progressIndikator.finish();
-                toast.error(
-                    "Kesalahan saat menghapus " +
-                        capitalizeWords(settingCalender.name_event) +
-                        ".",
-                );
-            });
-    };
 
     const StatusBadge = ({
         status,
@@ -276,9 +238,48 @@ export function EventDetailsDialog({
         );
     };
 
+    const [startUrl, setStartUrl] = useState<string|undefined>(undefined)
+
+    const get_startUrl = () => {
+        if(event.jadwal_ori.zoom_pinjam){
+            if(event.jadwal_ori.zoom_pinjam.zoom_meeting_id && event.jadwal_ori.zoom_pinjam.zoom_akun){
+                 axiosClient.post(route("pinjam-zoom-get-mmeting"), {zoom_meeting_id: event.jadwal_ori.zoom_pinjam.zoom_meeting_id, zoom_akun: event.jadwal_ori.zoom_pinjam.zoom_akun})
+                    .then(function (response) {
+                        try {
+                            const return_data: {
+                                    status:  boolean,
+                                    data:  {start_url: string}
+                                }
+                                = response.data  as  {
+                                    status:  boolean,
+                                    data:  {start_url: string}
+                                }
+                                setStartUrl(return_data.data.start_url)
+                        } catch (error) {
+                            console.log(error)
+                        }
+                    })
+                    .catch(function (error) {
+                    });
+            }
+        }
+
+    };
+
+    const [openDialog, setOpenDialog] = useState<boolean>(false)
+    const [openToolbox, setOpenToolbox] = useState<boolean>(false)
+
+    useEffect(() => {
+      if(openDialog || openToolbox){
+        get_startUrl()
+      }else{
+        setStartUrl(undefined)
+      }
+    }, [openDialog, openToolbox]);
+
     return (
-        <Dialog>
-            <Tooltip>
+        <Dialog open={openDialog} onOpenChange={setOpenDialog}>
+             <Tooltip open={openToolbox} onOpenChange={setOpenToolbox}>
                 <TooltipTrigger asChild>
                     <DialogTrigger asChild>{children}</DialogTrigger>
                 </TooltipTrigger>
@@ -392,27 +393,22 @@ export function EventDetailsDialog({
                                     <div className="grid grid-cols-2 gap-3">
                                         <a
                                             href={
-                                                event.jadwal_ori.zoom_pinjam
-                                                    ?.zoom_start_url ?? "#"
+                                                startUrl ?? "#"
                                             }
                                             target="_blank"
                                             rel="noopener noreferrer"
                                             aria-disabled={
-                                                !event.jadwal_ori.zoom_pinjam
-                                                    ?.zoom_start_url
+                                                !startUrl
                                             }
                                             className={`flex items-center justify-center gap-2 py-2 rounded-lg text-xs font-black transition-all shadow-xl shadow-blue-100
                                             ${
-                                                event.jadwal_ori.zoom_pinjam
-                                                    ?.zoom_start_url
+                                                startUrl
                                                     ? "bg-blue-600 hover:bg-blue-700 text-white"
                                                     : "bg-gray-400 cursor-not-allowed text-white"
                                             }`}
                                             onClick={(e) => {
                                                 if (
-                                                    !event.jadwal_ori
-                                                        .zoom_pinjam
-                                                        ?.zoom_start_url
+                                                    !startUrl
                                                 )
                                                     e.preventDefault();
                                             }}
@@ -583,26 +579,22 @@ export function EventDetailsDialog({
                                 <div className="grid grid-cols-2 gap-3">
                                     <a
                                         href={
-                                            event.jadwal_ori.zoom_pinjam
-                                                ?.zoom_start_url ?? "#"
+                                            startUrl ?? "#"
                                         }
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         aria-disabled={
-                                            !event.jadwal_ori.zoom_pinjam
-                                                ?.zoom_start_url
+                                            !startUrl
                                         }
                                         className={`flex items-center justify-center gap-2 py-2 rounded-lg text-xs font-black transition-all shadow-xl shadow-blue-100
                                             ${
-                                                event.jadwal_ori.zoom_pinjam
-                                                    ?.zoom_start_url
+                                                startUrl
                                                     ? "bg-blue-600 hover:bg-blue-700 text-white"
                                                     : "bg-gray-400 cursor-not-allowed text-white"
                                             }`}
                                         onClick={(e) => {
                                             if (
-                                                !event.jadwal_ori.zoom_pinjam
-                                                    ?.zoom_start_url
+                                                !startUrl
                                             )
                                                 e.preventDefault();
                                         }}

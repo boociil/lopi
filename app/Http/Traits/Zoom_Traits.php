@@ -104,6 +104,37 @@ trait Zoom_Traits
         ];
     }
 
+    public  function zoom_getMeeting($path, $zoomMeetingId)
+    {
+        try {
+            $client = $this->zoom_getClient($path);
+            $response = $client->request('GET', 'meetings/' . $zoomMeetingId);
+            $data = json_decode($response->getBody(), true);
+
+            if(!array_key_exists('start_time', $data)){
+                return [
+                    'status' => false,
+                ];
+            }else if(Carbon::parse($data['start_time'])->setTimezone('Asia/Singapore')->isToday()){
+                return [
+                    'status' => true,
+                    'data' => $data,
+                ];
+            }else{
+                return [
+                    'status' => false,
+                ];
+            }
+
+        } catch (\Throwable $th) {
+            Log::alert($th->getMessage());
+            return [
+                'status' => false,
+                'message' => $th->getMessage(),
+            ];
+        }
+    }
+
      public function zoom_getAllMeeting_helper($path, $from, $to, $type)
     {
         try {
