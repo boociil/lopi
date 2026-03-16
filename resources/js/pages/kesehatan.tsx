@@ -76,7 +76,7 @@ export default function Index({
 
 
 
-      const latestData: kesehatan = healthData.length > 0 ? healthData[healthData.length-1] :
+      const latestData: kesehatan = healthData.length > 0 ? {...healthData[healthData.length-1]} :
       {
         id: 0,
         tanggal: new Date().toISOString().slice(0, 16),
@@ -295,7 +295,7 @@ export default function Index({
                                     </CardHeader>
                                     <CardContent>
                                         <div className="flex items-end gap-2 mt-2">
-                                             <span className="text-4xl font-bold ">{latestData.kolestrol ? latestData.kolestrol : '-'}</span>
+                                             <span className="text-4xl font-bold ">{bmiValue? bmiValue : '-'}</span>
 
                                         </div>
                                         <span className="inline-block mt-3 px-0 py-1 text-xs font-semibold rounded-full uppercase">
@@ -515,7 +515,7 @@ export default function Index({
                                                 className="flex h-10 rounded-md border border-slate-200 bg-white px-2 py-2 text-xs font-bold text-black"
                                             >
                                                 <option value="gds">GDS</option>
-                                                <option value="dgp">DGP</option>
+                                                <option value="gdp">GDP</option>
                                             </select>
                                             </div>
                                         </div>

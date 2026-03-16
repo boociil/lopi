@@ -62,6 +62,7 @@ class Cek_Cuti_Controller extends Controller
                     $data = json_decode($response->getBody(), true);
                     foreach($data['data'] as $item){
                         array_push($return_data, [
+                            'p_id' => $item['p_id'],
                             'p_niplama' => $item['p_niplama'],
                             'p_nmcuti' => $item['p_nmcuti'],
                             'p_jmlcuti' => $item['p_jmlcuti'],

@@ -173,7 +173,9 @@ export default function Index({
                                                                         <>- {userDict.get(item.username)}<br/></>
                                                                     )
                                                                 }else{
-                                                                    return item.username+", "
+                                                                    return (
+                                                                        <>- {item.username}<br/></>
+                                                                    )
                                                                 }
                                                             })
 

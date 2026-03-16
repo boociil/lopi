@@ -18,6 +18,7 @@ use App\Http\Controllers\Lopi\Notif_Controller;
 use App\Http\Controllers\Lopi\Pinjam_Mobil_Controller;
 use App\Http\Controllers\Lopi\Pinjam_Zoom_Controller;
 use App\Http\Controllers\Lopi\Cek_Cuti_Controller;
+use App\Http\Controllers\Lopi\Rumah_Link_Controller;
 use App\Http\Controllers\WebController;
 use App\Model\Umum\User;
 use Illuminate\Support\Facades\Auth;
@@ -271,6 +272,16 @@ Route::group(
 ], function () {
     Route::get('/', [Cek_Cuti_Controller::class, 'index']);
 });
+
+
+Route::group(
+[
+    'prefix' => 'rumah_link',
+    'middleware' => ['auth', 'check_maintenance', 'statistik', 'check_satuan_kerja:7600'],
+], function () {
+    Route::get('/', [Rumah_Link_Controller::class, 'index']);
+});
+
 
 
 

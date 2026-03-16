@@ -34,7 +34,7 @@ export function AppSidebar() {
     ]
 
     if(!have_7600){
-         mainNavItems.push(...[
+        mainNavItems.push(...[
             {
                 type: 'item',
                 title: 'Cek Cuti',

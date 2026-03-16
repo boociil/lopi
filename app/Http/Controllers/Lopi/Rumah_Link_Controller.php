@@ -15,10 +15,10 @@ use Inertia\Inertia;
 class Rumah_Link_Controller extends Controller
 {
 
-    // public function index(Request $request)
-    // {
-    //      return Inertia::render('cek_cuti', [ 'cuti_daftar' => $this->get_data_cuti_satuan_kerja(),  "user" => User::all()]);
-    // }
+    public function index(Request $request)
+    {
+         return Inertia::render('cek_cuti', [ 'cuti_daftar' => $this->get_data_cuti_satuan_kerja(),  "user" => User::all()]);
+    }
 
 
 

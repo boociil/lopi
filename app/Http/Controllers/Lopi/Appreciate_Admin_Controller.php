@@ -400,18 +400,26 @@ class Appreciate_Admin_Controller extends Controller
                     ->whereIn('satuan_kerja_tahun_id', $satuan_kerja_tahun_kode)
                     ->get();
 
+
         foreach($master as $item){
             array_push($master_id, $item->id);
         }
 
-        $data =  Appreciate_Data::whereIn('master_id', $master_id)->where('status', "2")
+        $user = User::whereHas('peran', function (Builder $query) use ($satuan_kerja_tahun_kode) {
+                    $query->where('tipe_peran', 'satuan_kerja_tahun');
+                    $query->whereIn('parent_id', $satuan_kerja_tahun_kode);
+                })->orderBy('nama')->get();
+
+        $user_username_arr = $user->pluck('username')->toArray();
+
+        $data =  Appreciate_Data::whereIn('master_id', $master_id)->whereIn('tujuan', $user_username_arr)->where('status', "2")
                     ->select('master_id', 'dari', DB::raw("count(*) as jumlah"))->groupBy('master_id', 'dari')->get();
 
         return Inertia::render('appreciate/rekap', [
             "user" => User::whereHas('peran', function (Builder $query) use ($satuan_kerja_tahun_kode) {
                     $query->where('tipe_peran', 'satuan_kerja_tahun');
                     $query->whereIn('parent_id', $satuan_kerja_tahun_kode);
-                })->get(),
+                })->orderBy('nama')->get(),
             "data" => $data,
             "master" => $master,
         ]);

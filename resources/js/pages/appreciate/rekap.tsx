@@ -10,6 +10,9 @@ import Heading from "@/components/heading";
 import { Table, TableBody, TableCell, TableCellWrap, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Field, FieldLabel } from "@/components/ui/field"
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ChartLine, Heart } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -24,13 +27,13 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 interface data_rekap{
     dari: string,
-    master_id: string,
+    master_id: number,
     jumlah: number,
 }
 
 interface target{
     id: number;
-    master_id: string,
+    master_id: number,
     username: string,
 }
 
@@ -51,9 +54,6 @@ export default function Rekap({
     user: User[];
 }>) {
 
-    const [selectedMaster, setSelectedMaster] = React.useState<master | undefined>(master.length == 0 ? undefined : master[master.length - 1]);
-
-
     const [userDict, setUserDict] = React.useState<Map<string, string>>(new Map<string, string>);
 
     React.useEffect(() => {
@@ -62,7 +62,23 @@ export default function Rekap({
             userDict_.set(element.username, element.nama)
         });
         setUserDict(userDict_)
+
+        for (let i=0; i< master.length; i++){
+            let new_target : target[] = []
+            for(let j=0; j < master[i].target.length; j++){
+                if(userDict_.has(master[i].target[j].username)){
+                    new_target.push({...master[i].target[j]})
+                }
+            }
+            master[i].target = new_target
+        }
+
     }, [user]);
+
+
+
+
+    const [selectedMaster, setSelectedMaster] = React.useState<master | undefined>(master.length == 0 ? undefined : master[master.length - 1]);
 
     const [dataRekap, setDataRekap] = React.useState<Map<string, number>>(new Map<string, number>);
 
@@ -74,6 +90,25 @@ export default function Rekap({
         setDataRekap(dataDict_)
     }, [data]);
 
+    const [persentase, setPersentase] = React.useState<number>(0.00)
+    React.useEffect(() => {
+        let dataDict_ = new Map<string, number>()
+        let jumlah = 0
+        data.forEach(element => {
+            dataDict_.set(element.master_id+'-'+element.dari, element.jumlah)
+            if(selectedMaster){
+                if(userDict.has(element.dari) && selectedMaster!.id == element.master_id){
+                    jumlah += element.jumlah
+                }
+            }
+
+        });
+        setDataRekap(dataDict_)
+        if(selectedMaster){
+            setPersentase(Math.floor(jumlah * 100 * 100 / (user.length * selectedMaster!.target.length)) /100)
+        }
+    }, [selectedMaster, userDict]);
+
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -84,7 +119,7 @@ export default function Rekap({
                             title="Rekap Apresiasi"
                             description="Ringkasan data apresiasi yang diberikan Pegawai."
                         />
-                        <div className="flex w-full justify-end items-end mb-4">
+                        <div className="flex w-full justify-end items-end">
                             <Field className="w-lg">
                                 <FieldLabel>Pilih Mater</FieldLabel>
                                 <Select
@@ -101,6 +136,25 @@ export default function Rekap({
                                 </Select>
                                 {/* <FieldError>Please select a fruit.</FieldError> */}
                             </Field>
+                        </div>
+                         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5 my-5">
+
+                            <Card className="border gap-3 py-4 my-0">
+                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 text-muted-foreground">
+                                    <CardTitle className="text-sm font-normal">Response Rate</CardTitle>
+                                    <ChartLine className="h-4 w-4 " />
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="flex items-end gap-2 mt-2">
+                                        <span className="text-4xl font-bold ">{persentase}</span>
+                                        <span className="text-xs  mb-1">persen</span>
+                                    </div>
+                                    <span className="inline-block px-0 py-1 text-xs font-semibold rounded-full uppercase mt-4 mb-0">
+                                        {persentase >= 70 && <Badge variant="success_">Sudah Memenuhi</Badge>}
+                                        {persentase < 70 && <Badge variant="destructive_">Belum Memenuhi</Badge>}
+                                    </span>
+                                </CardContent>
+                            </Card>
                         </div>
                          <div className="overflow-hidden rounded-md border">
 

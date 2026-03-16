@@ -1,9 +1,8 @@
-import { CalenderUser, IEvent, SettingCalender } from "@/components/calender_modules/interfaces";
-
-import { v4 as uuidv4 } from 'uuid';
-
+import { CalenderUser, IEvent } from "@/components/calender_modules/interfaces";
+import { TEventColor } from "@/components/calender_modules/types";
 
 export interface cuti {
+    p_id: string;
     p_niplama: string;
     p_nmcuti: string;
     p_jmlcuti: string;
@@ -50,7 +49,7 @@ export function produceCutiIEvent(
             tanggal_akhir = reformatDateString(element.p_tglselesai);
 
             retur_data.push({
-                id: uuidv4(),
+                id: element.p_id,
                 startDate: `${tanggal_awal}T00:00:00`,
                 endDate: `${tanggal_akhir}T23:59:59`,
                 date: tanggal,
@@ -59,7 +58,7 @@ export function produceCutiIEvent(
                 _startTime: '00:00:00',
                 _endTime: '23:59:59',
                 title: user ? user.nama : "",
-                color:  colors[Math.floor(Math.random() * colors.length)],
+                color:  colors[Math.floor(Math.random() * colors.length)] as TEventColor,
                 description: element.p_nmcuti+' ('+element.p_jmlcuti+')',
                 user: null,
                 cuti_ori: element,

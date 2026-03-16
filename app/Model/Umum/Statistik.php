@@ -15,24 +15,22 @@ class Statistik extends Model
 
     public static function helper_tambah($request)
     {
-        if($request->method() == "POST"){
-            if (Auth::check()) {
-                $baru =  new Statistik;
-                $baru->method = $request->method();
-                $baru->username = Auth::user()->username;
-                $baru->ip_address = $request->ip();
-                $baru->path = $request->path();
-                $baru->save();
-                return $baru;
-            }else{
-                $baru =  new Statistik;
-                $baru->method = $request->method();
-                $baru->username = null;
-                $baru->ip_address = $request->ip();
-                $baru->path = $request->path();
-                $baru->save();
-                return $baru;
-            }
+        if (Auth::check()) {
+            $baru =  new Statistik;
+            $baru->method = $request->method();
+            $baru->username = Auth::user()->username;
+            $baru->ip_address = $request->ip();
+            $baru->path = 'lopi/'.$request->path();
+            $baru->save();
+            return $baru;
+        }else{
+            $baru =  new Statistik;
+            $baru->method = $request->method();
+            $baru->username = null;
+            $baru->ip_address = $request->ip();
+            $baru->path = 'lopi/'.$request->path();
+            $baru->save();
+            return $baru;
         }
     }
 }
