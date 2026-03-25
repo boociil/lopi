@@ -81,37 +81,33 @@ class Pinjam_Zoom_Controller extends Controller
             ->where('peran', 'zoom')
             ->first();
 
-        $pinjam_zoom_bulan_daftar = Pinjam_Zoom::orWhere(function (Builder $query) use ($tanggal_awal, $tanggal_akhir){
-                    $query->where('tipe', 'sekali')
-                        ->whereBetween('tanggal', [$tanggal_awal->format('Y-m-d'), $tanggal_akhir->format('Y-m-d')]);
-                })
-                ->orWhere(function (Builder $query) use ($tanggal_awal, $tanggal_akhir) {
-                    $query->where('tipe', 'berulang')
-                        ->where('berulang_tanggal_awal', '<=', $tanggal_akhir)
-                        ->where('berulang_tanggal_akhir', '>=', $tanggal_awal);
-                })
-                ->get();
-
-
-        $pinjam_zoom_statsulbar = $this->zoom_getAllMeeting('statsulbar', $tanggal_awal->format('Y-m-d'), $tanggal_akhir->format('Y-m-d'));
-        $pinjam_zoom_sp2020 = $this->zoom_getAllMeeting('sp2020', $tanggal_awal->format('Y-m-d'), $tanggal_akhir->format('Y-m-d'));
-
-        // $pinjam_zoom_statsulbar = ['status' => false, 'data' => []];
-        // $pinjam_zoom_sp2020 = ['status' => false, 'data' => []];
-
-        foreach($pinjam_zoom_bulan_daftar as $item){
-            $item->zoom_start_url = null;
-        }
-
         if($request->isMethod('get')){
             return Inertia::render('pinjam_zoom', [
                 "user" => User::all(),
                 "have_zoom_peran" => $have_zoom_peran,
-                "pinjam_zoom_data" => $pinjam_zoom_bulan_daftar,
-                "zoom_statsulbar" => $pinjam_zoom_statsulbar,
-                "zoom_sp2020" => $pinjam_zoom_sp2020,
             ]);
         }else if($request->isMethod('post')){
+            $pinjam_zoom_bulan_daftar = Pinjam_Zoom::orWhere(function (Builder $query) use ($tanggal_awal, $tanggal_akhir){
+                        $query->where('tipe', 'sekali')
+                            ->whereBetween('tanggal', [$tanggal_awal->format('Y-m-d'), $tanggal_akhir->format('Y-m-d')]);
+                    })
+                    ->orWhere(function (Builder $query) use ($tanggal_awal, $tanggal_akhir) {
+                        $query->where('tipe', 'berulang')
+                            ->where('berulang_tanggal_awal', '<=', $tanggal_akhir)
+                            ->where('berulang_tanggal_akhir', '>=', $tanggal_awal);
+                    })
+                    ->get();
+
+            foreach($pinjam_zoom_bulan_daftar as $item){
+                $item->zoom_start_url = null;
+            }
+
+            $pinjam_zoom_statsulbar = $this->zoom_getAllMeeting('statsulbar', $tanggal_awal->format('Y-m-d'), $tanggal_akhir->format('Y-m-d'));
+            $pinjam_zoom_sp2020 = $this->zoom_getAllMeeting('sp2020', $tanggal_awal->format('Y-m-d'), $tanggal_akhir->format('Y-m-d'));
+
+            // $pinjam_zoom_statsulbar = ['status' => false, 'data' => []];
+            // $pinjam_zoom_sp2020 = ['status' => false, 'data' => []];
+
             return [
                 "have_zoom_peran" => $have_zoom_peran,
                 "pinjam_zoom_data" => $pinjam_zoom_bulan_daftar,

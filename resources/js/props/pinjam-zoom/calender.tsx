@@ -18,23 +18,18 @@ import { useApi } from "@/lib/API/useApi";
 import { progress } from '@inertiajs/react'
 import { CalendarHeader } from "@/components/calender_modules/header/calendar-header";
 import { useLoading } from "../LoadingContext";
+import { useEffect, useState } from "react";
 
 export function PinjamZoomCalender({
-        pinjam_zoom_data,
         user,
         have_zoom_peran,
-        zoom_statsulbar,
-        zoom_sp2020,
     }: {
-        pinjam_zoom_data: pinjam_zoom[];
         user: User[];
         have_zoom_peran: boolean;
-        zoom_statsulbar: zoom_app[];
-        zoom_sp2020: zoom_app[];
 }) {
 
     const {setIsLoading} = useLoading();
-
+    const [isFirst, setIsFirst] = useState<boolean>(true);
     const axiosClient = useApi();
     const auth = usePage<SharedData>().props.auth;
 
@@ -47,13 +42,44 @@ export function PinjamZoomCalender({
         show_filter_user: false
     }
     const _user: IUser[] = produceCalenderUser(user);
-    const _allEvents: PinjamZoomIEvent[] = producePinjamZoomIEvent(pinjam_zoom_data);
+    const [_allEvents, _setAllEvents] = useState<PinjamZoomIEvent[]>([])
 
+    useEffect(() => {
+            if(isFirst){
+                toast.info('Meload data baru')
+                setIsLoading(true)
+                progress.start()
+                axiosClient.post(route("pinjam-zoom-index"))
+                    .then(function (response: any) {
+                        try {
 
-    producePinjamZoomIEventFromZoomApp(_allEvents, zoom_statsulbar, 'statsulbar');
-    producePinjamZoomIEventFromZoomApp(_allEvents, zoom_sp2020, 'sp2020');
+                            const _allEvents_: PinjamZoomIEvent[] = producePinjamZoomIEvent(response.data.pinjam_zoom_data as pinjam_zoom[]);
 
-    pairIEventDenganUser(_allEvents as PinjamZoomIEvent[], _user as CalenderUser[])
+                            producePinjamZoomIEventFromZoomApp(_allEvents_, response.data.zoom_statsulbar.data as zoom_app[], 'statsulbar');
+                            producePinjamZoomIEventFromZoomApp(_allEvents_, response.data.zoom_sp2020.data as zoom_app[], 'sp2020');
+                            pairIEventDenganUser(_allEvents_ as PinjamZoomIEvent[], _user as CalenderUser[])
+
+                            _setAllEvents(_allEvents_)
+                            console.log(_allEvents)
+                            setIsFirst(false)
+                            progress.finish()
+                            setIsLoading(false)
+                            toast.success('Berhasil mendapatkan data baru')
+                        } catch (error) {
+                            console.log(error)
+                            progress.finish()
+                            setIsLoading(false)
+                            toast.error('Gagal mendapatkan data baru')
+                        }
+                    })
+                    .catch(function (error: any) {
+                        console.log(error)
+                        progress.finish()
+                        setIsLoading(false)
+                        toast.error('Gagal mendapatkan data baru!')
+                    });
+            }
+        }, []);
 
     /////////////////////
     function reload_data(selectedDate: Date, currentView: TCalendarView, setAllEventsOri: (_allEvents: IEvent[]) => void){
@@ -159,7 +185,8 @@ export function PinjamZoomCalender({
     }
 
     return (
-        <CalendarProvider settingCalender={settingCalender}
+        <>{!isFirst &&
+             <CalendarProvider settingCalender={settingCalender}
                 _user={_user}
                 _allEvents={_allEvents}
 
@@ -176,12 +203,14 @@ export function PinjamZoomCalender({
                 canChange={canChange}
                 canApprove={canApprove}
             >
-            <DndProvider showConfirmation={true}>
-                <div className="w-full rounded-xl mx-2">
-                    <CalendarHeader />
-                    <CalendarBody />
-                </div>
-            </DndProvider>
-        </CalendarProvider>
+                <DndProvider showConfirmation={true}>
+                    <div className="w-full rounded-xl mx-2">
+                        <CalendarHeader />
+                        <CalendarBody />
+                    </div>
+                </DndProvider>
+            </CalendarProvider>
+        }</>
+
     );
 }

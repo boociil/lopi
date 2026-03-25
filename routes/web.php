@@ -274,7 +274,8 @@ Route::group(
     'prefix' => 'cek_cuti',
     'middleware' => ['auth', 'check_maintenance', 'statistik', 'check_satuan_kerja:7600'],
 ], function () {
-    Route::get('/', [Cek_Cuti_Controller::class, 'index']);
+    Route::get('/', [Cek_Cuti_Controller::class, 'index'])->name('cek-cuti-index');
+    Route::post('/', [Cek_Cuti_Controller::class, 'index'])->name('cek-cuti-index');
 });
 
 

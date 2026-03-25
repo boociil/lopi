@@ -12,15 +12,23 @@ import { EventDetailsDialog } from "./dialog/event-details-dialog";
 import { EventDropConfirmationDialog } from "./dialog/event-drop-confirmation-dialog";
 import { EventListDialog } from "./dialog/events-list-dialog";
 import { TCalendarView } from "@/components/calender_modules/types";
+import { useEffect, useState } from "react";
+import { useLoading } from "../LoadingContext";
+import { useApi } from "@/lib/API/useApi";
+import { toast } from "sonner";
+import { progress } from "@inertiajs/react";
 
 
 export function CutiCalender({
-        cuti_data,
+        // cuti_data,
         user,
     }: {
-        cuti_data: cuti[];
+        // cuti_data: cuti[];
         user: User[];
 }) {
+    const {setIsLoading} = useLoading();
+    const [isFirst, setIsFirst] = useState<boolean>(true);
+    const axiosClient = useApi();
 
     const settingCalender: SettingCalender = {
         showTime: false,
@@ -30,10 +38,44 @@ export function CutiCalender({
         filter_name: [['green', 'statsulbar'], ['yellow', 'sp2020']],
         show_filter_user: false,
     }
-    const _user: IUser[] = produceCalenderUser(user);
-    const _allEvents: CutiIEvent[] = produceCutiIEvent(cuti_data, _user as CalenderUser[]);
 
-    pairIEventDenganUser(_allEvents as CutiIEvent[], _user as CalenderUser[])
+
+    const _user: IUser[] = produceCalenderUser(user);
+    const [_allEvents, _setAllEvents] = useState<CutiIEvent[]>([])
+
+    useEffect(() => {
+        if(isFirst){
+            setIsLoading(true)
+            toast.info('Meload data baru')
+            progress.start()
+            axiosClient.post(route("cek-cuti-index"))
+                .then(function (response: any) {
+                    try {
+                        const _allEvents_: CutiIEvent[] = produceCutiIEvent(response.data.cuti_daftar, _user as CalenderUser[]);
+
+                        pairIEventDenganUser(_allEvents as CutiIEvent[], _user as CalenderUser[])
+
+                        _setAllEvents(_allEvents_)
+                        progress.finish()
+                        setIsLoading(false)
+                        setIsFirst(false)
+                        toast.success('Berhasil mendapatkan data baru')
+                    } catch (error) {
+                        console.log(error)
+                        progress.finish()
+                        setIsLoading(false)
+                        toast.error('Gagal mendapatkan data baru')
+                    }
+                })
+                .catch(function (error: any) {
+                    console.log(error)
+                    progress.finish()
+                    setIsLoading(false)
+                    toast.error('Gagal mendapatkan data baru!')
+                });
+        }
+    }, []);
+
 
     /////////////////////
     function reload_data(selectedDate: Date, currentView: TCalendarView, setAllEventsOri: (_allEvents: IEvent[]) => void){
@@ -59,7 +101,9 @@ export function CutiCalender({
     }
 
     return (
-        <CalendarProvider settingCalender={settingCalender}
+        <>
+        {!isFirst &&
+            <CalendarProvider settingCalender={settingCalender}
                 _user={_user}
                 _allEvents={_allEvents}
 
@@ -76,12 +120,16 @@ export function CutiCalender({
                 canChange={canChange}
                 canApprove={canApprove}
             >
-            <DndProvider showConfirmation={true}>
-                <div className="w-full rounded-xl mx-2">
-                    <CalendarHeader />
-                    <CalendarBody />
-                </div>
-            </DndProvider>
-        </CalendarProvider>
+                <DndProvider showConfirmation={true}>
+                    <div className="w-full rounded-xl mx-2">
+                        <CalendarHeader />
+                        <CalendarBody />
+                    </div>
+                </DndProvider>
+            </CalendarProvider>
+        }
+        </>
+
+
     );
 }

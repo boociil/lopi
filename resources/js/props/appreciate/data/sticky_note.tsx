@@ -34,7 +34,7 @@ export default function StickyNote({
             className={cn(
                 colors[number1],
                 rotate[number2],
-                "rounded-xl p-4 w-60 h-60 shadow-lg select-none m-2",
+                "rounded-xl p-4 w-60 h-60 shadow-lg select-none m-2 overflow-auto",
             )}
             onClick={() => {openDialog(data)}}
         >

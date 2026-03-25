@@ -17,6 +17,7 @@ import { usePage } from "@inertiajs/react";
 import { formatDate, formatTime } from "@/components/calender_modules/helpers";
 import { useApi } from "@/lib/API/useApi";
 import { progress } from '@inertiajs/react'
+import { useLoading } from "../LoadingContext";
 
 export function JadwalCalender({
         jadwal_data,
@@ -31,6 +32,7 @@ export function JadwalCalender({
         have_ruang_peran: boolean;
         ruang: string[],
 }) {
+    const {setIsLoading} = useLoading();
 
     const axiosClient = useApi();
     const auth = usePage<SharedData>().props.auth;
@@ -51,28 +53,31 @@ export function JadwalCalender({
 
     /////////////////////
     function reload_data(selectedDate: Date, currentView: TCalendarView, setAllEventsOri: (_allEvents: IEvent[]) => void){
+        setIsLoading(true)
         toast.info('Meload data baru')
         progress.start()
         axiosClient.post(route("jadwal-index"), {'selectedDate': selectedDate.toISOString(), view: currentView})
             .then(function (response: any) {
                 try {
-
-                    const _allEvents_: JadwalIEvent[] = produceJadwalIEvent(response.data.pinjam_zoom_data as jadwal[]);
+                    const _allEvents_: JadwalIEvent[] = produceJadwalIEvent(response.data.jadwal_daftar as jadwal[]);
 
                     pairIEventDenganUser(_allEvents_ as JadwalIEvent[], _user as CalenderUser[])
 
                     setAllEventsOri(_allEvents_)
                     progress.finish()
+                    setIsLoading(false)
                     toast.success('Berhasil mendapatkan data baru')
                 } catch (error) {
                     console.log(error)
                     progress.finish()
+                    setIsLoading(false)
                     toast.error('Gagal mendapatkan data baru')
                 }
             })
             .catch(function (error: any) {
                 console.log(error)
                 progress.finish()
+                setIsLoading(false)
                 toast.error('Gagal mendapatkan data baru!')
             });
     }
@@ -89,7 +94,7 @@ export function JadwalCalender({
             waktu_akhir:  formatTime(event.endDate, use24HourFormat),
             status: 'menunggu',
         }
-
+        setIsLoading(true)
         toast.info('Mencoba mengubah data')
         progress.start()
         axiosClient.post(route("jadwal-ubah", { jadwal: event.id }), data)
@@ -99,10 +104,12 @@ export function JadwalCalender({
                     pairIEventDenganUser(return_data  as JadwalIEvent[], _user as CalenderUser[])
                     updateEvent(return_data[0])
                     progress.finish()
+                    setIsLoading(false)
                     toast.success('Berhasil mengubah data')
                 } catch (error) {
                     console.log(error)
                     progress.finish()
+                    setIsLoading(false)
                     toast.error('Gagal mengubah data')
                     cancel()
                 }
@@ -110,6 +117,7 @@ export function JadwalCalender({
             .catch(function (error: any) {
                 console.log(error)
                 progress.finish()
+                setIsLoading(false)
                 toast.error('Gagal mengubah data')
             });
     }

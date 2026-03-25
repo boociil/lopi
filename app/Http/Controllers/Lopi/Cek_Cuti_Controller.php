@@ -17,7 +17,11 @@ class Cek_Cuti_Controller extends Controller
 
     public function index(Request $request)
     {
-         return Inertia::render('cek_cuti', [ 'cuti_daftar' => $this->get_data_cuti_satuan_kerja(),  "user" => User::all()]);
+        if($request->isMethod('get')){
+             return Inertia::render('cek_cuti', [ "user" => User::all()]);
+        }else if($request->isMethod('post')){
+            return [ 'cuti_daftar' => $this->get_data_cuti_satuan_kerja()];
+        }
     }
 
     private function get_data_cuti_satuan_kerja()

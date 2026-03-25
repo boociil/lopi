@@ -23,15 +23,10 @@ const breadcrumbs: BreadcrumbItem[] = [
 export default function Index({
     have_zoom_peran,
     user,
-    pinjam_zoom_data,
-    zoom_statsulbar,
-    zoom_sp2020
+
 }: React.PropsWithChildren<{
     have_zoom_peran: boolean;
     user: User[];
-    pinjam_zoom_data: pinjam_zoom[];
-    zoom_statsulbar: zoom_app_with_status;
-    zoom_sp2020: zoom_app_with_status;
 }>) {
 
     return (
@@ -45,10 +40,7 @@ export default function Index({
                         />
                         <PinjamZoomCalender
                             have_zoom_peran={have_zoom_peran}
-                            user={user}
-                            pinjam_zoom_data={pinjam_zoom_data}
-                            zoom_statsulbar={zoom_statsulbar.data}
-                            zoom_sp2020={zoom_sp2020.data}>
+                            user={user}>
                         </PinjamZoomCalender>
                     </div>
                 </div>

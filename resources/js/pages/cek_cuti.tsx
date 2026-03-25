@@ -9,7 +9,6 @@ import * as React from "react";
 import Heading from "@/components/heading";
 
 import { CutiCalender } from "@/props/cuti/calender";
-import { cuti } from "@/props/cuti/types";
 
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -21,13 +20,9 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 export default function Index({
     user,
-    cuti_daftar,
 }: React.PropsWithChildren<{
     user: User[];
-    cuti_daftar: cuti[];
 }>) {
-
-    console.log(cuti_daftar)
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -39,8 +34,7 @@ export default function Index({
                             description="Menampilkan cuti cuti pegawai untuk membantu perencanaan kerja dan memastikan ketersediaan tim setiap hari."
                         />
                         <CutiCalender
-                            user={user}
-                            cuti_data={cuti_daftar}>
+                            user={user}>
                         </CutiCalender>
                     </div>
                 </div>

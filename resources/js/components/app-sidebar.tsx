@@ -102,12 +102,12 @@ export function AppSidebar() {
         }
     }else {
         mainNavItems.push(...[
-            {
-                type: 'item',
-                title: 'Rumah Link',
-                href: '/lopi/rumah_link',
-                icon: LinkIcon,
-            },
+            // {
+            //     type: 'item',
+            //     title: 'Rumah Link',
+            //     href: '/lopi/rumah_link',
+            //     icon: LinkIcon,
+            // },
             {
                 type: 'item',
                 title: 'Cek Cuti',
@@ -132,22 +132,22 @@ export function AppSidebar() {
                 href: '/lopi/pinjam/mobil',
                 icon: Car,
             },
-            {
-                type: 'group',
-                title: 'Monica',
-                href: '/lopi/monica',
-                icon: Wallet,
-                subItems: [
-                    {
-                        title: 'Master',
-                        href: '/lopi/monica/dashboard',
-                    },
-                    {
-                        title: 'Form',
-                        href: '/lopi/monica/form',
-                    },
-                ]
-            }
+            // {
+            //     type: 'group',
+            //     title: 'Monica',
+            //     href: '/lopi/monica',
+            //     icon: Wallet,
+            //     subItems: [
+            //         {
+            //             title: 'Master',
+            //             href: '/lopi/monica/dashboard',
+            //         },
+            //         {
+            //             title: 'Form',
+            //             href: '/lopi/monica/form',
+            //         },
+            //     ]
+            // }
         ])
 
 
