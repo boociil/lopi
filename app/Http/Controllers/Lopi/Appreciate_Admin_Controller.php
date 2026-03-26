@@ -395,32 +395,63 @@ class Appreciate_Admin_Controller extends Controller
             return abort(401);
         }
 
+        $user = User::whereHas('peran', function (Builder $query) use ($satuan_kerja_tahun_kode) {
+                $query->where('tipe_peran', 'satuan_kerja_tahun');
+                $query->whereIn('parent_id', $satuan_kerja_tahun_kode);
+            })->orderBy('nama')->get();
+
+        $user_username_arr = $user->pluck('username')->toArray();
+
         $master_id = [];
-        $master = Appreciate_Master::with(['target'])
-                    ->whereIn('satuan_kerja_tahun_id', $satuan_kerja_tahun_kode)
-                    ->get();
+        $master_target = [];
+        $master = Appreciate_Master::with(['target'=> function($q) use($user_username_arr) {
+                $q->whereIn('username', $user_username_arr);
+            }])
+            ->whereIn('satuan_kerja_tahun_id', $satuan_kerja_tahun_kode)
+            ->get();
 
 
         foreach($master as $item){
             array_push($master_id, $item->id);
+            if(!array_key_exists($item->id, $master_target)){
+                $master_target[$item->id] = [];
+            }
+            foreach($item->target as $item_target){
+                array_push($master_target[$item->id], $item_target->username);
+            }
         }
 
-        $user = User::whereHas('peran', function (Builder $query) use ($satuan_kerja_tahun_kode) {
-                    $query->where('tipe_peran', 'satuan_kerja_tahun');
-                    $query->whereIn('parent_id', $satuan_kerja_tahun_kode);
-                })->orderBy('nama')->get();
 
-        $user_username_arr = $user->pluck('username')->toArray();
 
-        $data =  Appreciate_Data::whereIn('master_id', $master_id)->whereIn('tujuan', $user_username_arr)->where('status', "2")
-                    ->select('master_id', 'dari', DB::raw("count(*) as jumlah"))->groupBy('master_id', 'dari')->get();
+        $data =  Appreciate_Data::
+                    whereIn('master_id', $master_id)
+                    ->select( 'master_id', 'dari', 'tujuan')
+                    ->whereIn('tujuan', $user_username_arr)
+                    ->where('status', "2")
+                    ->select('master_id', 'dari', 'tujuan')
+                    ->distinct()
+                    ->get();
+
+        $data_arr = [];
+        $data_arr_index = [];
+
+        foreach($data as $item){
+            if(in_array($item->dari, $user_username_arr) && in_array($item->tujuan, $user_username_arr)
+                && in_array($item->tujuan, $master_target[$item->master_id])){
+                if(!array_key_exists($item->master_id.'--+-+--'.$item->dari, $data_arr_index)){
+                    $data_arr_index[$item->master_id.'--+-+--'.$item->dari] = count($data_arr_index);
+                    array_push($data_arr, ['master_id' => $item->master_id, 'dari' => $item->dari, 'jumlah' => 0]);
+                }
+                $data_arr[$data_arr_index[$item->master_id.'--+-+--'.$item->dari]]['jumlah'] += 1;
+            }
+        }
 
         return Inertia::render('appreciate/rekap', [
             "user" => User::whereHas('peran', function (Builder $query) use ($satuan_kerja_tahun_kode) {
                     $query->where('tipe_peran', 'satuan_kerja_tahun');
                     $query->whereIn('parent_id', $satuan_kerja_tahun_kode);
                 })->orderBy('nama')->get(),
-            "data" => $data,
+            "data" => $data_arr,
             "master" => $master,
         ]);
     }

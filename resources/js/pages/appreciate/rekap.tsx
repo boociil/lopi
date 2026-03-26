@@ -62,17 +62,6 @@ export default function Rekap({
             userDict_.set(element.username, element.nama)
         });
         setUserDict(userDict_)
-
-        for (let i=0; i< master.length; i++){
-            let new_target : target[] = []
-            for(let j=0; j < master[i].target.length; j++){
-                if(userDict_.has(master[i].target[j].username)){
-                    new_target.push({...master[i].target[j]})
-                }
-            }
-            master[i].target = new_target
-        }
-
     }, [user]);
 
 
@@ -98,7 +87,7 @@ export default function Rekap({
             dataDict_.set(element.master_id+'-'+element.dari, element.jumlah)
             if(selectedMaster){
                 if(userDict.has(element.dari) && selectedMaster!.id == element.master_id){
-                    jumlah += element.jumlah
+                    jumlah += Number(element.jumlah)
                 }
             }
 
