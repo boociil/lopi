@@ -11,7 +11,7 @@ import { Table, TableBody, TableCell, TableCellWrap, TableHead, TableHeader, Tab
 import { Field, FieldLabel } from "@/components/ui/field"
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ChartLine, Heart } from "lucide-react";
+import { ChartLine, ChartPie } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -64,9 +64,6 @@ export default function Rekap({
         setUserDict(userDict_)
     }, [user]);
 
-
-
-
     const [selectedMaster, setSelectedMaster] = React.useState<master | undefined>(master.length == 0 ? undefined : master[master.length - 1]);
 
     const [dataRekap, setDataRekap] = React.useState<Map<string, number>>(new Map<string, number>);
@@ -80,14 +77,20 @@ export default function Rekap({
     }, [data]);
 
     const [persentase, setPersentase] = React.useState<number>(0.00)
+    const [persentasePegawai, setPersentasePegawai] = React.useState<number>(0.00)
     React.useEffect(() => {
         let dataDict_ = new Map<string, number>()
+        let dariAdaIsi : string[] = []
         let jumlah = 0
         data.forEach(element => {
             dataDict_.set(element.master_id+'-'+element.dari, element.jumlah)
             if(selectedMaster){
                 if(userDict.has(element.dari) && selectedMaster!.id == element.master_id){
                     jumlah += Number(element.jumlah)
+
+                    if(!dariAdaIsi.includes(element.dari)){
+                        dariAdaIsi.push(element.dari)
+                    }
                 }
             }
 
@@ -95,6 +98,7 @@ export default function Rekap({
         setDataRekap(dataDict_)
         if(selectedMaster){
             setPersentase(Math.floor(jumlah * 100 * 100 / (user.length * selectedMaster!.target.length)) /100)
+            setPersentasePegawai(Math.floor(dariAdaIsi.length * 100 * 100 / (user.length)) /100)
         }
     }, [selectedMaster, userDict]);
 
@@ -130,7 +134,7 @@ export default function Rekap({
 
                             <Card className="border gap-3 py-4 my-0">
                                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 text-muted-foreground">
-                                    <CardTitle className="text-sm font-normal">Response Rate</CardTitle>
+                                    <CardTitle className="text-sm font-normal">Pers. Apresiasi Terkirim</CardTitle>
                                     <ChartLine className="h-4 w-4 " />
                                 </CardHeader>
                                 <CardContent>
@@ -141,6 +145,22 @@ export default function Rekap({
                                     <span className="inline-block px-0 py-1 text-xs font-semibold rounded-full uppercase mt-4 mb-0">
                                         {persentase >= 70 && <Badge variant="success_">Sudah Memenuhi</Badge>}
                                         {persentase < 70 && <Badge variant="destructive_">Belum Memenuhi</Badge>}
+                                    </span>
+                                </CardContent>
+                            </Card>
+                            <Card className="border gap-3 py-4 my-0">
+                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 text-muted-foreground">
+                                    <CardTitle className="text-sm font-normal">Pers. Yang Telah Memberikan Apresiasi</CardTitle>
+                                    <ChartPie  className="h-4 w-4 " />
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="flex items-end gap-2 mt-2">
+                                        <span className="text-4xl font-bold ">{persentasePegawai}</span>
+                                        <span className="text-xs  mb-1">persen</span>
+                                    </div>
+                                    <span className="inline-block px-0 py-1 text-xs font-semibold rounded-full uppercase mt-4 mb-0">
+                                        {persentasePegawai >= 70 && <Badge variant="success_">Sudah Memenuhi</Badge>}
+                                        {persentasePegawai < 70 && <Badge variant="destructive_">Belum Memenuhi</Badge>}
                                     </span>
                                 </CardContent>
                             </Card>

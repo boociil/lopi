@@ -27,18 +27,20 @@ type PeranForm = {
     tujuan: string;
     pesan: string;
     status_anonim: string;
+    kosong: boolean;
 };
 
 export default function DialogFormManage() {
     const { eventDialog, setEventDialog, userDict, axiosClient, ubahData, user } = useAppreciateDataContext();
-     const [processing, setProcessing] = React.useState(false)
+    const [processing, setProcessing] = React.useState(false)
 
     const { data, setData, errors, setError, clearErrors } = useForm<
         Required<PeranForm>
     >({
         tujuan: "",
         status_anonim: "0",
-        pesan: "<p>Tulis Pesan DIsini</p>"
+        pesan: "<p>Tulis Pesan DIsini</p>",
+        kosong: false,
     });
 
     useEffect(() => {
@@ -47,10 +49,15 @@ export default function DialogFormManage() {
                 setData("status_anonim", eventDialog.data.data.status_anonim);
                 setData("tujuan", eventDialog.data.target.username);
                 setData("pesan", eventDialog.data.data.pesan);
+                setData("kosong", false);
+                if(eventDialog.data.data.pesan == "<p></p>"){
+                    setData("kosong", true);
+                }
             }else{
                 setData("status_anonim", '0');
                 setData("tujuan", eventDialog.data.target.username);
                 setData("pesan", '<p></p>');
+                setData("kosong", true);
             }
         }
     }, [eventDialog]);
@@ -63,7 +70,7 @@ export default function DialogFormManage() {
         progressIndikator.start()
         axiosClient.post(route('appreciation-tambah'), data)
             .then(function (response) {
-                const data: appreciate_data = response.data as appreciate_data
+                const data: appreciate_data | null = response.data as appreciate_data | null
                 if(eventDialog.data){
                     ubahData({target: eventDialog.data.target, data: data, number1: eventDialog.data.number1, number2: eventDialog.data.number2});
                 }
@@ -145,9 +152,13 @@ export default function DialogFormManage() {
                             </Label>
                             <TipTap
                                 html={data.pesan}
-                                setHtml={(value: string) => {
-                                    console.log(value)
-                                    setData("pesan", value)
+                                setHtml={(valueHtml: string, valueString: string) => {
+                                    if(valueString == ''){
+                                        setData('kosong', true)
+                                    }else{
+                                        setData('kosong', false);
+                                    }
+                                    setData("pesan", valueHtml)
                                 }}
                             />
                         </div>

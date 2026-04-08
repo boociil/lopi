@@ -45,7 +45,7 @@ export interface pinjam_zoom {
     pembuat_username: string;
     confirm_username: string | null;
     zoom_akun: 'statsulbar' | 'sp2020' | null;
-    zoom_meeting_id: number | null;
+    zoom_meeting_id: string | null;
     zoom_start_url: string | null;
     zoom_join_url: string | null;
     jadwal_id: string | null;
@@ -71,7 +71,7 @@ export interface pinjam_zoom_req {
 export interface PinjamZoomIEvent extends IEvent {
     pinjam_zoom_ori: pinjam_zoom | null;
     zoom_akun: 'statsulbar' | 'sp2020' | null;
-    zoom_meeting_id: number | null;
+    zoom_meeting_id: string | null;
     join_url: string | null;
     start_url: string | null;
 }
@@ -136,7 +136,7 @@ export function producePinjamZoomIEventFromZoomApp(
     pinjam_zoom: zoom_app[],
     zoom_akun: 'statsulbar' | 'sp2020' | null,
 ): void {
-    const zoom_meeting_id_s: number[] = [];
+    const zoom_meeting_id_s: string[] = [];
     awal.forEach((element) => {
         if (element.pinjam_zoom_ori?.zoom_meeting_id) {
             zoom_meeting_id_s.push(element.pinjam_zoom_ori?.zoom_meeting_id);
@@ -144,7 +144,7 @@ export function producePinjamZoomIEventFromZoomApp(
     });
 
     const pinjam_zoom_filter = pinjam_zoom.filter((item) => {
-        if (!zoom_meeting_id_s.includes(item.id)) {
+        if (!zoom_meeting_id_s.includes(''+item.id)) {
             return true;
         } else {
             return false;
@@ -156,7 +156,7 @@ export function producePinjamZoomIEventFromZoomApp(
     pinjam_zoom_filter.forEach((element) => {
         let ada = false;
         for (let i = 0; i < retur_data.length; i++) {
-            if (retur_data[i].pinjam_zoom_ori?.zoom_meeting_id == element.id) {
+            if (retur_data[i].pinjam_zoom_ori?.zoom_meeting_id == ''+element.id) {
                 ada = true;
                 const date_awal = new Date(element.start_time);
                 const date_akhir = new Date(
@@ -196,7 +196,7 @@ export function producePinjamZoomIEventFromZoomApp(
                     description: "Peminjaman Zoom",
                     user: null,
                     zoom_akun: zoom_akun,
-                    zoom_meeting_id: element.id,
+                    zoom_meeting_id:  ''+element.id,
                     pinjam_zoom_ori: null,
                     join_url: element.join_url,
                     start_url: null,
@@ -222,7 +222,7 @@ export function producePinjamZoomIEventFromZoomApp(
                     description: "Peminjaman Zoom",
                     user: null,
                     zoom_akun: zoom_akun,
-                    zoom_meeting_id: element.id,
+                    zoom_meeting_id: ''+ element.id,
                     pinjam_zoom_ori: null,
                     join_url: element.join_url,
                     start_url: null,
@@ -243,7 +243,7 @@ export function producePinjamZoomIEventFromZoomApp(
                     description: "Peminjaman Zoom",
                     user: null,
                     zoom_akun: zoom_akun,
-                    zoom_meeting_id: element.id,
+                    zoom_meeting_id:  ''+element.id,
                     pinjam_zoom_ori: null,
                     join_url: element.join_url,
                     start_url: null,

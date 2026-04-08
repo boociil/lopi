@@ -76,3 +76,39 @@ export interface Satuan_Kerja_Tahun {
     type: string;
     parent_id: string?;
 }
+
+export interface Tim {
+    id: string;
+    nama: string;
+    tahun: number;
+    satuan_kerja_tahun_id: string;
+}
+
+export interface Jurnal_Harian_Proyek {
+    id: string;
+    nama: string;
+    tahun: number;
+    satuan_kerja_tahun_id: string;
+    tim_id: string;
+}
+
+interface Setting_User {
+    id: string;
+    username: string;
+    category: string;
+    key: string;
+    data: any;
+}
+
+function hashUuid(uuid) {
+  let hash = 0;
+  for (let i = 0; i < uuid.length; i++) {
+    hash = uuid.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  return Math.abs(hash);
+}
+
+function uuidToColor(uuid) {
+  const index = hashUuid(uuid) % palette.length;
+  return palette[index];
+}

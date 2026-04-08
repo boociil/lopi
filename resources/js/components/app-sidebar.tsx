@@ -4,7 +4,7 @@ import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import type { NavGeneral, SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { LayoutGrid, CalendarDays, LockKeyholeOpen, Car, SmilePlus, Hospital, Video, UserRoundCog, LinkIcon, CalendarCheck, Wallet } from 'lucide-react';
+import { LayoutGrid, CalendarDays, LockKeyholeOpen, Car, SmilePlus, Hospital, Video, UserRoundCog, LinkIcon, CalendarCheck, Wallet, PackageSearch } from 'lucide-react';
 import AppLogo from './app-logo';
 import { useEffect, useState } from 'react';
 import { useApi } from '@/lib/API/useApi';
@@ -102,12 +102,12 @@ export function AppSidebar() {
         }
     }else {
         mainNavItems.push(...[
-            // {
-            //     type: 'item',
-            //     title: 'Rumah Link',
-            //     href: '/lopi/rumah_link',
-            //     icon: LinkIcon,
-            // },
+            {
+                type: 'item',
+                title: 'Rumah Link',
+                href: '/lopi/rumah_link',
+                icon: LinkIcon,
+            },
             {
                 type: 'item',
                 title: 'Cek Cuti',
@@ -120,34 +120,70 @@ export function AppSidebar() {
                 href: '/lopi/jadwal',
                 icon: CalendarDays,
             },
-            {
-                type: 'item',
-                title: 'Pemakaian Zoom',
-                href: '/lopi/pinjam/zoom',
-                icon: Video,
+             {
+                type: 'group',
+                title: 'Peminjaman BMN',
+                href: '/lopi/pinjam',
+                icon: PackageSearch,
+                subItems: [
+                    {
+                        title: 'Pemakaian Zoom',
+                        href: '/lopi/pinjam/zoom',
+                    },
+                    {
+                         title: 'Pemakaian Mobil',
+                        href: '/lopi/pinjam/mobil',
+                    },
+                ]
             },
             {
-                type: 'item',
-                title: 'Pemakaian Mobil',
-                href: '/lopi/pinjam/mobil',
-                icon: Car,
+                type: 'group',
+                title: 'Monica',
+                href: '/lopi/monica',
+                icon: Wallet,
+                subItems: [
+                    {
+                        title: 'Master',
+                        href: '/lopi/monica/dashboard',
+                    },
+                    {
+                        title: 'Form',
+                        href: '/lopi/monica/form',
+                    },
+                ]
             },
-            // {
-            //     type: 'group',
-            //     title: 'Monica',
-            //     href: '/lopi/monica',
-            //     icon: Wallet,
-            //     subItems: [
-            //         {
-            //             title: 'Master',
-            //             href: '/lopi/monica/dashboard',
-            //         },
-            //         {
-            //             title: 'Form',
-            //             href: '/lopi/monica/form',
-            //         },
-            //     ]
-            // }
+            {
+                type: 'group',
+                title: 'IT-Valet',
+                href: '/lopi/it-valet',
+                icon: Wallet,
+                subItems: [
+                    {
+                        title: 'Master',
+                        href: '/lopi/monica/dashboard',
+                    },
+                    {
+                        title: 'Form',
+                        href: '/lopi/monica/form',
+                    },
+                ]
+            },
+            {
+                type: 'group',
+                title: 'KMS',
+                href: '/lopi/kms',
+                icon: Wallet,
+                subItems: [
+                    {
+                        title: 'Master',
+                        href: '/lopi/monica/dashboard',
+                    },
+                    {
+                        title: 'Form',
+                        href: '/lopi/monica/form',
+                    },
+                ]
+            }
         ])
 
 

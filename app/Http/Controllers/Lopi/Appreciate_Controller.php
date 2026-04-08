@@ -59,6 +59,7 @@ class Appreciate_Controller extends Controller
             'status_anonim' => Rule::in(['1', '0']),
             'tujuan' => 'required',
             'pesan' => 'required|string',
+            'kosong' => 'required|boolean',
         ]);
 
         $satuan_kerja_tahun_kode = [];
@@ -99,16 +100,18 @@ class Appreciate_Controller extends Controller
                 ->where('dari', Auth::user()->username)
                 ->delete();
 
-            $data = new Appreciate_Data();
+            $data = null;
+            if(!$request->input('kosong')){
+                $data = new Appreciate_Data();
 
-            $data->master_id = $target_master[$request->input('tujuan')];
-            $data->tujuan = $request->input('tujuan');
-            $data->dari = Auth::user()->username;
-            $data->status_anonim = $request->status_anonim;
-            $data->pesan = $request->input('pesan');
-            $data->status = "0";
-            $data->save();
-
+                $data->master_id = $target_master[$request->input('tujuan')];
+                $data->tujuan = $request->input('tujuan');
+                $data->dari = Auth::user()->username;
+                $data->status_anonim = $request->status_anonim;
+                $data->pesan = $request->input('pesan');
+                $data->status = "0";
+                $data->save();
+            }
             DB::commit();
 
             return $data;

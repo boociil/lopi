@@ -258,9 +258,10 @@ trait Zoom_Traits
                     "type" => 2
                 ]);
 
+                // Log::info( $zoom_mmet);
                 if($zoom_mmet['status']){
                     $instance->zoom_akun = $path;
-                    $instance->zoom_meeting_id = $zoom_mmet['data']['id'];
+                    $instance->zoom_meeting_id = ''.$zoom_mmet['data']['id'];
                     $instance->zoom_start_url = $zoom_mmet['data']['start_url'];
                     $instance->zoom_join_url =$zoom_mmet['data']['join_url'];
                 }else{
@@ -288,7 +289,7 @@ trait Zoom_Traits
 
                 if($zoom_mmet['status']){
                     $instance->zoom_akun = $path;
-                    $instance->zoom_meeting_id = $zoom_mmet['data']['id'];
+                    $instance->zoom_meeting_id = ''.$zoom_mmet['data']['id'];
                     $instance->zoom_start_url = $zoom_mmet['data']['start_url'];
                     $instance->zoom_join_url =$zoom_mmet['data']['join_url'];
                 }else{

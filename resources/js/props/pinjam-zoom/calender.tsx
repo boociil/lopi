@@ -60,7 +60,6 @@ export function PinjamZoomCalender({
                             pairIEventDenganUser(_allEvents_ as PinjamZoomIEvent[], _user as CalenderUser[])
 
                             _setAllEvents(_allEvents_)
-                            console.log(_allEvents)
                             setIsFirst(false)
                             progress.finish()
                             setIsLoading(false)

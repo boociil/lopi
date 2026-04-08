@@ -22,7 +22,7 @@ export default ({html, setHtml}) => {
     ],
     content: html,
     onUpdate: () => {
-        setHtml(editor.getHTML())
+        setHtml(editor.getHTML(), editor.getText())
     }
   })
 

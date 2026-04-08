@@ -55,7 +55,7 @@ return new class extends Migration
             $table->string('confirm_username', 100)->nullable();
 
             $table->string('zoom_akun', 100)->nullable();
-            $table->unsignedBigInteger('zoom_meeting_id')->nullable();
+            $table->string('zoom_meeting_id', 30)->nullable();
             $table->string('zoom_start_url', 2000)->nullable();
             $table->string('zoom_join_url', 2000)->nullable();
 
