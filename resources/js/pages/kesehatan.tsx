@@ -640,7 +640,7 @@ const StatusNilai = ({ latestData, type, gender = null } : { latestData: kesehat
 
             if (gender === "2") {
                 if (nilai < 2.4) return (<Badge variant="warning_">Rendah</Badge>);
-                if (nilai <= 6.0) (<Badge variant="success_">Normal</Badge>);
+                if (nilai <= 6.0) return (<Badge variant="success_">Normal</Badge>);
                 return (<Badge variant="destructive_">Tinggi (Hiperurisemia)</Badge>);
             }
         }
