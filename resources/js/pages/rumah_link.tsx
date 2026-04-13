@@ -1,9 +1,8 @@
 import AppLayout from "@/layouts/app-layout";
-import { type User, type BreadcrumbItem, Satuan_Kerja_Tahun, Tim, Jurnal_Harian_Proyek, Setting_User, SharedData } from "@/types";
+import { type BreadcrumbItem, Satuan_Kerja_Tahun, Tim, Setting_User, SharedData } from "@/types";
 import { Head, usePage } from "@inertiajs/react";
-import Heading from "@/components/heading";
 
-import React, { useState, useMemo, useRef, useEffect } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import * as LucideIcons from "lucide-react";
 import {
     Plus,
@@ -11,9 +10,7 @@ import {
     Trash2,
     Link as LinkIcon,
     Search,
-    LayoutGrid,
     GripVertical,
-    ExternalLink,
     Pin,
     PinOff,
     ChevronDown,
@@ -70,14 +67,14 @@ interface Rumah_Link {
 }
 
 interface Grup {
-    type: 'all' | 'satuan_kerja_tahun' | 'tim' | 'proyek' | 'user';
+    type: 'all' | 'satuan_kerja_tahun' | 'tim' | 'user';
     id: string | null;
     satuan_kerja_tahun_id: string | undefined;
     tim_id: string | undefined;
     proyek_id: string | undefined;
     name: string;
     color: TColorOption | undefined;
-    data: Satuan_Kerja_Tahun | Tim | Jurnal_Harian_Proyek | undefined;
+    data: Satuan_Kerja_Tahun | Tim | undefined;
 }
 
 interface Setting_User_Link_Pinned extends Setting_User {
@@ -108,14 +105,14 @@ export default function Index({
         data,
         satuan_kerja_tahun,
         tim,
-        proyek,
+        can_auth,
         setting_pinned,
         setting_sort
     } : {
         data: Rumah_Link[],
         satuan_kerja_tahun: Satuan_Kerja_Tahun[],
         tim: Tim[],
-        proyek: Jurnal_Harian_Proyek[],
+        can_auth: string [],
         setting_pinned?: Setting_User_Link_Pinned,
         setting_sort?: Setting_User_Link_Sort
     }) {
@@ -124,6 +121,7 @@ export default function Index({
     const auth = usePage<SharedData>().props.auth;
     const {setIsLoading} = useLoading();
     const [isFirst, setIsFirst] = useState<boolean>(true);
+    can_auth.push(auth.user.username)
 
     const group_ : Grup[] = [];
 
@@ -164,20 +162,6 @@ export default function Index({
         })
     });
 
-    proyek.forEach(element => {
-        group_.push({
-            type: 'proyek' ,
-            id:  element.id,
-            satuan_kerja_tahun_id: element.satuan_kerja_tahun_id,
-            tim_id:  element.tim_id,
-            proyek_id:  element.id,
-            name: element.nama,
-            color: uuidToColor(element.id),
-            data: element
-        })
-    });
-
-
     if(setting_sort){
         data.sort((a:Rumah_Link, b:Rumah_Link ) => {
             if(setting_sort.data.hasOwnProperty(a.id) && setting_sort.data.hasOwnProperty(a.id)){
@@ -199,6 +183,7 @@ export default function Index({
 
 
     const [groups, setGroups] = useState<Grup[]>(group_);
+    const [groupsCanAddUbah, setGroupsCanAddUbah] = useState<Grup[]>(group_.filter(item => item.id && can_auth.includes(item.id)));
 
     const [links, setLinks] = useState<Rumah_Link[]>(data);
 
@@ -258,6 +243,9 @@ export default function Index({
 
     const saveLink = () => {
         if(linkModal.type == 'add'){
+            if(linkModal.data){
+                linkModal.data.color == uuidToColor(linkModal.data.access_id)
+            }
             toast.info('Mencoba menambahkan link')
             setIsLoading(true)
             axiosClient.post(route("rumah_link-tambah"), linkModal.data)
@@ -293,9 +281,7 @@ export default function Index({
                         toast.success('Gagal mengubah link')
                     });
             }
-
         }
-
     };
 
     const deleteLink = (id: string) => {
@@ -321,7 +307,10 @@ export default function Index({
             const matchesSearch =
                 l.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
                 l.url.toLowerCase().includes(searchQuery.toLowerCase());
-            return matchesSearch;
+
+            const matchesGroup = activeGroup.type === 'all' || activeGroup.id === l.access_id;
+            return matchesGroup && matchesSearch;
+
         });
     }, [links, activeGroup, searchQuery]);
 
@@ -390,7 +379,7 @@ export default function Index({
                                             });
                                         }}
                                     >
-                                        <Plus size={16} /> Tambah Tautan
+                                        <Plus size={16} /> Tambah Link
                                     </Button>
                                 </div>
                             </div>
@@ -416,6 +405,7 @@ export default function Index({
                                                         key={`pinned-${link.id}`}
                                                         link={link}
                                                         pinnedId={pinnedIds}
+                                                        can_auth={can_auth}
                                                         onEdit={(l) => {
                                                             setLinkModal({
                                                                 open: true,
@@ -473,6 +463,7 @@ export default function Index({
                                                                 key={link.id}
                                                                 link={link}
                                                                 pinnedId={pinnedIds}
+                                                                can_auth={can_auth}
                                                                 onEdit={(l) => {
                                                                     setLinkModal(
                                                                         {
@@ -562,7 +553,7 @@ export default function Index({
                                             <Select
                                                 defaultValue={ (linkModal.data && linkModal.data.access_id) ? linkModal.data.access_id : undefined}
                                                 onValueChange={(id) => {
-                                                    const groupSelected = groups.find(item => item.id == id)
+                                                    const groupSelected = groupsCanAddUbah.find(item => item.id == id)
                                                     if(linkModal.data && groupSelected){
                                                         linkModal.data.access_type = groupSelected.type
                                                         linkModal.data.access_id = groupSelected.id as string
@@ -573,7 +564,7 @@ export default function Index({
                                                     <SelectValue placeholder="Select a user" />
                                                 </SelectTrigger>
                                                 <SelectContent>
-                                                    {groups.map((g) => (
+                                                    {groupsCanAddUbah.map((g) => (
                                                         g.id && (
                                                             <SelectItem key={g.id} value={ g.id }>
                                                                 {g.name}
@@ -715,38 +706,48 @@ const CustomSelect = ({ options, value, onChange }: {options: Grup[], value: Gru
 
 const ICON_OPTIONS = [
     "Link",
-    "Globe",
-    "Github",
-    "Youtube",
-    "Twitter",
-    "Instagram",
-    "Facebook",
-    "Slack",
-    "MessageCircle",
-    "Video",
-    "Music",
-    "Briefcase",
-    "Layers",
-    "Code",
-    "Hash",
+    "LayoutDashboard",
+    "Home",
+    "Building2",
+    "BarChart3",
+    "FileText",
+    "Folder",
+    "Archive",
+    "ClipboardList",
+    "Calendar",
+    "Clock",
+    "CalendarCheck",
+    "Wallet",
+    "CreditCard",
+    "Mail",
+    "Send",
+    "Inbox",
+    "MessageSquare",
+    "Phone",
+    "Megaphone"
 ];
 
 export type TIconOption =
-	"Link" |
-    "Globe" |
-    "Github" |
-    "Youtube"|
-    "Twitter"|
-    "Instagram"|
-    "Facebook"|
-    "Slack"|
-    "MessageCircle"|
-    "Video"|
-    "Music"|
-    "Briefcase"|
-    "Layers"|
-    "Code"|
-    "Hash";
+    "Link" |
+	"LayoutDashboard" |
+    "Home" |
+    "Building2" |
+    "BarChart3"|
+    "FileText"|
+    "Folder"|
+    "Archive"|
+    "ClipboardList"|
+    "Calendar"|
+    "Clock"|
+    "CalendarCheck"|
+    "Wallet"|
+    "CreditCard"|
+    "Mail"|
+    "Send"|
+    "Inbox"|
+    "MessageSquare"|
+    "Phone"|
+    "Megaphone"
 
 const ColorOption = [
 	"indigo" ,
@@ -777,8 +778,9 @@ const SortableLinkCard = ({
     onDelete,
     onTogglePin,
     colorClass,
-    pinnedId
-}: {link: Rumah_Link, onEdit: (link: Rumah_Link) => void, onDelete: (id: string) => void, onTogglePin: (id: string) => void,  colorClass: string, pinnedId: string[]}) => {
+    pinnedId,
+    can_auth
+}: {link: Rumah_Link, onEdit: (link: Rumah_Link) => void, onDelete: (id: string) => void, onTogglePin: (id: string) => void,  colorClass: string, pinnedId: string[], can_auth: string[]}) => {
     const {
         attributes,
         listeners,
@@ -841,7 +843,7 @@ const SortableLinkCard = ({
                     </p>
                 </a>
             </div>
-            <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+            <div className="flex items-center gap-0.5 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity">
                 <button
                     onClick={(e) => {
                         e.preventDefault();
@@ -852,26 +854,31 @@ const SortableLinkCard = ({
                 >
                     {(link.default_pin == '1' || pinnedId.includes(link.id)) ? <PinOff size={14} /> : <Pin size={14} />}
                 </button>
-                <button
-                    onClick={(e) => {
-                        e.preventDefault();
-                        onEdit(link);
-                    }}
-                    className="p-1.5 text-slate-400 hover:text-indigo-600 rounded-md hover:bg-indigo-50 transition-colors"
-                    title="Édit"
-                >
-                    <Pencil size={14} />
-                </button>
-                <button
-                    onClick={(e) => {
-                        e.preventDefault();
-                        onDelete(link.id);
-                    }}
-                    className="p-1.5 text-slate-400 hover:text-red-500 rounded-md hover:bg-red-50 transition-colors"
-                    title="Hapus"
-                >
-                    <Trash2 size={14} />
-                </button>
+                {can_auth.includes(link.access_id) &&
+                <>
+                    <button
+                        onClick={(e) => {
+                            e.preventDefault();
+                            onEdit(link);
+                        }}
+                        className="p-1.5 text-slate-400 hover:text-indigo-600 rounded-md hover:bg-indigo-50 transition-colors"
+                        title="Édit"
+                    >
+                        <Pencil size={14} />
+                    </button>
+                    <button
+                        onClick={(e) => {
+                            e.preventDefault();
+                            onDelete(link.id);
+                        }}
+                        className="p-1.5 text-slate-400 hover:text-red-500 rounded-md hover:bg-red-50 transition-colors"
+                        title="Hapus"
+                    >
+                        <Trash2 size={14} />
+                    </button>
+                </>}
+
+
             </div>
         </div>
     );

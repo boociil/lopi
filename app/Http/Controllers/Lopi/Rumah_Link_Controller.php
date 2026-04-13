@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Lopi;
 
 use App\Http\Controllers\Controller;
-use App\Model\Jurnal_Harian\Jurnal_Harian_Proyek;
 use App\Model\Lopi\Rumah_Link;
 use App\Model\Lopi\User_Setting;
 use App\Model\Umum\Peran;
@@ -25,7 +24,6 @@ class Rumah_Link_Controller extends Controller
 
     public function index(Request $request)
     {
-
         $all_satuan_kerja_tahun_id_sesuai_peran = Peran:: where('tipe_peran', 'satuan_kerja_tahun')
                                             ->where('tahun', session('tahun_active'))->get()
                                             ->where('pemilik_username', Auth::user()->username)
@@ -34,27 +32,9 @@ class Rumah_Link_Controller extends Controller
                                             ->get()
                                             ->pluck('id')
                                             ->toArray();
-        $all_proyek_id_sesuai_peran_satuan_kerja_tahun = Jurnal_Harian_Proyek::whereIn('satuan_kerja_tahun_id', $all_satuan_kerja_tahun_id_sesuai_peran)
-                                            ->get()
-                                            ->pluck('id')
-                                            ->toArray();
 
         $parent_id_arr_before_pluck = Peran::where('pemilik_username', Auth::user()->username)
-            // ->where(function ($query){
-            //     $query->where(function ($query2){
-            //         $query2->where('tipe_peran', 'satuan_kerja_tahun');
-            //         // $query2->whereIn('peran', ['pimpinan', 'admin']);
-            //     });
-            //     $query->orWhere(function ($query2){
-            //         $query2->where('tipe_peran', 'tim');
-            //         // $query2->whereIn('peran', ['ketua', 'admin']);
-            //     });
-            //     $query->orWhere(function ($query2){
-            //         $query2->where('tipe_peran', 'proyek');
-            //         // $query2->whereIn('peran', ['ketua', 'admin', 'anggota']);
-            //     });
-            // })
-            ->whereIn('tipe_peran', ['satuan_kerja_tahun', 'tim', 'proyek'])
+            ->whereIn('tipe_peran', ['satuan_kerja_tahun', 'tim'])
             ->where('tahun', session('tahun_active'))
             ->select('tipe_peran', 'parent_id', 'peran')
             ->distinct()
@@ -62,7 +42,6 @@ class Rumah_Link_Controller extends Controller
 
         $parent_id_satuan_kerja_tahun = [];
         $parent_id_tim = [];
-        $parent_id_proyek = [];
 
         $tambahan_satuan_kerja_tahun_id = [];
         $tambahan_tim_id = [];
@@ -82,62 +61,25 @@ class Rumah_Link_Controller extends Controller
                     }
                     array_push($tambahan_tim_id, $item->parent_id);
                 }
-            }else if($item->tipe_peran == 'proyek'){
-                if(in_array($item->parent_id, $all_proyek_id_sesuai_peran_satuan_kerja_tahun)){
-                    array_push($parent_id_proyek, $item->parent_id);
-                }
-            }
-        }
-
-        $proyek = Jurnal_Harian_Proyek::where('tahun', session('tahun_active'))
-            ->where(function ($query) use ($parent_id_satuan_kerja_tahun, $parent_id_tim, $parent_id_proyek){
-                // $query->orWhere(function($query0) use ($parent_id_satuan_kerja_tahun){
-                //     $query0->whereIn('satuan_kerja_tahun_id', $parent_id_satuan_kerja_tahun);
-                //     $query0->whereNull('fungsi_id');
-                //     $query0->whereNull('tim_id');
-                // });
-                $query->orWhereIn('satuan_kerja_tahun_id', $parent_id_satuan_kerja_tahun);
-                $query->orWhereIn('tim_id', $parent_id_tim);
-                $query->orWhereIn('id', $parent_id_proyek);
-            })
-            ->get();
-
-        $satuan_kerja_tahun_id_from_proyek = [];
-        $tim_id_from_proyek = [];
-
-        foreach($proyek as $item){
-            if(!is_null($item->tim_id)){
-                if(!in_array($item->tim_id, $tim_id_from_proyek)){
-                    array_push($tim_id_from_proyek, $item->tim_id);
-                }
-            }
-            if(!is_null($item->satuan_kerja_tahun_id) && is_null($item->fungsi_id) && is_null($item->tim_id)){
-                if(!in_array($item->satuan_kerja_tahun_id, $satuan_kerja_tahun_id_from_proyek)){
-                    array_push($satuan_kerja_tahun_id_from_proyek, $item->satuan_kerja_tahun_id);
-                }
             }
         }
 
         $satuan_kerja_tahun = Satuan_Kerja_Tahun::where('tahun', session('tahun_active'))
-                    ->where(function($query) use ($tambahan_satuan_kerja_tahun_id, $satuan_kerja_tahun_id_from_proyek){
+                    ->where(function($query) use ($tambahan_satuan_kerja_tahun_id){
                         $query->orWhereIn('id', $tambahan_satuan_kerja_tahun_id);
-                        $query->orWhereIn('id', $satuan_kerja_tahun_id_from_proyek);
                     })
                     ->get();
 
         $tim = Tim::where('tahun', session('tahun_active'))
-                    ->where(function ($query) use ($tambahan_satuan_kerja_tahun_id, $satuan_kerja_tahun_id_from_proyek, $tambahan_tim_id, $tim_id_from_proyek){
+                    ->where(function ($query) use ($tambahan_satuan_kerja_tahun_id, $tambahan_tim_id){
                         $query->orWhereIn('satuan_kerja_tahun_id', $tambahan_satuan_kerja_tahun_id);
-                        $query->orWhereIn('satuan_kerja_tahun_id', $satuan_kerja_tahun_id_from_proyek);
                         $query->orWhereIn('id', $tambahan_tim_id);
-                        $query->orWhereIn('id', $tim_id_from_proyek);
                     })
                     ->get();
 
 
-        $data_ori = Rumah_Link::where(function($query) use ($tambahan_satuan_kerja_tahun_id, $satuan_kerja_tahun_id_from_proyek){
+        $data_ori = Rumah_Link::where(function($query) use ($tambahan_satuan_kerja_tahun_id){
                         $query->orWhereIn('satuan_kerja_tahun_id', $tambahan_satuan_kerja_tahun_id);
-                        $query->orWhereIn('satuan_kerja_tahun_id', $satuan_kerja_tahun_id_from_proyek);
                         $query->orWhere('access_id', Auth::user()->username);
                     })->get();
 
@@ -145,24 +87,25 @@ class Rumah_Link_Controller extends Controller
 
         foreach($data_ori as $item_ori){
             if($item_ori->access_type == 'satuan_kerja_tahun'
-                && (in_array($item_ori->access_id, $satuan_kerja_tahun_id_from_proyek) || in_array($item_ori->access_id, $tambahan_satuan_kerja_tahun_id))){
+                && (in_array($item_ori->access_id, $tambahan_satuan_kerja_tahun_id))){
                 array_push($data_return, $item_ori);
             }else if($item_ori->access_type == 'tim'
-                && (in_array($item_ori->access_id, $tim_id_from_proyek) || in_array($item_ori->access_id, $tambahan_tim_id))){
-                array_push($data_return, $item_ori);
-            }else if($item_ori->access_type == 'proyek' && (in_array($item_ori->access_id, $parent_id_proyek))){
+                && (in_array($item_ori->access_id, $tambahan_tim_id))){
                 array_push($data_return, $item_ori);
             }else if($item_ori->access_type == 'user' && $item_ori->access_id == Auth::user()->username){
                 array_push($data_return, $item_ori);
             }
         }
 
+        $array_can_add_ubah = array_merge($parent_id_satuan_kerja_tahun, $parent_id_tim);
+        Log::info($array_can_add_ubah);
+
 
          return Inertia::render('rumah_link', [
                 "data" => $data_return,
                 'satuan_kerja_tahun' => $satuan_kerja_tahun,
                 'tim' => $tim,
-                'proyek' => $proyek,
+                "can_auth" => $array_can_add_ubah,
                 'setting_pinned' => User_Setting::where('username', Auth::user()->username)
                     ->where('category', 'rumah_link')
                     ->where('key', 'pinned')
@@ -205,15 +148,11 @@ class Rumah_Link_Controller extends Controller
             ->where(function ($query){
                 $query->orWhere(function ($query2){
                     $query2->where('tipe_peran', 'satuan_kerja_tahun');
-                    $query2->where('peran', 'pimpinan');
+                    $query2->whereIn('peran', ['pimpinan', 'admin']);
                 });
                 $query->orWhere(function ($query2){
                     $query2->where('tipe_peran', 'tim');
-                    $query2->where('peran', 'ketua');
-                });
-                $query->orWhere(function ($query2){
-                    $query2->where('tipe_peran', 'proyek');
-                    $query2->whereIn('peran', ['ketua', 'admin', 'anggota']);
+                    $query2->whereIn('peran', ['ketua', 'admin']);
                 });
             })
             ->where('tahun', session('tahun_active'))
@@ -222,25 +161,11 @@ class Rumah_Link_Controller extends Controller
             ->get()
         )->pluck('parent_id')->toArray();
 
-        $jurnal_harian_proyek = Jurnal_Harian_Proyek::where('satuan_kerja_tahun_id', $satuan_kerja_tahun_kode)
-            ->where(function ($query) use ($parent_id_arr){
-                $query->whereIn('id', $parent_id_arr);
-                $query->orWhereIn('tim_id', $parent_id_arr);
-                $query->orWhereIn('satuan_kerja_tahun_id', $parent_id_arr);
-            })
-            ->where('tahun', session('tahun_active'))
-            ->get();
-
-        $can_item_added = [Auth::user()->username];
-
-        foreach($jurnal_harian_proyek as $item){
-            array_push($can_item_added, $item->satuan_kerja_tahun_id);
-            array_push($can_item_added, $item->tim_id);
-            array_push($can_item_added, $item->id);
-        }
+        $can_item_added= $parent_id_arr;
+        array_push($can_item_added, Auth::user()->username);
 
         if(!in_array($request->input('access_id'),$can_item_added)){
-            return abort(404, 'Id tidak ditemukan');
+            return abort(401, 'Tidak memiliki akses');
         }
 
         DB::beginTransaction();
@@ -274,7 +199,7 @@ class Rumah_Link_Controller extends Controller
         }
     }
 
-    public function ubah(Request $request, $rumah_link)
+    public function ubah(Request $request, Rumah_Link $rumah_link)
     {
         $validated = $request->validate([
             'title' => 'required|max:256',
@@ -301,15 +226,11 @@ class Rumah_Link_Controller extends Controller
             ->where(function ($query){
                 $query->orWhere(function ($query2){
                     $query2->where('tipe_peran', 'satuan_kerja_tahun');
-                    $query2->where('peran', 'pimpinan');
+                    $query2->whereIn('peran', ['pimpinan', 'admin']);
                 });
                 $query->orWhere(function ($query2){
                     $query2->where('tipe_peran', 'tim');
-                    $query2->where('peran', 'ketua');
-                });
-                $query->orWhere(function ($query2){
-                    $query2->where('tipe_peran', 'proyek');
-                    $query2->whereIn('peran', ['ketua', 'admin', 'anggota']);
+                    $query2->whereIn('peran', ['ketua', 'admin']);
                 });
             })
             ->where('tahun', session('tahun_active'))
@@ -318,25 +239,11 @@ class Rumah_Link_Controller extends Controller
             ->get()
         )->pluck('parent_id')->toArray();
 
-         $jurnal_harian_proyek = Jurnal_Harian_Proyek::where('satuan_kerja_tahun_id', $satuan_kerja_tahun_kode)
-            ->where(function ($query) use ($parent_id_arr){
-                $query->whereIn('id', $parent_id_arr);
-                $query->orWhereIn('tim_id', $parent_id_arr);
-                $query->orWhereIn('satuan_kerja_tahun_id', $parent_id_arr);
-            })
-            ->where('tahun', session('tahun_active'))
-            ->get();
-
-        $can_item_added = [Auth::user()->username];
-
-        foreach($jurnal_harian_proyek as $item){
-            array_push($can_item_added, $item->satuan_kerja_tahun_id);
-            array_push($can_item_added, $item->tim_id);
-            array_push($can_item_added, $item->id);
-        }
+        $can_item_added= $parent_id_arr;
+        array_push($can_item_added, Auth::user()->username);
 
         if(!in_array($rumah_link->access_id, $can_item_added)){
-            return abort(404, 'Id tidak ditemukan');
+            return abort(401, 'Tidak memiliki akses');
         }
 
         DB::beginTransaction();
@@ -366,7 +273,7 @@ class Rumah_Link_Controller extends Controller
         }
     }
 
-    public function hapus(Request $request, $rumah_link)
+    public function hapus(Request $request, Rumah_Link $rumah_link)
     {
         $satuan_kerja_tahun_kode = [];
         $peran_satuan_kerja = Peran::get_my_peran_satuan_kerja_kerja_tahun();
@@ -385,15 +292,11 @@ class Rumah_Link_Controller extends Controller
             ->where(function ($query){
                 $query->orWhere(function ($query2){
                     $query2->where('tipe_peran', 'satuan_kerja_tahun');
-                    $query2->where('peran', 'pimpinan');
+                    $query2->whereIn('peran', ['pimpinan', 'admin']);
                 });
                 $query->orWhere(function ($query2){
                     $query2->where('tipe_peran', 'tim');
-                    $query2->where('peran', 'ketua');
-                });
-                $query->orWhere(function ($query2){
-                    $query2->where('tipe_peran', 'proyek');
-                    $query2->whereIn('peran', ['ketua', 'admin', 'anggota']);
+                    $query2->whereIn('peran', ['ketua', 'admin']);
                 });
             })
             ->where('tahun', session('tahun_active'))
@@ -402,30 +305,16 @@ class Rumah_Link_Controller extends Controller
             ->get()
         )->pluck('parent_id')->toArray();
 
-        $jurnal_harian_proyek = Jurnal_Harian_Proyek::where('pemilik_username', Auth::user()->username)
-            ->where('satuan_kerja_tahun_id', $satuan_kerja_tahun_kode)
-            ->where(function ($query) use ($parent_id_arr){
-                $query->whereIn('id', $parent_id_arr);
-                $query->orWhereIn('tim_id', $parent_id_arr);
-                $query->orWhereIn('satuan_kerja_tahun_id', $parent_id_arr);
-            })
-            ->where('tahun', session('tahun_active'))
-            ->first();
-
-        $can_item_added = [Auth::user()->username];
-
-        foreach($jurnal_harian_proyek as $item){
-            array_push($can_item_added, $item->satuan_kerja_tahun_id);
-            array_push($can_item_added, $item->tim_id);
-            array_push($can_item_added, $item->id);
-        }
+        $can_item_added= $parent_id_arr;
+        array_push($can_item_added, Auth::user()->username);
 
         if(!in_array($rumah_link->access_id, $can_item_added)){
-            return abort(404, 'Id tidak ditemukan');
+            return abort(401, 'Tidak memiliki akses');
         }
 
 
         $rumah_link->delete();
+        return 1;
     }
 
     public function setting(Request $request)
