@@ -22,6 +22,7 @@ use App\Http\Controllers\Lopi\Rumah_Link_Controller;
 use App\Http\Controllers\Lopi\KMS_Controller;
 use App\Http\Controllers\Lopi\Monica_Controller;
 use App\Http\Controllers\Lopi\ITValet_Controller;
+use App\Http\Controllers\Lopi\Timeline_Controller;
 use App\Http\Controllers\WebController;
 use App\Model\Umum\User;
 use Illuminate\Support\Facades\Auth;
@@ -267,6 +268,18 @@ Route::group(
         Route::post('/{pinjamZoom}/approval', [Pinjam_Zoom_Controller::class, 'approval'])->name('pinjam-zoom-approval');
         Route::post('/get_mmeting', [Pinjam_Zoom_Controller::class, 'get_mmeting'])->name('pinjam-zoom-get-mmeting');
     });
+
+    Route::group(
+    [
+        'prefix' => 'non_bmn',
+    ], function () {
+        Route::get('/', [Pinjam_Zoom_Controller::class, 'index'])->name('non-bmn-index');
+        Route::post('/', [Pinjam_Zoom_Controller::class, 'index'])->name('non-bmn-index');
+        Route::post('/tambah', [Pinjam_Zoom_Controller::class, 'tambah'])->name('non-bmn-tambah');
+        Route::post('/{nonBmn}/ubah', [Pinjam_Zoom_Controller::class, 'ubah'])->name('non-bmn-ubah');
+        Route::post('/{nonBmn}/hapus', [Pinjam_Zoom_Controller::class, 'hapus'])->name('non-bmn-hapus');
+        Route::post('/{nonBmn}/approval', [Pinjam_Zoom_Controller::class, 'approval'])->name('non-bmn-approval');
+    });
 });
 
 Route::group(
@@ -297,12 +310,12 @@ Route::group(
     'prefix' => 'timeline',
     'middleware' => ['auth', 'check_maintenance', 'statistik', 'check_satuan_kerja:7600'],
 ], function () {
-    Route::get('/', [Rumah_Link_Controller::class, 'index'])->name('rumah_link-index');
-    Route::post('/tambah', [Rumah_Link_Controller::class, 'tambah'])->name('rumah_link-tambah');
-    Route::post('/{timeline}/ubah', [Rumah_Link_Controller::class, 'ubah'])->name('rumah_link-ubah');
-    Route::post('/{timeline}/hapus', [Rumah_Link_Controller::class, 'hapus'])->name('rumah_link-hapus');
+    Route::get('/', [Timeline_Controller::class, 'index'])->name('rumah_link-index');
+    Route::post('/tambah', [Timeline_Controller::class, 'tambah'])->name('rumah_link-tambah');
+    Route::post('/{timeline}/ubah', [Timeline_Controller::class, 'ubah'])->name('rumah_link-ubah');
+    Route::post('/{timeline}/hapus', [Timeline_Controller::class, 'hapus'])->name('rumah_link-hapus');
 
-    Route::post('/setting', [Rumah_Link_Controller::class, 'setting'])->name('rumah_link-setting');
+    Route::post('/setting', [Timeline_Controller::class, 'setting'])->name('rumah_link-setting');
 });
 
 Route::group(

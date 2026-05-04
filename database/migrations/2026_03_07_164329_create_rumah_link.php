@@ -49,7 +49,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-       Schema::dropIfExists('links');
-        Schema::dropIfExists('groups');
+        Schema::dropIfExists('siakip2_user_setting');
+        Schema::dropIfExists('siakip2_rumah_links');
     }
 };

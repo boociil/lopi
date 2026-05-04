@@ -82,7 +82,7 @@ class Pinjam_Zoom_Controller extends Controller
             ->first();
 
         if($request->isMethod('get')){
-            return Inertia::render('pinjam_zoom', [
+            return Inertia::render('pinjam/zoom', [
                 "user" => User::all(),
                 "have_zoom_peran" => $have_zoom_peran,
             ]);

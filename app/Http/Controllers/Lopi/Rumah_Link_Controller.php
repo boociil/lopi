@@ -98,7 +98,6 @@ class Rumah_Link_Controller extends Controller
         }
 
         $array_can_add_ubah = array_merge($parent_id_satuan_kerja_tahun, $parent_id_tim);
-        Log::info($array_can_add_ubah);
 
 
          return Inertia::render('rumah_link', [

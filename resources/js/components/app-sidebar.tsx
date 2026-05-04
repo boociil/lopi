@@ -4,7 +4,7 @@ import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import type { NavGeneral, SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { LayoutGrid, CalendarDays, LockKeyholeOpen, Car, SmilePlus, Hospital, Video, UserRoundCog, LinkIcon, CalendarCheck, Wallet, PackageSearch } from 'lucide-react';
+import { LayoutGrid, CalendarDays, LockKeyholeOpen, Car, SmilePlus, Hospital, Video, UserRoundCog, LinkIcon, CalendarCheck, Wallet, PackageSearch, GanttChart } from 'lucide-react';
 import AppLogo from './app-logo';
 import { useEffect, useState } from 'react';
 import { useApi } from '@/lib/API/useApi';
@@ -110,6 +110,12 @@ export function AppSidebar() {
             },
             {
                 type: 'item',
+                title: 'Timeline',
+                href: '/lopi/timeline',
+                icon: GanttChart,
+            },
+            {
+                type: 'item',
                 title: 'Cek Cuti',
                 href: '/lopi/cek_cuti',
                 icon: CalendarCheck,
@@ -122,7 +128,7 @@ export function AppSidebar() {
             },
              {
                 type: 'group',
-                title: 'Peminjaman BMN',
+                title: 'Peminjaman',
                 href: '/lopi/pinjam',
                 icon: PackageSearch,
                 subItems: [
@@ -133,6 +139,10 @@ export function AppSidebar() {
                     {
                          title: 'Pemakaian Mobil',
                         href: '/lopi/pinjam/mobil',
+                    },
+                    {
+                         title: 'Non BMN',
+                        href: '/lopi/pinjam/non_bmn',
                     },
                 ]
             },

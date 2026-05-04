@@ -6,15 +6,13 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
+
     public function up(): void
     {
-       Schema::create('social_accounts', function (Blueprint $table) {
-            $table->id();
+       Schema::create('siakip2_social_account', function (Blueprint $table) {
+            $table->string('id', 36)->primary();
 
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->string('username');
 
             $table->string('provider');        // google
             $table->string('provider_user_id');// sub dari google
@@ -25,64 +23,50 @@ return new class extends Migration
 
             $table->timestamps();
 
-            $table->unique(['user_id', 'provider','provider_user_id']);
+            $table->unique(['username', 'provider','provider_user_id']);
+
+            $table->foreign('username', 'social_account_fk_username')->references('username')->on('siakip2_users');
         });
 
-        Schema::create('siakip2_sync_events', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+        Schema::create('siakip2_calender', function (Blueprint $table) {
+            $table->string('id', 36)->primary();
 
-            $table->string('title');
-            $table->text('description')->nullable();
-            $table->timestamp('start_at');
-            $table->timestamp('end_at')->nullable();
+            $table->string('google_id', 255);
 
-            $table->timestamps();
+            $table->string('summary');
+            $table->string('timeZone')->default('Asia/Makassar');
+
+            $table->string('tipe_parent', 30); // satuan_kerja_tahun, tim
+            $table->string('parent_id', 36)->nullable();
         });
 
-        Schema::create('google_event_links', function (Blueprint $table) {
-            $table->id();
+        Schema::create('siakip2_calender_member', function (Blueprint $table) {
+            $table->string('id', 36)->primary();
 
-            $table->foreignId('event_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('google_calendar_id')->constrained('google_calendars')->cascadeOnDelete();
+             $table->string('username');
 
-            $table->string('google_event_id');
-            $table->string('etag')->nullable(); // version control google
+            $table->string('calender_id', 36);
 
-            $table->timestamps();
-
-            $table->unique(['event_id','google_event_id']);
+            $table->foreign('username', 'calender_member_fk_username')->references('username')->on('siakip2_users');
+            $table->foreign('calender_id', 'calender_member_fk_calender_id')->references('id')->on('siakip2_calender');
         });
 
-        Schema::create('siakip2_sync_tasl', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+        Schema::create('siakip2_calender_google_event', function (Blueprint $table) {
+            $table->string('id', 36)->primary();
 
-            $table->string('title');
-            $table->boolean('completed')->default(false);
-            $table->timestamp('due_at')->nullable();
+            $table->string('calender_id', 36)->nullable();
+            $table->string('event_id', 255);
 
-            $table->timestamps();
+            $table->string('tipe_event', 30); // satuan_kerja_tahun, tim, user
         });
 
-        Schema::create('google_task_links', function (Blueprint $table) {
-            $table->id();
-
-            $table->foreignId('task_id')->constrained()->cascadeOnDelete();
-            $table->string('google_task_id');
-            $table->string('google_tasklist_id');
-
-            $table->timestamps();
-
-            $table->unique(['task_id','google_task_id']);
-        });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
-        Schema::dropIfExists('sync_google');
+        Schema::dropIfExists('siakip2_calender_google_event');
+        Schema::dropIfExists('siakip2_calender_member');
+        Schema::dropIfExists('siakip2_calender');
+        Schema::dropIfExists('siakip2_social_account');
     }
 };
