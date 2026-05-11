@@ -24,9 +24,30 @@ return new class extends Migration
             $table->foreign('username', 'jadwal_peserta_fk_username')->references('username')->on('siakip2_users');
         });
 
-        Schema::create('siakip2_petugas_jadwal', function (Blueprint $table) {
-            $table->id();
-            $table->timestamps();
+        Schema::create('siakip2_jadwal_peserta', function (Blueprint $table) {
+            //peserta ruang mana tanggal, tautan daftar hadrir, notulensi, tautan dokumentasi, tautan undangan
+            $table->string('id', 36)->primary();
+            $table->string('jadwal_id', 36);
+
+            $table->string('peserta_type', 100);
+            $table->string('peserta_id', 100);
+
+            $table->engine = 'InnoDB';
+
+            $table->foreign('jadwal_id', 'peserta_fk_jadwal_id')->references('id')->on('siakip2_jadwal');
+        });
+
+        Schema::create('siakip2_petugas', function (Blueprint $table) {
+            $table->string('id', 36)->primary();
+
+            $table->string('kegiatan_tipe', 36);
+            $table->string('kegiatan_id', 36);
+            $table->unsignedSmallInteger('kegiatan_id');
+            $table->string('username', 100);
+
+            $table->engine = 'InnoDB';
+
+            $table->foreign('username', 'petugas_fk_username')->references('username')->on('siakip2_users');
         });
     }
 

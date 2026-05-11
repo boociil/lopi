@@ -14,78 +14,146 @@ return new class extends Migration
         Schema::create('siakip2_perjalanan_dinas', function (Blueprint $table) {
             $table->id();
 
-            $table->string('request_no')->unique(); // No
-            $table->string('deskripsi', 1024);
+            $table->date('pengajuan_tanggal');
+            $table->string('pengajuan_username', 100);
+            $table->string('tim_id', 36);
 
+            $table->string('deskripsi', 1024);
             $table->string('beban_akun'); // Beban akun
 
-            $table->date('tanggal_pelaksanaan'); // tanggal pelaksanaan
-            $table->string('tujuan'); // tujuan
+            $table->boolean('approval_status')->default(false);
+            $table->string('approval_username');
 
-            $table->string('pelaksana_spd');
+            $table->boolean('status_entry_bos')->default(false);
+            $table->boolean('status_terbit_st')->default(false);
 
-            $table->date('tanggal_pengajuan');
+            $table->date('tanggal_terbit_st')->nullable();
+            $table->date('tanggal_setor_adm')->nullable();
+            $table->date('tanggal_cair')->nullable();
 
-            $table->foreignId('executor_id')->constrained('users'); // pelaksana SPD
-            $table->foreignId('approval_id')->nullable()->constrained()->nullOnDelete();
+            $table->string('tanggal_gap', 255)->nullable();
 
-            $table->enum('status', [
-                'entry_bos',
-                'terbit_st',
-                'keterangan'
-            ])->default('entry_bos');
+            $table->enum('status_keterangan', [
+                'Revisi POK',
+                'Aprove PJ',
+                'Aprove PPK',
+                'Proses ST',
+                'Terbit ST',
+                'Pelaksanaan SPD',
+                'Setor Adm',
+                'Verifikasi',
+                'Proses SPJ',
+                'Terbit SP2D',
+                'Cair',
+                'PengajuanBOS',
+            ])->default('Revisi POK');
 
-            $table->foreignId('pic_id')->constrained('users');
+            $table->enum('PIC', [
+                'Pimpinan',
+                'KetuaTim',
+                'PPK',
+                'TimPerencana',
+                'TimKeu',
+                'PelaksanaSPD',
+            ])->default('PelaksanaSPD');
 
-            $table->string('fp_number')->nullable();
-            $table->string('sp2d_number')->nullable();
-            $table->decimal('sp2d_value', 18,2)->nullable();
-            $table->date('disbursement_date')->nullable();
+            $table->string('nomor_fp')->nullable();
+            $table->string('nomor_sp2d')->nullable();
+            $table->decimal('nilai_sp2d', 18,2)->nullable();
+            $table->date('tanggal_pencarian')->nullable();
 
             $table->text('notes')->nullable();
 
-            $table->timestamps();
+            $table->foreign('pengajuan_username', 'perjalanan_dinas_fk_pengajuan_username')->references('username')->on('siakip2_users');
+            $table->foreign('tim_id', 'perjalanan_dinas_fk_tim_id')->references('id')->on('siakip2_tim');
+        });
+
+        Schema::create('siakip2_perjalanan_dinas_pelaksana', function (Blueprint $table) {
+            $table->id();
+
+            $table->string('perjalanan_dinas_id')->unique(); // No
+
+            $table->date('tanggal'); // tanggal pelaksanaan
+            $table->string('tujuan', 255); // tujuan
+            $table->string('pelaksana', 255); // tanggal pelaksanaan\
+
+            $table->foreign('perjalanan_dinas_id', 'pd_pelaksana_fk_perjalanan_dinas_id')->references('id')->on('siakip2_perjalanan_dinas');
         });
 
         Schema::create('siakip2_lembur', function (Blueprint $table) {
             $table->id();
 
-            $table->string('request_no')->unique();
-            $table->text('description');
+            $table->date('pengajuan_tanggal');
+            $table->string('pengajuan_username', 100);
+            $table->string('tim_id', 36);
 
-            $table->date('execution_date');
+            $table->string('deskripsi', 1024);
 
-            $table->foreignId('executor_id')->constrained('users'); // pelaksana lembur
-            $table->foreignId('approval_id')->nullable()->constrained()->nullOnDelete();
+            $table->string('tanggal_pelaksanaan', 120); // tanggal pelaksanaan
 
-            $table->enum('status', [
-                'entry_bos',
-                'nota_dinas',
-                'daftar_hadir',
-                'laporan_spkl',
-                'sptjm',
-                'keterangan'
-            ])->default('entry_bos');
+            $table->boolean('approval_status')->default(false);
+            $table->string('approval_username');
 
-            $table->foreignId('pic_id')->constrained('users');
+            $table->boolean('status_entry_bos')->default(false);
+            $table->boolean('status_nota_dinas')->default(false);
+            $table->boolean('status_daftar_hadir')->default(false);
+            $table->boolean('status_laporan')->default(false);
+            $table->boolean('status_spkl')->default(false);
+            $table->boolean('status_sptjm')->default(false);
 
-            $table->string('fp_number')->nullable();
-            $table->string('sp2d_number')->nullable();
-            $table->decimal('sp2d_value', 18,2)->nullable();
-            $table->date('disbursement_date')->nullable();
+            $table->date('tanggal_entry_bos')->nullable();
+            $table->date('tanggal_nota_dinas')->nullable();
+            $table->date('tanggal_daftar_hadir')->nullable();
+            $table->date('tanggal_laporan')->nullable();
+            $table->date('tanggal_spkl')->nullable();
+            $table->date('tanggal_sptjm')->nullable();
+            $table->date('tanggal_cair')->nullable();
+
+            $table->string('tanggal_gap', 255)->nullable();
+
+            $table->enum('status_keterangan', [
+                'Revisi POK',
+                'Aprove PJ',
+                'Aprove PPK',
+                'Proses ST',
+                'Terbit ST',
+                'Pelaksanaan Lembur',
+                'Setor Adm',
+                'Verifikasi',
+                'Proses SPJ',
+                'Terbit SP2D',
+                'Cair',
+                'PengajuanBOS',
+            ])->default('Revisi POK');
+
+            $table->enum('PIC', [
+                'Pimpinan',
+                'KetuaTim',
+                'PPK',
+                'TimPerencana',
+                'TimKeu',
+                'PelaksanaLembur',
+            ])->default('PelaksanaSPD');
+
+            $table->string('nomor_fp')->nullable();
+            $table->string('nomor_sp2d')->nullable();
+            $table->decimal('nilai_sp2d', 18,2)->nullable();
+            $table->date('tanggal_pencarian')->nullable();
 
             $table->text('notes')->nullable();
 
-            $table->timestamps();
+            $table->foreign('pengajuan_username', 'perjalanan_dinas_fk_pengajuan_username')->references('username')->on('siakip2_users');
         });
 
         Schema::create('siakip2_rapat', function (Blueprint $table) {
             $table->id();
 
-            $table->string('request_no')->unique();
             $table->text('description');
 
-            $table->foreignId('account_id')->nullable()->constrained()->nullOnDelete();
+            $table->string('beban_akun'); // Beban akun
+
+            $table->boolean('approval_status')->default(false);
+            $table->string('approval_username');
 
             $table->date('execution_date');
             $table->time('execution_time'); // WITA

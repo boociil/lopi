@@ -111,15 +111,35 @@ trait Zoom_Traits
             $response = $client->request('GET', 'meetings/' . $zoomMeetingId);
             $data = json_decode($response->getBody(), true);
 
-            if(!array_key_exists('start_time', $data)){
-                return [
-                    'status' => false,
-                ];
-            }else if(Carbon::parse($data['start_time'])->setTimezone('Asia/Singapore')->isToday()){
-                return [
-                    'status' => true,
-                    'data' => $data,
-                ];
+            if(array_key_exists('start_time', $data)){
+                if(Carbon::parse($data['start_time'])->setTimezone('Asia/Singapore')->isToday()){
+                    return [
+                        'status' => true,
+                        'data' => $data,
+                    ];
+                }else{
+                    return [
+                        'status' => false,
+                    ];
+                }
+            }else if(array_key_exists('occurrences', $data)){
+                $hari_ini = false;
+                foreach ($data['occurrences'] as $item){
+                    if(Carbon::parse($item['start_time'])->setTimezone('Asia/Singapore')->isToday()){
+                        $hari_ini = true;
+                    }
+                }
+                if($hari_ini){
+                    return [
+                        'status' => true,
+                        'data' => $data,
+                    ];
+                }else{
+                    return [
+                        'status' => false,
+                    ];
+                }
+
             }else{
                 return [
                     'status' => false,
