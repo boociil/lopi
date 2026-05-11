@@ -59,7 +59,7 @@ class Cek_Cuti_Controller extends Controller
         try {
             return Cache::flexible('cuti_'.$nip_lama, [2*60*60, 6*60*60], function () use ($nip_lama) {
                 $client = new Client();
-                $response = $client->get('https://sipecut.bps.go.id/api/v1/cuti_rwusul/bynip/id/'.$nip_lama);
+                $response = $client->get('https://sipecut.bps.go.id/api/v1/cuti_rwusul/bynip/id/'.$nip_lama.'/thn/2026');
 
                 if ($response->getStatusCode() == 200) {
                     $return_data = [];
