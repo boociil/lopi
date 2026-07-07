@@ -1,8 +1,11 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Lopi\Pinjam_Mobil_Controller;
-use App\Http\Controllers\Lopi\Pinjam_Zoom_Controller;
+use App\Http\Controllers\Lopi\Pinjam\Zoom_Controller as Pinjam_Zoom_Controller;
+use App\Http\Controllers\Lopi\Pinjam\Mobil_Controller as Pinjam_Mobil_Controller;
+use App\Http\Controllers\Lopi\Pinjam\Ruang_Controller as Pinjam_Ruang_Controller;
+use App\Http\Controllers\Lopi\Pinjam\Non_BMN_Controller as Pinjam_Non_BMN_Controller;
+
 
 Route::group(
 [
@@ -33,16 +36,23 @@ Route::group(
         Route::post('/{pinjamZoom}/approval', [Pinjam_Zoom_Controller::class, 'approval'])->name('pinjam-zoom-approval');
         Route::post('/get_mmeting', [Pinjam_Zoom_Controller::class, 'get_mmeting'])->name('pinjam-zoom-get-mmeting');
     });
-
+    Route::group(
+    [
+        'prefix' => 'ruang',
+    ], function () {
+        Route::get('/', [Pinjam_Ruang_Controller::class, 'index'])->name('pinjam-ruang-index');
+        Route::post('/', [Pinjam_Ruang_Controller::class, 'index'])->name('pinjam-ruang-index');
+        Route::post('/{nonBmn}/approval', [Pinjam_Ruang_Controller::class, 'approval'])->name('pinjam-ruang-approval');
+    });
     Route::group(
     [
         'prefix' => 'non_bmn',
     ], function () {
-        Route::get('/', [Pinjam_Zoom_Controller::class, 'index'])->name('non-bmn-index');
-        Route::post('/', [Pinjam_Zoom_Controller::class, 'index'])->name('non-bmn-index');
-        Route::post('/tambah', [Pinjam_Zoom_Controller::class, 'tambah'])->name('non-bmn-tambah');
-        Route::post('/{nonBmn}/ubah', [Pinjam_Zoom_Controller::class, 'ubah'])->name('non-bmn-ubah');
-        Route::post('/{nonBmn}/hapus', [Pinjam_Zoom_Controller::class, 'hapus'])->name('non-bmn-hapus');
-        Route::post('/{nonBmn}/approval', [Pinjam_Zoom_Controller::class, 'approval'])->name('non-bmn-approval');
+        Route::get('/', [Pinjam_Non_BMN_Controller::class, 'index'])->name('pinjam-non-bmn-index');
+        Route::post('/', [Pinjam_Non_BMN_Controller::class, 'index'])->name('pinjam-non-bmn-index');
+        Route::post('/tambah', [Pinjam_Non_BMN_Controller::class, 'tambah'])->name('pinjam-non-bmn-tambah');
+        Route::post('/{nonBmn}/ubah', [Pinjam_Non_BMN_Controller::class, 'ubah'])->name('pinjam-non-bmn-ubah');
+        Route::post('/{nonBmn}/hapus', [Pinjam_Non_BMN_Controller::class, 'hapus'])->name('pinjam-non-bmn-hapus');
+        Route::post('/{nonBmn}/approval', [Pinjam_Non_BMN_Controller::class, 'approval'])->name('pinjam-non-bmn-approval');
     });
 });

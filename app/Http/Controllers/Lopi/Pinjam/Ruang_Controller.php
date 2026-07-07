@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Lopi;
+namespace App\Http\Controllers\Lopi\Pinjam;
 
 use App\Http\Controllers\Controller;
 use App\Http\Traits\Zoom_Traits;
@@ -22,7 +22,7 @@ use App\Model\Umum\User;
 use Exception;
 use Inertia\Inertia;
 
-class Pinjam_Zoom_Controller extends Controller
+class Ruang_Controller extends Controller
 {
 
     use Zoom_Traits;

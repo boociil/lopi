@@ -12,9 +12,9 @@ export function AppSidebarHeader({ breadcrumbs = [] }: { breadcrumbs?: Breadcrum
                 <Breadcrumbs breadcrumbs={breadcrumbs} />
             </div>
             <div className="flex items-end">
-                <div className='block h-full'>
+                {/* <div className='block h-full'>
                     <NavNotification />
-                </div>
+                </div> */}
                 <div className='block h-full'>
                     <NavUser />
                 </div>

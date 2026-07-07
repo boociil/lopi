@@ -4,7 +4,7 @@ import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import type { NavGeneral, SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { LayoutGrid, CalendarDays, LockKeyholeOpen, Car, SmilePlus, Hospital, Video, UserRoundCog, LinkIcon, CalendarCheck, Wallet, PackageSearch, GanttChart } from 'lucide-react';
+import { LayoutGrid, CalendarDays, LockKeyholeOpen, SmilePlus, Hospital, UserRoundCog, CalendarCheck, Wallet, PackageSearch, GanttChart, Book, BookOpen } from 'lucide-react';
 import AppLogo from './app-logo';
 import { useEffect, useState } from 'react';
 import { useApi } from '@/lib/API/useApi';
@@ -102,18 +102,18 @@ export function AppSidebar() {
         }
     }else {
         mainNavItems.push(...[
-            {
-                type: 'item',
-                title: 'Rumah Link',
-                href: '/lopi/rumah_link',
-                icon: LinkIcon,
-            },
-            {
-                type: 'item',
-                title: 'Timeline',
-                href: '/lopi/timeline',
-                icon: GanttChart,
-            },
+            // {
+            //     type: 'item',
+            //     title: 'Rumah Link',
+            //     href: '/lopi/rumah_link',
+            //     icon: LinkIcon,
+            // },
+            // {
+            //     type: 'item',
+            //     title: 'Timeline',
+            //     href: '/lopi/timeline',
+            //     icon: GanttChart,
+            // },
             {
                 type: 'item',
                 title: 'Cek Cuti',
@@ -137,63 +137,43 @@ export function AppSidebar() {
                         href: '/lopi/pinjam/zoom',
                     },
                     {
+                        title: 'Pemakaian Ruang',
+                        href: '/lopi/pinjam/ruang',
+                    },
+                    {
                          title: 'Pemakaian Mobil',
                         href: '/lopi/pinjam/mobil',
-                    },
-                    {
-                         title: 'Non BMN',
-                        href: '/lopi/pinjam/non_bmn',
-                    },
+                    }
                 ]
             },
-            {
-                type: 'group',
-                title: 'Monica',
-                href: '/lopi/monica',
-                icon: Wallet,
-                subItems: [
-                    {
-                        title: 'Master',
-                        href: '/lopi/monica/dashboard',
-                    },
-                    {
-                        title: 'Form',
-                        href: '/lopi/monica/form',
-                    },
-                ]
-            },
-            {
-                type: 'group',
-                title: 'IT-Valet',
-                href: '/lopi/it-valet',
-                icon: Wallet,
-                subItems: [
-                    {
-                        title: 'Master',
-                        href: '/lopi/monica/dashboard',
-                    },
-                    {
-                        title: 'Form',
-                        href: '/lopi/monica/form',
-                    },
-                ]
-            },
-            {
-                type: 'group',
-                title: 'KMS',
-                href: '/lopi/kms',
-                icon: Wallet,
-                subItems: [
-                    {
-                        title: 'Master',
-                        href: '/lopi/monica/dashboard',
-                    },
-                    {
-                        title: 'Form',
-                        href: '/lopi/monica/form',
-                    },
-                ]
-            }
+            // {
+            //     type: 'item',
+            //     title: 'Monica',
+            //     href: '/lopi/monica',
+            //     icon: Wallet,
+            // },
+            // {
+            //     type: 'group',
+            //     title: 'IT-Valet',
+            //     href: '/lopi/it-valet',
+            //     icon: Wallet,
+            //     subItems: [
+            //         {
+            //             title: 'Master',
+            //             href: '/lopi/monica/dashboard',
+            //         },
+            //         {
+            //             title: 'Form',
+            //             href: '/lopi/monica/form',
+            //         },
+            //     ]
+            // },
+            // {
+            //     type: 'item',
+            //     title: 'KMS',
+            //     href: '/lopi/kms',
+            //     icon: BookOpen
+            // }
         ])
 
 

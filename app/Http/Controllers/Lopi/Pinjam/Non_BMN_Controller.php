@@ -1,13 +1,13 @@
 <?php
 
-namespace App\Http\Controllers\Lopi;
+namespace App\Http\Controllers\Lopi\Pinjam;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
 use Inertia\Inertia;
 
-class Pinjam_Non_BMN_Controller extends Controller
+class Non_BMN_Controller extends Controller
 {
 
     public function index(Request $request)

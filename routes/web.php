@@ -71,13 +71,13 @@ Route::group(
 });
 
 require __DIR__.'/modul/admin.php';
+// require __DIR__.'/modul/rumah_link.php';
 require __DIR__.'/modul/appreciate.php';
 require __DIR__.'/modul/cek_cuti.php';
-require __DIR__.'/modul/it-valet.php';
+// require __DIR__.'/modul/it-valet.php';
 require __DIR__.'/modul/jadwal.php';
 require __DIR__.'/modul/kesehatan.php';
 require __DIR__.'/modul/kms.php';
 require __DIR__.'/modul/peran.php';
 require __DIR__.'/modul/pinjam.php';
-require __DIR__.'/modul/rumah_link.php';
-require __DIR__.'/modul/timeline.php';
+// require __DIR__.'/modul/timeline.php';

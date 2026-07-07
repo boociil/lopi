@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Lopi;
+namespace App\Http\Controllers\Lopi\Pinjam;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
@@ -19,7 +19,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
-class Pinjam_Mobil_Controller extends Controller
+class Mobil_Controller extends Controller
 {
     public function index(Request $request)
     {
