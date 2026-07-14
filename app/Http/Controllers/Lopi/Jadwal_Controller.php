@@ -19,6 +19,8 @@ use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
 use App\Model\Umum\Peran;
+use App\Model\Umum\Satuan_Kerja_Tahun;
+use App\Model\Umum\Tim;
 use App\Model\Umum\User;
 use Exception;
 use Inertia\Inertia;
@@ -34,11 +36,24 @@ class Jadwal_Controller extends Controller
 
      public function index(Request $request)
     {
-         $validated = $request->validate([
+        $validated = $request->validate([
             'selectedDate'  => 'date',
             'view'          => 'string',
             'view'          => Rule::in(['day', 'week', 'month', 'year', 'agenda'])
         ]);
+
+        $satuan_kerja_tahun_kode = [];
+        $peran_satuan_kerja = Peran::get_my_peran_satuan_kerja_kerja_tahun();
+
+        foreach($peran_satuan_kerja as $item){
+            if(!in_array($item->parent_id, $satuan_kerja_tahun_kode)){
+                array_push($satuan_kerja_tahun_kode, $item->parent_id);
+            }
+        }
+
+        if(count($satuan_kerja_tahun_kode) != 1){
+            return abort(401);
+        }
 
         $selectedDate = null;
         $view = null;
@@ -103,12 +118,70 @@ class Jadwal_Controller extends Controller
 
 
         if($request->isMethod('get')){
+            $all_satuan_kerja_tahun_id_sesuai_peran = Peran:: where('tipe_peran', 'satuan_kerja_tahun')
+                                            ->where('tahun', session('tahun_active'))->get()
+                                            ->where('pemilik_username', Auth::user()->username)
+                                            ->pluck('parent_id')->toArray();
+            $all_tim_id_sesuai_peran_satuan_kerja_tahun = Tim::whereIn('satuan_kerja_tahun_id', $all_satuan_kerja_tahun_id_sesuai_peran)
+                                            ->get()
+                                            ->pluck('id')
+                                            ->toArray();
+
+            $parent_id_arr_before_pluck = Peran::where('pemilik_username', Auth::user()->username)
+                ->whereIn('tipe_peran', ['satuan_kerja_tahun', 'tim'])
+                ->where('tahun', session('tahun_active'))
+                ->select('tipe_peran', 'parent_id', 'peran')
+                ->distinct()
+                ->get();
+
+            $parent_id_satuan_kerja_tahun = [];
+            $parent_id_tim = [];
+
+            $tambahan_satuan_kerja_tahun_id = [];
+            $tambahan_tim_id = [];
+
+            foreach($parent_id_arr_before_pluck as $item){
+                if($item->tipe_peran == 'satuan_kerja_tahun'){
+                    if(in_array($item->parent_id, $all_satuan_kerja_tahun_id_sesuai_peran)){
+                        if(in_array($item->peran, ['pimpinan', 'admin'])){
+                            array_push($parent_id_satuan_kerja_tahun, $item->parent_id);
+                        }
+                        array_push($tambahan_satuan_kerja_tahun_id, $item->parent_id);
+                    }
+                }else if($item->tipe_peran == 'tim'){
+                    if(in_array($item->parent_id, $all_tim_id_sesuai_peran_satuan_kerja_tahun)){
+                        if(in_array($item->peran, ['ketua', 'admin'])){
+                            array_push($parent_id_tim, $item->parent_id);
+                        }
+                        array_push($tambahan_tim_id, $item->parent_id);
+                    }
+                }
+            }
+
+            $satuan_kerja_tahun = Satuan_Kerja_Tahun::where('tahun', session('tahun_active'))
+                        ->where(function($query) use ($tambahan_satuan_kerja_tahun_id){
+                            $query->orWhereIn('id', $tambahan_satuan_kerja_tahun_id);
+                        })
+                        ->get();
+
+            $tim = Tim::where('tahun', session('tahun_active'))
+                        ->where(function ($query) use ($tambahan_satuan_kerja_tahun_id, $tambahan_tim_id){
+                            $query->orWhereIn('satuan_kerja_tahun_id', $tambahan_satuan_kerja_tahun_id);
+                            $query->orWhereIn('id', $tambahan_tim_id);
+                        })
+                        ->get();
+
             return Inertia::render('jadwal', [
                 "have_zoom_peran" => $have_zoom_peran,
                 "have_ruang_peran" => $have_ruang_peran,
                 "jadwal_daftar" => $jadwal_daftar,
                 "ruang" => $this->ruang,
-                "user" => User::all(),
+                "user" => User::whereHas('peran', function (Builder $query) use ($satuan_kerja_tahun_kode) {
+                        $query->where('tipe_peran', 'satuan_kerja_tahun');
+                        $query->whereIn('parent_id', $satuan_kerja_tahun_kode);
+                    })->get(),
+                'satuan_kerja_tahun' => $satuan_kerja_tahun,
+                'tim' => $tim,
             ]);
         }else if($request->isMethod('post')){
             return [
@@ -276,7 +349,8 @@ class Jadwal_Controller extends Controller
                     $peserta = new Jadwal_Peserta();
                     $peserta->id = Str::uuid();
                     $peserta->jadwal_id = $jadwal->id;
-                    $peserta->username = $item;
+                    $peserta->peserta_type = $item[0];
+                    $peserta->peserta_id = $item[1];
                     $peserta->save();
                 }
             }
@@ -504,8 +578,8 @@ class Jadwal_Controller extends Controller
                 foreach($request->input('peserta') as $item){
                     $peserta = new Jadwal_Peserta();
                     $peserta->id = Str::uuid();
-                    $peserta->jadwal_id = $jadwal->id;
-                    $peserta->username = $item;
+                    $peserta->peserta_type = $item[0];
+                    $peserta->peserta_id = $item[1];
                     $peserta->save();
                 }
             }

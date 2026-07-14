@@ -11,6 +11,6 @@ class Jadwal_Peserta extends Model
     protected $keyType = 'string';
     public $timestamps = false;
 
-    protected $fillable = ['id', 'jadwal_id', 'username'];
+    protected $fillable = ['id', 'jadwal_id', 'peserta_type', 'peserta_id'];
 
 }

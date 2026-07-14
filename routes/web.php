@@ -4,12 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\SSO_Controller;
 use App\Http\Controllers\Umum\Beranda_Controller;
 use App\Http\Controllers\Lopi\Notif_Controller;
-
-use App\Http\Controllers\WebController;
-use App\Model\Umum\User;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
-use Inertia\Inertia;
+use App\Http\Controllers\Lopi\Google_Sync_Calandar;
 
 /*
 |--------------------------------------------------------------------------
@@ -30,6 +25,16 @@ use Inertia\Inertia;
 Route::get('/login', [SSO_Controller::class, 'showLoginForm'])->name('login');
 Route::get('/sso', [SSO_Controller::class, 'sso'])->name('sso');
 Route::get('/logout', [SSO_Controller::class, 'logout'])->name('logout');
+
+
+
+Route::group(
+[
+    'prefix' => 'profile',
+    'middleware' => ['auth', 'check_maintenance', 'statistik'],
+], function () {
+    Route::get('create_calender', [Google_Sync_Calandar::class, 'create_calender'])->name('profile-create_calender');
+});
 
 // Route::get('/login_dev', function(){
 //     Auth::logout();
