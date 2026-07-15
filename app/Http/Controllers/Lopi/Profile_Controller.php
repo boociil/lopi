@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers\Lopi;
 
+use App\Model\Lopi\Sync_Google\Calendar_Google_Event;
+use App\Model\Lopi\Sync_Google\Calendar_User;
+
 use Illuminate\Database\Eloquent\Builder;
 use App\Http\Controllers\Controller;
 use App\Model\Lopi\Jadwal;
-use App\Model\Lopi\Sync_Google\Calendar_Google_Event;
-use App\Model\Lopi\Sync_Google\Calendar_User;
+use App\Model\Lopi\User_Setting;
 use App\Model\Umum\Peran;
 use App\Model\Umum\Satuan_Kerja_Tahun;
 use App\Model\Umum\Tim;
@@ -14,9 +16,35 @@ use App\Model\Umum\User;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
+use Illuminate\Http\Request;
+use Inertia\Inertia;
 
-class Google_Sync_Calandar extends Controller
+class Profile_Controller extends Controller
 {
+    public function index(Request $request)
+    {
+        $profile_no_wa = User_Setting::where('category', 'profile')
+            ->where('key', 'no_wa')
+            ->where('username', Auth::user()->username)
+            ->first();
+        $no_whatsapp = null;
+        if($profile_no_wa){
+            $no_whatsapp = $profile_no_wa->data;
+        }
+
+        $calendar_id = "";
+        $Calendar_User = Calendar_User::where('username', Auth::user()->username)
+            ->first();
+        if($Calendar_User){
+            $calendar_id = $Calendar_User->google_calendar_id;
+        }
+
+        return Inertia::render('profile', [
+                "no_whatsapp" => $no_whatsapp,
+                'calendar_id' => $calendar_id,
+            ]);
+    }
+
     public function create_calender(){
         $user_calender = Calendar_User::where('username', Auth::user()->username)->first();
 
@@ -103,6 +131,9 @@ class Google_Sync_Calandar extends Controller
                 Calendar_Google_Event::saveEvent($item_daftar, $service,  $calendar->google_calendar_id
                     , Auth::user()->username, $user_dict, $satuan_kerja_tahun_dict, $tim_dict);
             }
+
+            return $calendar->google_calendar_id;
         }
+        return "";
     }
 }

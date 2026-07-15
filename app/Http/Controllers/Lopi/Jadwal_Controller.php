@@ -344,14 +344,28 @@ class Jadwal_Controller extends Controller
             $jadwal->save();
 
             Jadwal_Peserta::where('jadwal_id', $jadwal->id)->delete();
+            $username_arr_peserta_to_add = [];
+            $satuan_kerja_tahun_dan_tim_id = [];
             if($request->input('peserta')){
                 foreach($request->input('peserta') as $item){
                     $peserta = new Jadwal_Peserta();
                     $peserta->id = Str::uuid();
                     $peserta->jadwal_id = $jadwal->id;
                     $peserta->peserta_type = $item[0];
+                    if($item[0] == 'satuan_kerja_tahun' || $item[1] == 'tim'){
+                        array_push($satuan_kerja_tahun_dan_tim_id, $item[1]);
+                    }else{
+                        array_push($username_arr_peserta_to_add, $item[1]);
+                    }
                     $peserta->peserta_id = $item[1];
                     $peserta->save();
+                }
+            }
+
+            $peran_satuan_kerja_tahun_tim = Peran::whereIn('parent_id', $satuan_kerja_tahun_dan_tim_id)->get();
+            foreach($peran_satuan_kerja_tahun_tim as $item_peran){
+                if(!in_array($item_peran->pemilik_username, $username_arr_peserta_to_add)){
+                    array_push($username_arr_peserta_to_add, $item_peran->pemilik_username);
                 }
             }
 

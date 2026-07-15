@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\SSO_Controller;
 use App\Http\Controllers\Umum\Beranda_Controller;
 use App\Http\Controllers\Lopi\Notif_Controller;
-use App\Http\Controllers\Lopi\Google_Sync_Calandar;
+use App\Http\Controllers\Lopi\Profile_Controller;
 
 /*
 |--------------------------------------------------------------------------
@@ -33,7 +33,8 @@ Route::group(
     'prefix' => 'profile',
     'middleware' => ['auth', 'check_maintenance', 'statistik'],
 ], function () {
-    Route::get('create_calender', [Google_Sync_Calandar::class, 'create_calender'])->name('profile-create_calender');
+    Route::get('/', [Profile_Controller::class, 'index'])->name('profile');
+    Route::post('create_calender', [Profile_Controller::class, 'create_calender'])->name('profile-create-calender');
 });
 
 // Route::get('/login_dev', function(){
