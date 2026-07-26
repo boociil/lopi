@@ -2,6 +2,8 @@ import AppLayout from "@/layouts/app-layout";
 import {
     type User,
     type BreadcrumbItem,
+    Satuan_Kerja_Tahun,
+    Tim,
 } from "@/types";
 import { Head } from "@inertiajs/react";
 
@@ -25,12 +27,16 @@ export default function Index({
     jadwal_daftar,
     have_ruang_peran,
     ruang,
+    satuan_kerja_tahun,
+    tim
 }: React.PropsWithChildren<{
     have_zoom_peran: boolean;
     user: User[];
     jadwal_daftar: jadwal[];
     have_ruang_peran: boolean;
     ruang: string[],
+    satuan_kerja_tahun: Satuan_Kerja_Tahun[],
+    tim: Tim[]
 }>) {
 
     return (
@@ -47,7 +53,9 @@ export default function Index({
                             user={user}
                             jadwal_data={jadwal_daftar}
                             have_ruang_peran={have_ruang_peran}
-                            ruang={ruang}>
+                            ruang={ruang}
+                            satuan_kerja_tahun={satuan_kerja_tahun}
+                            tim={tim}>
                         </JadwalCalender>
                     </div>
                 </div>

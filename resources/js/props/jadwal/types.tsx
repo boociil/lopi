@@ -1,4 +1,4 @@
-import { CalenderUser, IEvent, IUser, SettingCalender } from "@/components/calender_modules/interfaces";
+import { IEvent, IUser, SettingCalender } from "@/components/calender_modules/interfaces";
 import { User } from "@/types";
 import { pinjam_zoom } from "../pinjam-zoom/types";
 
@@ -17,7 +17,8 @@ export type JadwalContextType = JadwalProps & {
 export interface jadwal_peserta {
     id: string;
     jadwal_id: string;
-    username: string;
+    peserta_type: string;
+    peserta_id: string;
 }
 
 export interface jadwal {
@@ -123,7 +124,7 @@ export function produceJadwalIEvent(
                 title: element.kegiatan,
                 color: element.status == "disetujui" ? "green" : "blue",
                 description: "Peminjaman Zoom",
-                user: null,
+                user: [],
                 jadwal_ori: element,
                 oriKey: 'jadwal_ori',
             });
@@ -135,13 +136,12 @@ export function produceJadwalIEvent(
 
 export function pairIEventDenganUser(
     jadwal_event: JadwalIEvent[],
-    users: CalenderUser[],
+    users: IUser[],
 ) {
     for (let i = 0; i < jadwal_event.length; i++) {
-        const user = users.find(
+        const user = users.filter(
             (e) =>
-                e.username ==
-                jadwal_event[i].jadwal_ori?.pembuat_username,
+                e.id ==jadwal_event[i].jadwal_ori?.pembuat_username,
         );
         if (user) {
             jadwal_event[i].user = user;

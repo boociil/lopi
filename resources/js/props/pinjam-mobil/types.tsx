@@ -1,4 +1,4 @@
-import { CalenderUser, IEvent } from "@/components/calender_modules/interfaces"
+import { IEvent, IUser } from "@/components/calender_modules/interfaces"
 import { User } from "@/types"
 
 export type PinjamMobilProps = {
@@ -84,7 +84,7 @@ export function producePinjamMobilIEvent(pinjam_mobil: pinjam_mobil[]): PinjamMo
                 title: element.kegiatan,
                 color: element.status == 'disetujui' ?  "green" : "blue",
                 description: "Peminjaman Mobil",
-                user: null,
+                user: [],
                 pinjam_mobil_ori: element,
                 oriKey: 'pinjam_mobil_ori'
             })
@@ -94,11 +94,11 @@ export function producePinjamMobilIEvent(pinjam_mobil: pinjam_mobil[]): PinjamMo
     return retur_data
 }
 
-export function pairIEventDenganUser(pinjam_mobil_event: PinjamMobilIEvent[], users: CalenderUser[]){
+export function pairIEventDenganUser(pinjam_mobil_event: PinjamMobilIEvent[], users: IUser[]){
     for(let i=0; i<pinjam_mobil_event.length; i++){
-        const user = users.find(e => e.username == pinjam_mobil_event[i].pinjam_mobil_ori.pembuat_username)
+        const user = users.find(e => e.id == pinjam_mobil_event[i].pinjam_mobil_ori.pembuat_username)
         if(user){
-            pinjam_mobil_event[i].user = user
+            pinjam_mobil_event[i].user = [user]
         }
     }
 }

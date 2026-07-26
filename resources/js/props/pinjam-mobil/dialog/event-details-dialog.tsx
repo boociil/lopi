@@ -37,7 +37,7 @@ import {
 } from "@/components/calender_modules/helpers";
 import { Event_Details_Dialog_IProps } from "@/components/calender_modules/dialogs/props-dialog";
 import { progress as progressIndikator } from "@inertiajs/react";
-import { CalenderUser, IEvent } from "@/components/calender_modules/interfaces";
+import { IEvent } from "@/components/calender_modules/interfaces";
 import {
     pairIEventDenganUser,
     pinjam_mobil,
@@ -80,7 +80,7 @@ export function EventDetailsDialog({
         progressIndikator.start();
         axiosClient
             .post(route("pinjam-mobil-hapus", { pinjamMobil: event_id }))
-            .then(function (response) {
+            .then(function () {
                 removeEvent(event_id);
                 progressIndikator.finish();
                 toast.success(
@@ -88,7 +88,7 @@ export function EventDetailsDialog({
                         " telah dihapus dengan sukses.",
                 );
             })
-            .catch(function (error) {
+            .catch(function () {
                 progressIndikator.finish();
                 toast.error(
                     "Kesalahan saat menghapus " +
@@ -109,14 +109,14 @@ export function EventDetailsDialog({
             .post(route("pinjam-mobil-approval", { pinjamMobil: event_id }), {
                 status: status,
             })
-            .then(function (response) {
+            .then(function (response: any) {
                 try {
                     const return_data: IEvent[] = producePinjamMobilIEvent([
                         response.data.data,
                     ] as pinjam_mobil[]);
                     pairIEventDenganUser(
                         return_data as PinjamMobilIEvent[],
-                        users as CalenderUser[],
+                        users,
                     );
                     updateEvent(return_data[0]);
 
@@ -128,7 +128,7 @@ export function EventDetailsDialog({
                     toast.error("Gagal mengubah data");
                 }
             })
-            .catch(function (error) {
+            .catch(function () {
                 progressIndikator.finish();
                 toast.error(
                     "Kesalahan saat menghapus " +

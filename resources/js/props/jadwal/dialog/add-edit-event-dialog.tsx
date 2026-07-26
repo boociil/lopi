@@ -39,10 +39,9 @@ import {
     type jadwal,
     SettingCalenderJadwal,
 } from "../types";
-import { CalenderUser, IEvent } from "@/components/calender_modules/interfaces";
+import { IEvent } from "@/components/calender_modules/interfaces";
 import { Add_Edit_Event_IProps } from "@/components/calender_modules/dialogs/props-dialog";
 import { progress as progressIndikator } from "@inertiajs/react";
-import { defineStepper } from "@stepperize/react";
 import { Separator } from "@/components/ui/separator";
 import {
     CheckCircle,
@@ -87,8 +86,6 @@ export function AddEditEventDialog({
         userDict,
     } = useCalendar();
     const isEditing = !!event;
-
-    // const [tipe, setTipe] = useState<string>("sekali");
 
     const initialDates = useMemo(() => {
         if (!isEditing && !event) {
@@ -150,7 +147,7 @@ export function AddEditEventDialog({
                 .then(function (response: any) {
                     try {
                         const return_data: JadwalIEvent[] = produceJadwalIEvent(response.data.data as jadwal[]);
-                        pairIEventDenganUser(return_data as JadwalIEvent[], users as CalenderUser[])
+                        pairIEventDenganUser(return_data as JadwalIEvent[], users)
 
                         addEvent(return_data[0]);
                         progressIndikator.finish();
@@ -188,7 +185,7 @@ export function AddEditEventDialog({
                 .then(function (response: any) {
                     try {
                         const return_data: JadwalIEvent[] = produceJadwalIEvent(response.data.data as jadwal[]);
-                        pairIEventDenganUser(return_data as JadwalIEvent[], users as CalenderUser[])
+                        pairIEventDenganUser(return_data as JadwalIEvent[], users)
                         updateEvent(return_data[0]);
 
                         progressIndikator.finish();
@@ -242,7 +239,7 @@ export function AddEditEventDialog({
 
             setData("peserta", []);
             (event as JadwalIEvent).jadwal_ori.peserta.forEach(element => {
-                setData("peserta", [...data.peserta, element.username]);
+                setData("peserta", [...data.peserta, element.id]);
             });
 
             if ((event as JadwalIEvent).jadwal_ori) {
@@ -337,7 +334,9 @@ export function AddEditEventDialog({
         switch (step) {
             case 1:
                 return (
+                    // Bagian Step 1 (Info) tidak ada perubahan
                     <div className="space-y-2 animate-in fade-in slide-in-from-right-4 duration-300">
+                        {/* ... Sama seperti sebelumnya ... */}
                         <div>
                             <label className="block text-xs font-bold text-slate-700 mb-1.5">
                                 Nama Kegiatan
@@ -561,8 +560,7 @@ export function AddEditEventDialog({
                                             {(
                                                 settingCalender as SettingCalenderJadwal
                                             ).ruang.map((item, index) => (
-                                                // Each element in a list must have a unique 'key' prop
-                                                <SelectItem value={item}>
+                                                <SelectItem key={index} value={item}>
                                                     {capitalizeWords(item)}
                                                 </SelectItem>
                                             ))}
@@ -576,6 +574,7 @@ export function AddEditEventDialog({
                 );
             case 3:
                 return (
+                    // Bagian Step 3 (Zoom) tidak ada perubahan
                     <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
                         <div className="grid grid-cols-1 gap-3">
                             {[
@@ -742,7 +741,8 @@ export function AddEditEventDialog({
                                             <ChevronsUpDown className="opacity-50" />
                                         </Button>
                                     </PopoverTrigger>
-                                    <PopoverContent className="p-0 w-full shadow-2xl">
+                                    {/* ✅ PERBAIKAN: Mengganti w-full menjadi ukuran trigger popover dan menambah z-[100] untuk mencegah isu layout terpotong/hilang */}
+                                    <PopoverContent className="p-0 w-[var(--radix-popover-trigger-width)] z-[100] shadow-2xl">
                                         <Command>
                                             <CommandInput
                                                 placeholder="Cari Pengguna..."
@@ -755,37 +755,20 @@ export function AddEditEventDialog({
                                                 <CommandGroup>
                                                     {users.map((item) => (
                                                         <CommandItem
-                                                            key={item.username+' '+item.name}
-                                                            value={
-                                                                item.username
-                                                            }
-                                                            onSelect={(
-                                                                currentValue,
-                                                            ) => {
-                                                                if(!data.peserta.includes(currentValue)){
-                                                                    setData(
-                                                                        "peserta",
-                                                                        [
-                                                                            ...data.peserta,
-                                                                            currentValue,
-                                                                        ],
-                                                                    );
-                                                                }
+                                                            key={item.id + ' ' + item.name}
+                                                            value={item.id}
+                                                            onSelect={(currentValue) => {
+                                                                // ✅ PERBAIKAN: Memastikan case-sensitivity tidak menjadi bug dengan menemukan item aslinya
+                                                                const selectedUser = users.find(u => u.id.toLowerCase() === currentValue.toLowerCase());
+                                                                const actualUsername = selectedUser ? selectedUser.id : currentValue;
 
-                                                                // setData("username", currentValue === data.username ? "" : currentValue)
-                                                                setOpenPengguna(
-                                                                    false,
-                                                                );
+                                                                if (!data.peserta.includes(actualUsername)) {
+                                                                    setData("peserta", [...data.peserta, actualUsername]);
+                                                                }
+                                                                setOpenPengguna(false);
                                                             }}
                                                         >
                                                             {item.name}
-                                                            {/* {userDict.has(item.pemilik_username) ? userDict.get(item.pemilik_username) : item.pemilik_username} */}
-                                                            {/* <Check
-                                                        className={cn(
-                                                        "ml-auto",
-                                                            data.username === item.pemilik_username ? "opacity-100" : "opacity-0"
-                                                        )}
-                                                    /> */}
                                                         </CommandItem>
                                                     ))}
                                                 </CommandGroup>
@@ -808,7 +791,8 @@ export function AddEditEventDialog({
                                 </thead>
                                 <tbody className="divide-y divide-slate-100">
                                     {data.peserta.map((item, index) => (
-                                        <tr>
+                                        // ✅ PERBAIKAN: Menambahkan 'key' prop untuk table row
+                                        <tr key={item}>
                                             <td className="px-4 py-3 font-semibold text-slate-700">
                                                 {userDict.has(item)
                                                     ? userDict.get(item)?.name
@@ -836,7 +820,7 @@ export function AddEditEventDialog({
     };
 
     return (
-        <Modal open={isOpen} onOpenChange={onToggle} modal={false}>
+        <Modal open={isOpen} onOpenChange={onToggle} modal={true}>
             <ModalTrigger asChild>{children}</ModalTrigger>
             <ModalContent>
                 <ModalHeader>

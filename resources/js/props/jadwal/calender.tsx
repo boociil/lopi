@@ -3,8 +3,8 @@ import { CalendarProvider } from "@/components/calender_modules/contexts/calenda
 import { DndProvider } from "@/components/calender_modules/contexts/dnd-context";
 import { CalendarHeader } from "@/components/calender_modules/header/calendar-header";
 import { jadwal, pairIEventDenganUser, JadwalIEvent, produceJadwalIEvent, SettingCalenderJadwal } from "./types";
-import { type SharedData, type User } from "@/types";
-import { CalenderUser, produceCalenderUser, SettingCalender, type IEvent, type IUser } from "@/components/calender_modules/interfaces";
+import { Satuan_Kerja_Tahun, Tim, type SharedData, type User } from "@/types";
+import { produceCalenderUser, SettingCalender, type IEvent, type IUser } from "@/components/calender_modules/interfaces";
 import { AddEditEventDialog } from "./dialog/add-edit-event-dialog";
 import DeleteEventDialog from "./dialog/delete-event-dialog";
 import { DndConfirmationDialog } from "./dialog/dnd-confirmation-dialog";
@@ -22,12 +22,16 @@ import { useLoading } from "../LoadingContext";
 export function JadwalCalender({
         jadwal_data,
         user,
+        satuan_kerja_tahun,
+        tim,
         have_zoom_peran,
         have_ruang_peran,
         ruang,
     }: {
         jadwal_data: jadwal[];
         user: User[];
+        satuan_kerja_tahun: Satuan_Kerja_Tahun[];
+        tim: Tim[];
         have_zoom_peran: boolean;
         have_ruang_peran: boolean;
         ruang: string[],
@@ -43,13 +47,14 @@ export function JadwalCalender({
         calender_show: ["week", "month","agenda"],
         show_filter: true,
         filter_name: [['green', 'statsulbar'], ['yellow', 'sp2020']],
-        show_filter_user: false,
+        show_filter_user: true,
         ruang: ruang
     }
-    const _user: IUser[] = produceCalenderUser(user);
+
+    const _user: IUser[] = produceCalenderUser(user, satuan_kerja_tahun, tim);
     const _allEvents: JadwalIEvent[] = produceJadwalIEvent(jadwal_data);
 
-    pairIEventDenganUser(_allEvents as JadwalIEvent[], _user as CalenderUser[])
+    pairIEventDenganUser(_allEvents as JadwalIEvent[], _user)
 
     /////////////////////
     function reload_data(selectedDate: Date, currentView: TCalendarView, setAllEventsOri: (_allEvents: IEvent[]) => void){
@@ -61,7 +66,7 @@ export function JadwalCalender({
                 try {
                     const _allEvents_: JadwalIEvent[] = produceJadwalIEvent(response.data.jadwal_daftar as jadwal[]);
 
-                    pairIEventDenganUser(_allEvents_ as JadwalIEvent[], _user as CalenderUser[])
+                    pairIEventDenganUser(_allEvents_ as JadwalIEvent[], _user)
 
                     setAllEventsOri(_allEvents_)
                     progress.finish()
@@ -101,7 +106,7 @@ export function JadwalCalender({
             .then(function (response: any) {
                 try {
                     const return_data: IEvent[] = produceJadwalIEvent([response.data.data] as jadwal[]);
-                    pairIEventDenganUser(return_data  as JadwalIEvent[], _user as CalenderUser[])
+                    pairIEventDenganUser(return_data  as JadwalIEvent[], _user)
                     updateEvent(return_data[0])
                     progress.finish()
                     setIsLoading(false)

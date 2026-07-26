@@ -44,7 +44,7 @@ import {
 } from "@/components/calender_modules/helpers";
 import { Event_Details_Dialog_IProps } from "@/components/calender_modules/dialogs/props-dialog";
 import { progress as progressIndikator } from "@inertiajs/react";
-import { CalenderUser, IEvent } from "@/components/calender_modules/interfaces";
+import { IEvent } from "@/components/calender_modules/interfaces";
 import {
     pairIEventDenganUser,
     jadwal,
@@ -106,7 +106,7 @@ export function EventDetailsDialog({
         progressIndikator.start();
         axiosClient
             .post(route("jadwal-hapus", { jadwal: event_id }))
-            .then(function (response) {
+            .then(function () {
                 removeEvent(event_id);
                 progressIndikator.finish();
                 toast.success(
@@ -114,7 +114,7 @@ export function EventDetailsDialog({
                         " telah dihapus dengan sukses.",
                 );
             })
-            .catch(function (error) {
+            .catch(function () {
                 progressIndikator.finish();
                 toast.error(
                     "Kesalahan saat menghapus " +
@@ -135,14 +135,14 @@ export function EventDetailsDialog({
             .post(route("jadwal-approval-ruang", { jadwal: event_id }), {
                 status: status,
             })
-            .then(function (response) {
+            .then(function (response: any) {
                 try {
                     const return_data: IEvent[] = produceJadwalIEvent([
                         response.data.data,
                     ] as jadwal[]);
                     pairIEventDenganUser(
                         return_data as JadwalIEvent[],
-                        users as CalenderUser[],
+                        users,
                     );
                     updateEvent(return_data[0]);
 
@@ -154,7 +154,7 @@ export function EventDetailsDialog({
                     toast.error("Gagal mengubah data");
                 }
             })
-            .catch(function (error) {
+            .catch(function () {
                 progressIndikator.finish();
                 toast.error(
                     "Kesalahan saat menghapus " +
@@ -174,14 +174,14 @@ export function EventDetailsDialog({
                 status: status,
                 zoom_akun: zoomAkun,
             })
-            .then(function (response) {
+            .then(function (response: any) {
                 try {
                     const return_data: IEvent[] = produceJadwalIEvent([
                         response.data.data,
                     ] as jadwal[]);
                     pairIEventDenganUser(
                         return_data as JadwalIEvent[],
-                        users as CalenderUser[],
+                        users,
                     );
                     updateEvent(return_data[0]);
 
@@ -193,7 +193,7 @@ export function EventDetailsDialog({
                     toast.error("Gagal mengubah data");
                 }
             })
-            .catch(function (error) {
+            .catch(function () {
                 progressIndikator.finish();
                 toast.error(
                     "Kesalahan saat menghapus " +
@@ -244,7 +244,7 @@ export function EventDetailsDialog({
         if(event.jadwal_ori.zoom_pinjam){
             if(event.jadwal_ori.zoom_pinjam.zoom_meeting_id && event.jadwal_ori.zoom_pinjam.zoom_akun){
                  axiosClient.post(route("pinjam-zoom-get-mmeting"), {zoom_meeting_id: event.jadwal_ori.zoom_pinjam.zoom_meeting_id, zoom_akun: event.jadwal_ori.zoom_pinjam.zoom_akun})
-                    .then(function (response) {
+                    .then(function (response: any) {
                         try {
                             const return_data: {
                                     status:  boolean,
@@ -259,7 +259,7 @@ export function EventDetailsDialog({
                             console.log(error)
                         }
                     })
-                    .catch(function (error) {
+                    .catch(function () {
                     });
             }
         }
@@ -670,10 +670,10 @@ export function EventDetailsDialog({
                                         className="flex items-center gap-2 p-2 bg-white border border-slate-100 rounded-2xl hover:border-blue-200 transition-all group"
                                     >
                                         <div className="w-8 h-8 rounded-xl bg-slate-100 flex items-center justify-center text-slate-500 font-bold text-sm group-hover:bg-blue-500 group-hover:text-white transition-all">
-                                            {p ? p.username.charAt(0) : "?"}
+                                            {p ? p.id.charAt(0) : "?"}
                                         </div>
                                         <span className="text-sm  text-slate-700">
-                                            {userDict.get(p.username)?.name}
+                                            {userDict.get(p.id)?.name}
                                         </span>
                                     </div>
                                 ))}

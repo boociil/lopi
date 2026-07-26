@@ -33,12 +33,12 @@ export default function DeleteEventDialog({ eventId }: Delete_Event_Dialog_IProp
 	const deleteEvent = () => {
         progressIndikator.start()
         axiosClient.post(route("pinjam-mobil-hapus", {pinjamMobil: eventId}))
-            .then(function (response) {
+            .then(function () {
                 removeEvent(eventId);
                 progressIndikator.finish()
                 toast.success(capitalizeWords(settingCalender.name_event)+" telah dihapus dengan sukses.");
             })
-            .catch(function (error) {
+            .catch(function () {
                 progressIndikator.finish()
                 toast.error("Kesalahan saat menghapus "+capitalizeWords(settingCalender.name_event)+".");
             });

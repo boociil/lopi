@@ -27,7 +27,7 @@ import { useCalendar } from "@/components/calender_modules/contexts/calendar-con
 import { capitalizeWords, formatDate, formatTime } from "@/components/calender_modules/helpers";
 import { Event_Details_Dialog_IProps } from "@/components/calender_modules/dialogs/props-dialog";
 import { progress as progressIndikator } from '@inertiajs/react'
-import { CalenderUser, IEvent } from "@/components/calender_modules/interfaces";
+import { IEvent } from "@/components/calender_modules/interfaces";
 import { pairIEventDenganUser, pinjam_zoom, PinjamZoomIEvent, producePinjamZoomIEvent } from "../types";
 import { useEffect, useState } from "react";
 import { Label } from "@/components/ui/label";
@@ -68,12 +68,12 @@ export function EventDetailsDialog({ _event, children }: Event_Details_Dialog_IP
     const deleteEvent = (event_id: string) => {
         progressIndikator.start()
         axiosClient.post(route("pinjam-zoom-hapus", {pinjamZoom: event_id}))
-            .then(function (response) {
+            .then(function () {
                 removeEvent(event_id);
                 progressIndikator.finish()
                 toast.success(capitalizeWords(settingCalender.name_event)+" telah dihapus dengan sukses.");
             })
-            .catch(function (error) {
+            .catch(function () {
                 progressIndikator.finish()
                 toast.error("Kesalahan saat menghapus "+capitalizeWords(settingCalender.name_event)+".");
             });
@@ -122,11 +122,11 @@ export function EventDetailsDialog({ _event, children }: Event_Details_Dialog_IP
             return
         }
         progressIndikator.start()
-        axiosClient.post(route("pinjam-zoom-approval", {pinjamZoom: event_id}), {status: status, zoom_akun: approval})
-            .then(function (response) {
+        axiosClient.post(route("pinjam-zoom-approval", {pinjamZoom: event_id}), {zoom_status: status, zoom_akun: approval})
+            .then(function (response: any) {
                  try {
                     const return_data: IEvent[] = producePinjamZoomIEvent([response.data.data] as pinjam_zoom[]);
-                    pairIEventDenganUser(return_data as PinjamZoomIEvent[], users  as CalenderUser[])
+                    pairIEventDenganUser(return_data as PinjamZoomIEvent[], users )
                     updateEvent(return_data[0])
 
                     progressIndikator.finish()
@@ -137,7 +137,7 @@ export function EventDetailsDialog({ _event, children }: Event_Details_Dialog_IP
                     toast.error('Gagal mengubah data')
                 }
             })
-            .catch(function (error) {
+            .catch(function () {
                 progressIndikator.finish()
                 toast.error("Kesalahan saat menghapus "+capitalizeWords(settingCalender.name_event)+".");
             });
@@ -147,7 +147,7 @@ export function EventDetailsDialog({ _event, children }: Event_Details_Dialog_IP
 
     const get_startUrl = () => {
         axiosClient.post(route("pinjam-zoom-get-mmeting"), {zoom_meeting_id: event.zoom_meeting_id, zoom_akun: event.zoom_akun})
-            .then(function (response) {
+            .then(function (response: any) {
                  try {
                     const return_data: {
                             status:  boolean,
@@ -162,7 +162,7 @@ export function EventDetailsDialog({ _event, children }: Event_Details_Dialog_IP
                     console.log(error)
                 }
             })
-            .catch(function (error) {
+            .catch(function () {
             });
     };
 

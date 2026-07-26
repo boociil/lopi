@@ -25,7 +25,7 @@ import {
 } from "@/components/calender_modules/helpers";
 import { Time24Picker } from "@/components/ui/time24-picker";
 import { pairIEventDenganUser, pinjam_mobil_req, PinjamMobilIEvent, producePinjamMobilIEvent, type pinjam_mobil } from "../types";
-import { CalenderUser, IEvent } from "@/components/calender_modules/interfaces";
+import { IEvent } from "@/components/calender_modules/interfaces";
 import { Add_Edit_Event_IProps } from "@/components/calender_modules/dialogs/props-dialog";
 import { progress as progressIndikator } from '@inertiajs/react'
 
@@ -92,7 +92,7 @@ export function AddEditEventDialog({
                 .then(function (response: any) {
                     try {
                         const return_data: IEvent[] = producePinjamMobilIEvent([response.data.data] as pinjam_mobil[]);
-                        pairIEventDenganUser(return_data  as PinjamMobilIEvent[], users as CalenderUser[])
+                        pairIEventDenganUser(return_data  as PinjamMobilIEvent[], users)
                         addEvent(return_data[0])
                         progressIndikator.finish()
                         toast.success('Berhasil menambahkan data baru')
@@ -124,7 +124,7 @@ export function AddEditEventDialog({
                 .then(function (response: any) {
                     try {
                         const return_data: IEvent[] = producePinjamMobilIEvent([response.data.data] as pinjam_mobil[]);
-                        pairIEventDenganUser(return_data  as PinjamMobilIEvent[], users as CalenderUser[])
+                        pairIEventDenganUser(return_data  as PinjamMobilIEvent[], users)
                         updateEvent(return_data[0])
 
                         progressIndikator.finish()

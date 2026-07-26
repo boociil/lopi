@@ -52,7 +52,7 @@ interface ICalendarContext {
     canChange: (event: IEvent) => boolean;
     canApprove: (event: IEvent) => boolean;
 
-    axiosClient: AxiosInstance;
+    axiosClient: any;
 }
 
 const CalendarContext = createContext({} as ICalendarContext);
@@ -100,7 +100,7 @@ export function CalendarProvider({
     useEffect(() => {
         let dictUse = new Map<string, IUser>();
         users.forEach(element => {
-            dictUse.set(element.username, element)
+            dictUse.set(element.id, element)
         });
         setUserDict(dictUse)
     }, [users]);
@@ -250,7 +250,16 @@ export function CalendarProvider({
 		}else {
 			let filtered = allEvents;
             if(selectedUserId != 'all'){
-                filtered = filtered.filter((event) => event.user?.id === selectedUserId);
+                filtered = filtered.filter((event) => {
+                    if(event.user == null){
+                        return true
+                    }
+                    const found = event.user.find(item => item.id == selectedUserId)
+                    if(found){
+                        return true
+                    }
+                    return false
+                });
             }
             if(selectedColors.length > 0){
                 filtered = filtered.filter((event) => {

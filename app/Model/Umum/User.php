@@ -254,4 +254,13 @@ class User extends Authenticatable
         return $this->hasMany(Peran::class,'pemilik_username','username');
     }
 
+    public static function getDataDict() {
+        $data = self::where('tahun', session('tahun_active'))->get();
+        $return_data = [];
+        foreach($data as $item){
+            $return_data[$item->username] = $$item;
+        }
+        return $return_data;
+    }
+
 }

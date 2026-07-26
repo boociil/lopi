@@ -1,6 +1,6 @@
 import { format, parseISO } from "date-fns";
 import { formatDate, formatTime } from "@/components/calender_modules/helpers";
-import { CalenderUser, IEvent } from "@/components/calender_modules/interfaces";
+import { IEvent, IUser } from "@/components/calender_modules/interfaces";
 import { User } from "@/types";
 import { v4 as uuidv4 } from "uuid";
 import { TEventColor } from "@/components/calender_modules/types";
@@ -118,7 +118,7 @@ export function producePinjamZoomIEvent(
                 title: element.kegiatan,
                 color: element.status == "disetujui" ? element.zoom_akun == 'statsulbar' ? "green" : "yellow" : "purple",
                 description: "Peminjaman Zoom",
-                user: null,
+                user: [],
                 zoom_akun: element.zoom_akun as 'statsulbar' | 'sp2020' | null,
                 zoom_meeting_id: element.zoom_meeting_id,
                 pinjam_zoom_ori: element,
@@ -194,7 +194,7 @@ export function producePinjamZoomIEventFromZoomApp(
                     title: element.topic,
                     color:  color,
                     description: "Peminjaman Zoom",
-                    user: null,
+                    user: [],
                     zoom_akun: zoom_akun,
                     zoom_meeting_id:  ''+element.id,
                     pinjam_zoom_ori: null,
@@ -220,7 +220,7 @@ export function producePinjamZoomIEventFromZoomApp(
                     title: element.topic,
                     color:  color,
                     description: "Peminjaman Zoom",
-                    user: null,
+                    user: [],
                     zoom_akun: zoom_akun,
                     zoom_meeting_id: ''+ element.id,
                     pinjam_zoom_ori: null,
@@ -241,7 +241,7 @@ export function producePinjamZoomIEventFromZoomApp(
                     title: element.topic,
                     color:  color,
                     description: "Peminjaman Zoom",
-                    user: null,
+                    user: [],
                     zoom_akun: zoom_akun,
                     zoom_meeting_id:  ''+element.id,
                     pinjam_zoom_ori: null,
@@ -261,16 +261,16 @@ export function producePinjamZoomIEventFromZoomApp(
 
 export function pairIEventDenganUser(
     pinjam_zoom_event: PinjamZoomIEvent[],
-    users: CalenderUser[],
+    users: IUser[],
 ) {
     for (let i = 0; i < pinjam_zoom_event.length; i++) {
         const user = users.find(
             (e) =>
-                e.username ==
+                e.id ==
                 pinjam_zoom_event[i].pinjam_zoom_ori?.pembuat_username,
         );
         if (user) {
-            pinjam_zoom_event[i].user = user;
+            pinjam_zoom_event[i].user = [user]
         }
     }
 }

@@ -4,6 +4,9 @@ namespace App\Model\Lopi\Sync_Google;
 
 use App\Model\Lopi\Jadwal;
 use App\Model\Umum\Peran;
+use App\Model\Umum\Satuan_Kerja_Tahun;
+use App\Model\Umum\Tim;
+use App\Model\Umum\User;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Google\Service\Calendar\Event;
@@ -34,14 +37,13 @@ class Calendar_Google_Event extends Model
         $this->delete();
     }
 
-    public static function saveEventPeserta(Jadwal $jadwal, $peserta_arr, $user_dict, $satuan_kerja_tahun_dict, $tim_dict)
+    public static function saveEventPeserta(Jadwal $jadwal, $peserta_arr)
     {
         $client = new \Google\Client();
         $client->setAuthConfig(storage_path('app/lopiservice-48fe7bfdaa73.json'));
         $client->addScope(\Google\Service\Calendar::CALENDAR);
 
         $service = new \Google\Service\Calendar($client);
-        $event_obj = self::build_event($jadwal, $peserta_arr, $user_dict, $satuan_kerja_tahun_dict, $tim_dict);
 
         $peserta_ids = collect($peserta_arr)->pluck('peserta_id')->toArray();
         $peran = Peran::whereIn('parent_id', $peserta_ids)->get();
@@ -69,8 +71,16 @@ class Calendar_Google_Event extends Model
             } catch (\Exception $e) {}
         }
 
-        Calendar_Google_Event::where('event_id', $jadwal->id)->delete();
+        if(count($peserta_arr) == 0){
+            return;
+        }
 
+        $user_dict = User::getDataDict();
+        $satuan_kerja_tahun_dict = Satuan_Kerja_Tahun::getDataDict();
+        $tim_dict = Tim::getDataDict();
+
+        $event_obj = self::build_event($jadwal, $peserta_arr, $user_dict, $satuan_kerja_tahun_dict, $tim_dict);
+        Calendar_Google_Event::where('event_id', $jadwal->id)->delete();
         $insert_keys = [];
 
         foreach ($calendar_user_add as $item) {

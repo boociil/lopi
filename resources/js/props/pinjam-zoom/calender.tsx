@@ -3,7 +3,7 @@ import { CalendarProvider } from "@/components/calender_modules/contexts/calenda
 import { DndProvider } from "@/components/calender_modules/contexts/dnd-context";
 import { pairIEventDenganUser, pinjam_zoom, PinjamZoomIEvent, producePinjamZoomIEvent, producePinjamZoomIEventFromZoomApp, zoom_app } from "./types";
 import { type SharedData, type User } from "@/types";
-import { CalenderUser, produceCalenderUser, SettingCalender, type IEvent, type IUser } from "@/components/calender_modules/interfaces";
+import { produceCalenderUser, SettingCalender, type IEvent, type IUser } from "@/components/calender_modules/interfaces";
 import { AddEditEventDialog } from "./dialog/add-edit-event-dialog";
 import DeleteEventDialog from "./dialog/delete-event-dialog";
 import { DndConfirmationDialog } from "./dialog/dnd-confirmation-dialog";
@@ -41,7 +41,7 @@ export function PinjamZoomCalender({
         filter_name: [['green', 'statsulbar'], ['yellow', 'sp2020']],
         show_filter_user: false
     }
-    const _user: IUser[] = produceCalenderUser(user);
+    const _user: IUser[] = produceCalenderUser(user, [], []);
     const [_allEvents, _setAllEvents] = useState<PinjamZoomIEvent[]>([])
 
     useEffect(() => {
@@ -57,7 +57,7 @@ export function PinjamZoomCalender({
 
                             producePinjamZoomIEventFromZoomApp(_allEvents_, response.data.zoom_statsulbar.data as zoom_app[], 'statsulbar');
                             producePinjamZoomIEventFromZoomApp(_allEvents_, response.data.zoom_sp2020.data as zoom_app[], 'sp2020');
-                            pairIEventDenganUser(_allEvents_ as PinjamZoomIEvent[], _user as CalenderUser[])
+                            pairIEventDenganUser(_allEvents_ as PinjamZoomIEvent[], _user)
 
                             _setAllEvents(_allEvents_)
                             setIsFirst(false)
@@ -93,7 +93,7 @@ export function PinjamZoomCalender({
 
                     producePinjamZoomIEventFromZoomApp(_allEvents_, response.data.zoom_statsulbar.data as zoom_app[], 'statsulbar');
                     producePinjamZoomIEventFromZoomApp(_allEvents_, response.data.zoom_sp2020.data as zoom_app[], 'sp2020');
-                    pairIEventDenganUser(_allEvents_ as PinjamZoomIEvent[], _user as CalenderUser[])
+                    pairIEventDenganUser(_allEvents_ as PinjamZoomIEvent[], _user)
 
                     setAllEventsOri(_allEvents_)
                     progress.finish()
@@ -133,7 +133,7 @@ export function PinjamZoomCalender({
             .then(function (response: any) {
                 try {
                     const return_data: IEvent[] = producePinjamZoomIEvent([response.data.data] as pinjam_zoom[]);
-                    pairIEventDenganUser(return_data  as PinjamZoomIEvent[], _user as CalenderUser[])
+                    pairIEventDenganUser(return_data  as PinjamZoomIEvent[], _user)
                     updateEvent(return_data[0])
                     progress.finish()
                     setIsLoading(false)

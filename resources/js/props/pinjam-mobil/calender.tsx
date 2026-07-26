@@ -4,7 +4,7 @@ import { DndProvider } from "@/components/calender_modules/contexts/dnd-context"
 import { CalendarHeader } from "@/components/calender_modules/header/calendar-header";
 import { pairIEventDenganUser, pinjam_mobil, PinjamMobilIEvent, producePinjamMobilIEvent } from "./types";
 import { type SharedData, type User } from "@/types";
-import { CalenderUser, produceCalenderUser, SettingCalender, type IEvent, type IUser } from "@/components/calender_modules/interfaces";
+import { produceCalenderUser, SettingCalender, type IEvent, type IUser } from "@/components/calender_modules/interfaces";
 import { AddEditEventDialog } from "./dialog/add-edit-event-dialog";
 import DeleteEventDialog from "./dialog/delete-event-dialog";
 import { DndConfirmationDialog } from "./dialog/dnd-confirmation-dialog";
@@ -41,9 +41,9 @@ export function PinjamMobilCalender({
         filter_name: [],
         show_filter_user: false
     }
-    const _user: IUser[] = produceCalenderUser(user);
+    const _user: IUser[] = produceCalenderUser(user, [], []);
     const _allEvents: IEvent[] = producePinjamMobilIEvent(pinjam_mobil_data);
-    pairIEventDenganUser(_allEvents as PinjamMobilIEvent[], _user as CalenderUser[])
+    pairIEventDenganUser(_allEvents as PinjamMobilIEvent[], _user)
 
     /////////////////////
     function reload_data(selectedDate: Date, currentView: TCalendarView, setAllEventsOri: (_allEvents: IEvent[]) => void){
@@ -54,7 +54,7 @@ export function PinjamMobilCalender({
             .then(function (response: any) {
                 try {
                     const _allEvents_: IEvent[] = producePinjamMobilIEvent(response.data.data as pinjam_mobil[]);
-                    pairIEventDenganUser(_allEvents_ as PinjamMobilIEvent[], _user as CalenderUser[])
+                    pairIEventDenganUser(_allEvents_ as PinjamMobilIEvent[], _user)
                     setAllEventsOri(_allEvents_)
                     progress.finish()
                     setIsLoading(false)
@@ -93,7 +93,7 @@ export function PinjamMobilCalender({
             .then(function (response: any) {
                 try {
                     const return_data: IEvent[] = producePinjamMobilIEvent([response.data.data] as pinjam_mobil[]);
-                    pairIEventDenganUser(return_data  as PinjamMobilIEvent[], _user as CalenderUser[])
+                    pairIEventDenganUser(return_data  as PinjamMobilIEvent[], _user)
                     updateEvent(return_data[0])
                     progress.finish()
                     setIsLoading(false)

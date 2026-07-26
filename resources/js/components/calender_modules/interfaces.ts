@@ -1,11 +1,12 @@
 import type { TCalendarView, TEventColor } from "@/components/calender_modules/types";
-import { User } from "@/types";
+import { Satuan_Kerja_Tahun, Tim, User } from "@/types";
 
 export interface IUser {
-	id: number;
-    username: string;
+	id: string; // username , id
 	name: string;
+    type: "user" | "tim" | "satuan_kerja_tahun";
 	picturePath: string | null;
+    ori: any;
 }
 
 export interface IEvent {
@@ -20,7 +21,7 @@ export interface IEvent {
 	title: string;
 	color: TEventColor;
 	description: string;
-	user: IUser | null;
+	user: IUser[];
     oriKey: string | null;
 }
 
@@ -39,23 +40,34 @@ export interface SettingCalender {
     show_filter_user: boolean;
 }
 
-export interface CalenderUser extends IUser, User{
-}
-
-export function produceCalenderUser(user_: User[]): CalenderUser[]{
-    let retur_data: CalenderUser[] = []
-    user_.forEach(element => {
+export function produceCalenderUser(user_: User[], satuan_kerja_tahun_: Satuan_Kerja_Tahun[], tim_: Tim[]): IUser[]{
+    let retur_data: IUser[] = []
+    satuan_kerja_tahun_.forEach(element => {
         retur_data.push({
             id: element.id,
-            username: element.username,
-            email: element.email,
-            nip_baru: element.nip_baru,
-            nip_lama: element.nip_lama,
-            nama: element.nama,
-            jabatan: element.jabatan,
-            golonagan: element.golonagan,
             name: element.nama,
-            picturePath: 'https://simpeg.bps.go.id/apis/pegawai/avatar/'+element.nip_lama,
+            type: "satuan_kerja_tahun",
+            ori: element,
+            picturePath: null
+        })
+    });
+
+    tim_.forEach(element => {
+        retur_data.push({
+            id: element.id,
+            name: element.nama,
+            type: "tim",
+            ori: element,
+            picturePath: null
+        })
+    });
+    user_.forEach(element => {
+        retur_data.push({
+            id: element.username,
+            name: element.nama,
+            type: "user",
+            ori: element,
+            picturePath: '/lopi/public/profile'+element.username
         })
     });
 

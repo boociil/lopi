@@ -150,4 +150,13 @@ class Satuan_Kerja_Tahun extends Model
         return $return_data;
     }
 
+    public static function getDataDict() {
+        $data = self::where('tahun', session('tahun_active'))->get();
+        $return_data = [];
+        foreach($data as $item){
+            $return_data[$item->id] = $$item;
+        }
+        return $return_data;
+    }
+
 }

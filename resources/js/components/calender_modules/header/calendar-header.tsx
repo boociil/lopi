@@ -57,7 +57,9 @@ export function CalendarHeader() {
 
 				<div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:gap-1.5">
                     { settingCalender.show_filter_user &&
-                        (<UserSelect />)
+                        <div className="min-w-0 w-full lg:w-48 xl:w-56">
+                            <UserSelect />
+                        </div>
                     }
 
                     {canAdd() &&

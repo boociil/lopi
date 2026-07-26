@@ -3,10 +3,10 @@
 namespace App\Http\Controllers\Lopi;
 
 use App\Http\Controllers\Controller;
-use App\Http\Traits\Zoom_Traits;
 use App\Model\Lopi\Jadwal;
 use App\Model\Lopi\Jadwal_Peserta;
 use App\Model\Lopi\Pinjam_Zoom;
+use App\Model\Lopi\Sync_Google\Calendar_Google_Event;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Builder;
@@ -38,8 +38,10 @@ class Jadwal_Controller extends Controller
     {
         $validated = $request->validate([
             'selectedDate'  => 'date',
-            'view'          => 'string',
-            'view'          => Rule::in(['day', 'week', 'month', 'year', 'agenda'])
+            'view' => [
+                'string',
+                Rule::in(['day', 'week', 'month', 'year', 'agenda']),
+            ],
         ]);
 
         $satuan_kerja_tahun_kode = [];
@@ -118,57 +120,12 @@ class Jadwal_Controller extends Controller
 
 
         if($request->isMethod('get')){
-            $all_satuan_kerja_tahun_id_sesuai_peran = Peran:: where('tipe_peran', 'satuan_kerja_tahun')
-                                            ->where('tahun', session('tahun_active'))->get()
-                                            ->where('pemilik_username', Auth::user()->username)
-                                            ->pluck('parent_id')->toArray();
-            $all_tim_id_sesuai_peran_satuan_kerja_tahun = Tim::whereIn('satuan_kerja_tahun_id', $all_satuan_kerja_tahun_id_sesuai_peran)
-                                            ->get()
-                                            ->pluck('id')
-                                            ->toArray();
-
-            $parent_id_arr_before_pluck = Peran::where('pemilik_username', Auth::user()->username)
-                ->whereIn('tipe_peran', ['satuan_kerja_tahun', 'tim'])
-                ->where('tahun', session('tahun_active'))
-                ->select('tipe_peran', 'parent_id', 'peran')
-                ->distinct()
-                ->get();
-
-            $parent_id_satuan_kerja_tahun = [];
-            $parent_id_tim = [];
-
-            $tambahan_satuan_kerja_tahun_id = [];
-            $tambahan_tim_id = [];
-
-            foreach($parent_id_arr_before_pluck as $item){
-                if($item->tipe_peran == 'satuan_kerja_tahun'){
-                    if(in_array($item->parent_id, $all_satuan_kerja_tahun_id_sesuai_peran)){
-                        if(in_array($item->peran, ['pimpinan', 'admin'])){
-                            array_push($parent_id_satuan_kerja_tahun, $item->parent_id);
-                        }
-                        array_push($tambahan_satuan_kerja_tahun_id, $item->parent_id);
-                    }
-                }else if($item->tipe_peran == 'tim'){
-                    if(in_array($item->parent_id, $all_tim_id_sesuai_peran_satuan_kerja_tahun)){
-                        if(in_array($item->peran, ['ketua', 'admin'])){
-                            array_push($parent_id_tim, $item->parent_id);
-                        }
-                        array_push($tambahan_tim_id, $item->parent_id);
-                    }
-                }
-            }
-
             $satuan_kerja_tahun = Satuan_Kerja_Tahun::where('tahun', session('tahun_active'))
-                        ->where(function($query) use ($tambahan_satuan_kerja_tahun_id){
-                            $query->orWhereIn('id', $tambahan_satuan_kerja_tahun_id);
-                        })
+                        ->whereIn('id', $satuan_kerja_tahun_kode)
                         ->get();
 
             $tim = Tim::where('tahun', session('tahun_active'))
-                        ->where(function ($query) use ($tambahan_satuan_kerja_tahun_id, $tambahan_tim_id){
-                            $query->orWhereIn('satuan_kerja_tahun_id', $tambahan_satuan_kerja_tahun_id);
-                            $query->orWhereIn('id', $tambahan_tim_id);
-                        })
+                        ->whereIn('satuan_kerja_tahun_id', $satuan_kerja_tahun_kode)
                         ->get();
 
             return Inertia::render('jadwal', [
@@ -215,7 +172,7 @@ class Jadwal_Controller extends Controller
 
         if(!$request->input('tanggal') || (!$request->input('tanggal_awal') && !$request->input('tanggal_akhir'))){
             throw ValidationException::withMessages([
-                '_status' => 'Peran tidak dapat dibuat',
+                '_status' => 'Jadwal tidak dapat dibuat',
             ]);
         }
 
@@ -344,30 +301,24 @@ class Jadwal_Controller extends Controller
             $jadwal->save();
 
             Jadwal_Peserta::where('jadwal_id', $jadwal->id)->delete();
-            $username_arr_peserta_to_add = [];
-            $satuan_kerja_tahun_dan_tim_id = [];
+            $peserta_arrr = [];
             if($request->input('peserta')){
                 foreach($request->input('peserta') as $item){
                     $peserta = new Jadwal_Peserta();
                     $peserta->id = Str::uuid();
                     $peserta->jadwal_id = $jadwal->id;
                     $peserta->peserta_type = $item[0];
-                    if($item[0] == 'satuan_kerja_tahun' || $item[1] == 'tim'){
-                        array_push($satuan_kerja_tahun_dan_tim_id, $item[1]);
-                    }else{
-                        array_push($username_arr_peserta_to_add, $item[1]);
-                    }
                     $peserta->peserta_id = $item[1];
                     $peserta->save();
+                    array_push( $peserta_arrr, $peserta);
                 }
             }
 
-            $peran_satuan_kerja_tahun_tim = Peran::whereIn('parent_id', $satuan_kerja_tahun_dan_tim_id)->get();
-            foreach($peran_satuan_kerja_tahun_tim as $item_peran){
-                if(!in_array($item_peran->pemilik_username, $username_arr_peserta_to_add)){
-                    array_push($username_arr_peserta_to_add, $item_peran->pemilik_username);
-                }
-            }
+
+            Calendar_Google_Event::saveEventPeserta(
+                $jadwal,
+                $peserta_arrr
+            );
 
             DB::commit();
             return [
@@ -414,7 +365,7 @@ class Jadwal_Controller extends Controller
 
         if(!$request->input('tanggal') || (!$request->input('tanggal_awal') && !$request->input('tanggal_akhir'))){
             throw ValidationException::withMessages([
-                '_status' => 'Peran tidak dapat dibuat',
+                '_status' => 'Jadwal tidak dapat dibuat',
             ]);
         }
 
@@ -606,6 +557,26 @@ class Jadwal_Controller extends Controller
                 $jadwal->status = 'menunggu';
             }
             $jadwal->save();
+
+            Jadwal_Peserta::where('jadwal_id', $jadwal->id)->delete();
+            $peserta_arrr = [];
+            if($request->input('peserta')){
+                foreach($request->input('peserta') as $item){
+                    $peserta = new Jadwal_Peserta();
+                    $peserta->id = Str::uuid();
+                    $peserta->jadwal_id = $jadwal->id;
+                    $peserta->peserta_type = $item[0];
+                    $peserta->peserta_id = $item[1];
+                    $peserta->save();
+                    array_push( $peserta_arrr, $peserta);
+                }
+            }
+
+
+            Calendar_Google_Event::saveEventPeserta(
+                $jadwal,
+                $peserta_arrr
+            );
             DB::commit();
             return [
                 "_status" => 'Berhasil mengubah peminjaman zoom!',
@@ -647,6 +618,11 @@ class Jadwal_Controller extends Controller
             Jadwal_Peserta::where('jadwal_id', $jadwal->id)->delete();
             $jadwal->delete();
             DB::commit();
+
+            Calendar_Google_Event::saveEventPeserta(
+                $jadwal,
+                []
+            );
             return [
                 "_status" => 'Berhasil menghapus peminjaman zoom!'
             ];
@@ -758,7 +734,7 @@ class Jadwal_Controller extends Controller
             if($have_zoom_peran){
                 if($jadwal->zoom_pinjam_id){
                     $pinjam_zoom = $jadwal->zoom_pinjam;
-                    $pinjam_zoom->helper_approval($request->input('zoom_status'), $request->input('zoom_status'));
+                    $pinjam_zoom->helper_approval($request->input('zoom_status'), $request->input('zoom_akun'));
 
                     $jadwal->zoom_pinjam_id = $pinjam_zoom->id;
                     $jadwal->zoom_status = $pinjam_zoom->status;
