@@ -255,7 +255,7 @@ class User extends Authenticatable
     }
 
     public static function getDataDict() {
-        $data = self::where('tahun', session('tahun_active'))->get();
+        $data = self::all();
         $return_data = [];
         foreach($data as $item){
             $return_data[$item->username] = $$item;

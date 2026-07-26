@@ -239,7 +239,7 @@ export function AddEditEventDialog({
 
             setData("peserta", []);
             (event as JadwalIEvent).jadwal_ori.peserta.forEach(element => {
-                setData("peserta", [...data.peserta, element.id]);
+                setData("peserta", [...data.peserta,element.id]);
             });
 
             if ((event as JadwalIEvent).jadwal_ori) {
@@ -318,10 +318,10 @@ export function AddEditEventDialog({
         { id: 4, title: "Peserta", icon: <Users size={18} /> },
     ];
 
-    function deleteUser(username: string) {
+    function deleteUser(id: string) {
         setData(
             "peserta",
-            data.peserta.filter((item) => item != username),
+            data.peserta.filter((item) => item != id),
         );
     }
 
@@ -755,15 +755,14 @@ export function AddEditEventDialog({
                                                 <CommandGroup>
                                                     {users.map((item) => (
                                                         <CommandItem
-                                                            key={item.id + ' ' + item.name}
-                                                            value={item.id}
-                                                            onSelect={(currentValue) => {
-                                                                // ✅ PERBAIKAN: Memastikan case-sensitivity tidak menjadi bug dengan menemukan item aslinya
-                                                                const selectedUser = users.find(u => u.id.toLowerCase() === currentValue.toLowerCase());
-                                                                const actualUsername = selectedUser ? selectedUser.id : currentValue;
-
-                                                                if (!data.peserta.includes(actualUsername)) {
-                                                                    setData("peserta", [...data.peserta, actualUsername]);
+                                                            key={`${item.id}-${item.name}`}
+                                                            // ✅ PERBAIKAN 1: Gabungkan nama dan ID di value agar keduanya bisa dicari
+                                                            value={`${item.name} ${item.id}`}
+                                                            onSelect={() => {
+                                                                // ✅ PERBAIKAN 2: Akses langsung item.id dari scope map,
+                                                                // tidak perlu users.find() lagi. Ini jauh lebih aman dan efisien.
+                                                                if (!data.peserta.includes(item.id)) {
+                                                                    setData("peserta", [...data.peserta, item.id]);
                                                                 }
                                                                 setOpenPengguna(false);
                                                             }}

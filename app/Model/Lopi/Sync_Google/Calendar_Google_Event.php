@@ -24,7 +24,7 @@ class Calendar_Google_Event extends Model
     public function deleteEvent()
     {
         $client = new \Google\Client();
-        $client->setAuthConfig(storage_path('app/lopiservice-48fe7bfdaa73.json'));
+        $client->setAuthConfig('lopiservice-48fe7bfdaa73.json');
         $client->addScope(\Google\Service\Calendar::CALENDAR);
 
         $service = new \Google\Service\Calendar($client);
@@ -40,7 +40,7 @@ class Calendar_Google_Event extends Model
     public static function saveEventPeserta(Jadwal $jadwal, $peserta_arr)
     {
         $client = new \Google\Client();
-        $client->setAuthConfig(storage_path('app/lopiservice-48fe7bfdaa73.json'));
+        $client->setAuthConfig('lopiservice-48fe7bfdaa73.json');
         $client->addScope(\Google\Service\Calendar::CALENDAR);
 
         $service = new \Google\Service\Calendar($client);

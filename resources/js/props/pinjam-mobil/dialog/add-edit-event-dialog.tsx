@@ -186,15 +186,13 @@ export function AddEditEventDialog({
             setData('pembuat_username', '')
             setData('confirm_username', '')
             setData('error_clash', '')
-
-            console.log(data)
         }
 	}, [event, initialDates]);
 
 
 
     return (
-        <Modal open={isOpen} onOpenChange={onToggle} modal={false}>
+        <Modal open={isOpen} onOpenChange={onToggle} modal={true}>
             <ModalTrigger asChild>{children}</ModalTrigger>
             <ModalContent>
                 <ModalHeader>

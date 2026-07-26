@@ -44,7 +44,7 @@ export function produceCalenderUser(user_: User[], satuan_kerja_tahun_: Satuan_K
     let retur_data: IUser[] = []
     satuan_kerja_tahun_.forEach(element => {
         retur_data.push({
-            id: element.id,
+            id: "satuan_kerja_tahun-+-"+element.id,
             name: element.nama,
             type: "satuan_kerja_tahun",
             ori: element,
@@ -54,7 +54,7 @@ export function produceCalenderUser(user_: User[], satuan_kerja_tahun_: Satuan_K
 
     tim_.forEach(element => {
         retur_data.push({
-            id: element.id,
+            id: "tim-+-"+element.id,
             name: element.nama,
             type: "tim",
             ori: element,
@@ -63,7 +63,7 @@ export function produceCalenderUser(user_: User[], satuan_kerja_tahun_: Satuan_K
     });
     user_.forEach(element => {
         retur_data.push({
-            id: element.username,
+            id: "user-+-"+element.username,
             name: element.nama,
             type: "user",
             ori: element,
