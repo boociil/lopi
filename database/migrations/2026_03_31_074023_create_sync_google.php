@@ -21,8 +21,9 @@ return new class extends Migration
 
         Schema::create('siakip2_calendar_google_event', function (Blueprint $table) {
             $table->string('id', 36)->primary();
+            $table->string('parent_tipe', 20); // jadwal dll
+            $table->string('parent_id', 36); // jadwal dll
             $table->string('google_calendar_id', 255);
-            $table->string('event_tipe', 100); // jadwal dll
             $table->string('event_id', 255);
             $table->string('username', 100);
             $table->foreign('username', 'calendar_google_event_fk_username')

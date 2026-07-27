@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Model\Lopi\Jadwal;
 use App\Model\Lopi\Jadwal_Peserta;
 use App\Model\Lopi\Pinjam_Zoom;
-use App\Model\Lopi\Sync_Google\Calendar_Google_Event;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Builder;

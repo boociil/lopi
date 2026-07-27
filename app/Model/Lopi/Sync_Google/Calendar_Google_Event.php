@@ -11,5 +11,5 @@ class Calendar_Google_Event extends Model
     protected $keyType = 'string';
     public $timestamps = false;
 
-    protected $fillable = ['id', 'google_calendar_id', 'event_tipe', 'event_id', 'username'];
+    protected $fillable = ['id', 'parent_tipe', 'parent_id', 'google_calendar_id', 'event_id', 'username'];
 }

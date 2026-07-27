@@ -42,7 +42,7 @@ class Google_Event_Local_Service
         $eventModel->delete();
     }
 
-    public function saveEventPeserta(Jadwal $jadwal, $peserta_arr)
+   public function saveEventPeserta(Jadwal $jadwal, $peserta_arr)
     {
         $peserta_ids = collect($peserta_arr)->pluck('peserta_id')->toArray();
         $peran = Peran::whereIn('parent_id', $peserta_ids)->get();
@@ -54,7 +54,8 @@ class Google_Event_Local_Service
 
         $peserta_arr_full_uni = array_unique($peserta_arr_full);
         $calendar_user_add = Calendar_User::whereIn('username', $peserta_arr_full_uni)->get();
-        $calendar_google_event = Calendar_Google_Event::where('event_id', $jadwal->id)->get();
+
+        $calendar_google_event = Calendar_Google_Event::where('parent_id', $jadwal->id)->get();
 
         $this->client->setUseBatch(true);
         $batch = new Batch($this->client);
@@ -68,39 +69,38 @@ class Google_Event_Local_Service
             } catch (\Exception $e) {}
         }
 
-        if (count($peserta_arr) == 0) {
-            $this->client->setUseBatch(false); // Reset batch mode before returning
-            return;
-        }
+        Calendar_Google_Event::where('parent_id', $jadwal->id)->delete();
 
-        $user_dict = User::getDataDict();
-        $satuan_kerja_tahun_dict = Satuan_Kerja_Tahun::getDataDict();
-        $tim_dict = Tim::getDataDict();
-
-        $event_obj = $this->buildEvent($jadwal, $peserta_arr, $user_dict, $satuan_kerja_tahun_dict, $tim_dict);
-
-        Calendar_Google_Event::where('event_id', $jadwal->id)->delete();
         $insert_keys = [];
 
-        foreach ($calendar_user_add as $item) {
-            $insRequest = $this->service->events->insert(
-                $item->google_calendar_id,
-                $event_obj,
-                ['fields' => 'id']
-            );
-            $batchKey = "ins_$i";
-            $batch->add($insRequest, $batchKey);
 
-            $insert_keys[$batchKey] = [
-                'username' => $item->username,
-                'calendar_id' => $item->google_calendar_id,
-                'jadwal_id' => $jadwal->id
-            ];
-            $i++;
+        if(count($peserta_arr) > 0) {
+            $user_dict = User::getDataDict();
+            $satuan_kerja_tahun_dict = Satuan_Kerja_Tahun::getDataDict();
+            $tim_dict = Tim::getDataDict();
+
+            $event_obj = $this->buildEvent($jadwal, $peserta_arr, $user_dict, $satuan_kerja_tahun_dict, $tim_dict);
+
+            foreach ($calendar_user_add as $item) {
+                $insRequest = $this->service->events->insert(
+                    $item->google_calendar_id,
+                    $event_obj,
+                    ['fields' => 'id']
+                );
+                $batchKey = "ins_$i";
+                $batch->add($insRequest, $batchKey);
+
+                $insert_keys[$batchKey] = [
+                    'username' => $item->username,
+                    'calendar_id' => $item->google_calendar_id,
+                    'jadwal_id' => $jadwal->id,
+                ];
+                $i++;
+            }
         }
 
         $results = $batch->execute();
-        $this->client->setUseBatch(false); // Reset batch mode to avoid polluting future requests
+        $this->client->setUseBatch(false);
 
         foreach ($results as $responseId => $response) {
             $requestId = str_replace('response-', '', $responseId);
@@ -115,18 +115,15 @@ class Google_Event_Local_Service
             }
 
             $info = $insert_keys[$requestId];
-            $google_event_id = $response->id;
+            $event_id = $response->id;
 
             Calendar_Google_Event::create([
                 'id' => Str::uuid(),
+                'parent_tipe' => 'jadwal',
+                'parent_id' => $jadwal->id,
                 'google_calendar_id' => $info['calendar_id'],
-                'event_tipe' => 'jadwal',
-                'event_id' => $google_event_id,
-                'username' => $info['username']
-            ]);
-
-            Jadwal::where('id', $info['jadwal_id'])->update([
-                'google_event_id' => $google_event_id,
+                'event_id' => $event_id,
+                'username' => $info['username'],
             ]);
         }
     }
@@ -177,7 +174,7 @@ class Google_Event_Local_Service
         ]);
 
         if ($jadwal->tipe == 'berulang') {
-            $untilDate = Carbon::parse($jadwal->berulang_tanggal_akhir)
+            $untilDate = Carbon::parse("{$jadwal->berulang_tanggal_akhir} {$jadwal->waktu_akhir}")
                             ->setTimezone('UTC')
                             ->format('Ymd\THis\Z');
 
