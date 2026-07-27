@@ -243,7 +243,7 @@ export function EventDetailsDialog({
     const get_startUrl = () => {
         if(event.jadwal_ori.zoom_pinjam){
             if(event.jadwal_ori.zoom_pinjam.zoom_meeting_id && event.jadwal_ori.zoom_pinjam.zoom_akun){
-                 axiosClient.post(route("pinjam-zoom-get-mmeting"), {zoom_meeting_id: event.jadwal_ori.zoom_pinjam.zoom_meeting_id, zoom_akun: event.jadwal_ori.zoom_pinjam.zoom_akun})
+                 axiosClient.post(route("pinjam-zoom-get-meeting"), {zoom_meeting_id: event.jadwal_ori.zoom_pinjam.zoom_meeting_id, zoom_akun: event.jadwal_ori.zoom_pinjam.zoom_akun})
                     .then(function (response: any) {
                         try {
                             const return_data: {

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Traits;
+namespace App\Services;
 
 use App\Model\Lopi\Pinjam_Zoom;
 use Carbon\Carbon;
@@ -9,11 +9,11 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
-trait Zoom_Traits
+class Zoom_Service
 {
     private $zoom_config;
 
-    public function define_config()
+    public function __construct()
     {
         $this->zoom_config = [
             'statsulbar' => [

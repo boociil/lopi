@@ -146,7 +146,7 @@ export function EventDetailsDialog({ _event, children }: Event_Details_Dialog_IP
     const [startUrl, setStartUrl] = useState<string|undefined>(undefined)
 
     const get_startUrl = () => {
-        axiosClient.post(route("pinjam-zoom-get-mmeting"), {zoom_meeting_id: event.zoom_meeting_id, zoom_akun: event.zoom_akun})
+        axiosClient.post(route("pinjam-zoom-get-meeting"), {zoom_meeting_id: event.zoom_meeting_id, zoom_akun: event.zoom_akun})
             .then(function (response: any) {
                  try {
                     const return_data: {

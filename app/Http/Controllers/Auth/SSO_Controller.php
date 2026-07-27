@@ -14,6 +14,8 @@ use JKD\SSO\Client\Provider\Keycloak;
 
 use Inertia\Inertia;
 use Inertia\Response;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class SSO_Controller extends Controller
 {
@@ -105,6 +107,19 @@ class SSO_Controller extends Controller
                     if (array_key_exists("golongan",$data_owner_arr) && $data_owner_arr['golongan'])
                     {
                         $user->golonagan = $data_owner_arr['golongan'];
+                    }
+
+                    $url = "https://simpeg.bps.go.id/apis/pegawai/avatar/" . $data_owner_arr['nip-lama'];
+                    $imageData = @file_get_contents($url);
+
+                    if ($imageData !== false) {
+                        // 1. Buat nama file yang aman (misalnya NIP + random string agar tidak bentrok)
+                        // Asumsi gambar dari BPS berupa JPG/PNG.
+                        $filename = 'avatars/' . $data_owner_arr['username'];
+                        if (Storage::disk('public')->exists($filename)) {
+                            Storage::disk('public')->delete($filename);
+                        }
+                        Storage::disk('public')->put($filename, $imageData);
                     }
 
                     $user->save();

@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Lopi\Pinjam;
 
 use App\Http\Controllers\Controller;
-use App\Http\Traits\Zoom_Traits;
 use App\Model\Lopi\Jadwal;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -19,25 +18,25 @@ use Illuminate\Validation\ValidationException;
 use App\Model\Umum\Peran;
 use App\Model\Lopi\Pinjam_Zoom;
 use App\Model\Umum\User;
+use App\Services\Zoom_Service;
 use Exception;
 use Inertia\Inertia;
 
 class Zoom_Controller extends Controller
 {
 
-    use Zoom_Traits;
-
-    public function __construct()
+    public function __construct(protected Zoom_Service $zoom)
     {
-        $this->define_config();
     }
 
      public function index(Request $request)
     {
          $validated = $request->validate([
             'selectedDate'  => 'date',
-            'view'          => 'string',
-            'view'          => Rule::in(['day', 'week', 'month', 'year', 'agenda'])
+            'view'          => [
+                'string',
+                Rule::in(['day', 'week', 'month', 'year', 'agenda'])
+            ]
         ]);
 
         $selectedDate = null;
@@ -102,8 +101,8 @@ class Zoom_Controller extends Controller
                 $item->zoom_start_url = null;
             }
 
-            $pinjam_zoom_statsulbar = $this->zoom_getAllMeeting('statsulbar', $tanggal_awal->format('Y-m-d'), $tanggal_akhir->format('Y-m-d'));
-            $pinjam_zoom_sp2020 = $this->zoom_getAllMeeting('sp2020', $tanggal_awal->format('Y-m-d'), $tanggal_akhir->format('Y-m-d'));
+            $pinjam_zoom_statsulbar = $this->zoom->zoom_getAllMeeting('statsulbar', $tanggal_awal->format('Y-m-d'), $tanggal_akhir->format('Y-m-d'));
+            $pinjam_zoom_sp2020 = $this->zoom->zoom_getAllMeeting('sp2020', $tanggal_awal->format('Y-m-d'), $tanggal_akhir->format('Y-m-d'));
 
             // $pinjam_zoom_statsulbar = ['status' => false, 'data' => []];
             // $pinjam_zoom_sp2020 = ['status' => false, 'data' => []];
@@ -176,7 +175,8 @@ class Zoom_Controller extends Controller
                 $request->input('waktu_awal'),
                 $request->input('waktu_akhir'),
                 $have_zoom_peran,
-                $request->input('zoom_akun')
+                $request->input('zoom_akun'),
+                $this->zoom
             );
 
             DB::commit();
@@ -197,6 +197,7 @@ class Zoom_Controller extends Controller
     {
         $validated = $request->validate([
             'kegiatan'          => 'required|string|max:255',
+            'password'          => 'required|string',
             'tipe'              => 'required|in:sekali,berulang',
             'tanggal'           => 'date',
             'tanggal_awal'      => 'date',
@@ -219,7 +220,7 @@ class Zoom_Controller extends Controller
         if($have_zoom_peran && in_array($request->input('zoom_akun'), ['statsulbar', 'sp2020'])){
              if($request->input('tipe') == 'sekali'){
                 if(Pinjam_Zoom::staticCheckClash($request->input('zoom_akun'), $request->input('tanggal'), $request->input('tanggal')
-                    , $request->input('waktu_awal').':00', $request->input('waktu_akhir').':00'))
+                    , $request->input('waktu_awal').':00', $request->input('waktu_akhir').':00', $pinjamZoom->id))
                 {
                     throw ValidationException::withMessages([
                         'error_clash' => 'Sudah terdapat peminjaman di tanggal dan waktu tersebut',
@@ -227,7 +228,7 @@ class Zoom_Controller extends Controller
                 }
              }else{
                 if(Pinjam_Zoom::staticCheckClash($request->input('zoom_akun'), $request->input('tanggal_awal'), $request->input('tanggal_akhir')
-                    , $request->input('waktu_awal').':00', $request->input('waktu_akhir').':00'))
+                    , $request->input('waktu_awal').':00', $request->input('waktu_akhir').':00', $pinjamZoom->id))
                 {
                     throw ValidationException::withMessages([
                         'error_clash' => 'Sudah terdapat peminjaman di tanggal dan waktu tersebut',
@@ -255,7 +256,8 @@ class Zoom_Controller extends Controller
                 $request->input('waktu_awal'),
                 $request->input('waktu_akhir'),
                 $have_zoom_peran,
-                $request->input('zoom_akun')
+                $request->input('zoom_akun'),
+                $this->zoom
             );
             DB::commit();
             return [
@@ -283,7 +285,7 @@ class Zoom_Controller extends Controller
         DB::beginTransaction();
         try
         {
-            $pinjamZoom->helper_hapus($have_zoom_peran);
+            $pinjamZoom->helper_hapus($have_zoom_peran, $this->zoom);
             DB::commit();
             return [
                 "_status" => 'Berhasil menghapus peminjaman zoom!'
@@ -331,7 +333,7 @@ class Zoom_Controller extends Controller
         {
             $pinjamZoom->status = $request->input('status');
             $pinjamZoom->zoom_akun = $request->input('zoom_akun');
-            $pinjamZoom->helper_approval($request->input('status'), $request->input('zoom_akun'));
+            $pinjamZoom->helper_approval($request->input('status'), $request->input('zoom_akun'), $this->zoom);
 
             $jadwal = Jadwal::where('zoom_pinjam_id', $pinjamZoom->id)->first();
             if($jadwal){
@@ -357,7 +359,7 @@ class Zoom_Controller extends Controller
         }
     }
 
-    public function get_mmeting(Request $request)
+    public function get_meeting(Request $request)
     {
         $have_zoom_peran =  Peran::where('pemilik_username', Auth::user()->username)
             ->where('peran', 'zoom')
@@ -378,7 +380,7 @@ class Zoom_Controller extends Controller
                 ]);
             }
 
-            return $pinjamZoom->getMeeting();
+            return $pinjamZoom->getMeeting($this->zoom);
         }else{
             if(! ($have_zoom_peran) ){
                 throw ValidationException::withMessages([
@@ -387,14 +389,11 @@ class Zoom_Controller extends Controller
             }
 
             if($request->zoom_meeting_id && $request->zoom_akun){
-                Log::alert($request->zoom_meeting_id);
-                Log::alert($request->zoom_akun);
-
                 $pinjamZoom = new Pinjam_Zoom();
                 $pinjamZoom->zoom_meeting_id = $request->zoom_meeting_id;
                 $pinjamZoom->zoom_akun = $request->zoom_akun;
 
-                return $pinjamZoom->getMeeting();
+                return $pinjamZoom->getMeeting($this->zoom);
             }else{
                 throw ValidationException::withMessages([
                     '_status' => 'Gagal mendapatkan zoom!',

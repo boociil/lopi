@@ -35,4 +35,10 @@ return [
         ],
     ],
 
+    'wablas' => [
+        'domain' => env('WABLAS_DOMAIN', 'https://tegal.wablas.com'),
+        'token' => env('WABLAS_TOKEN'),
+        'secret_key' => env('WABLAS_SECRET_KEY'),
+    ],
+
 ];

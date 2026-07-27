@@ -2,9 +2,8 @@
 
 namespace App\Model\Lopi;
 
-use App\Http\Traits\Zoom_Traits;
 use App\Model\Umum\User;
-
+use App\Services\Zoom_Service;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Auth;
@@ -16,7 +15,6 @@ use Exception;
 
 class Pinjam_Zoom extends Model
 {
-    use Zoom_Traits;
     use SoftDeletes;
 
     protected $table = 'siakip2_pinjam_zoom';
@@ -65,6 +63,7 @@ class Pinjam_Zoom extends Model
         $waktu_akhir,
         $have_zoom_peran,
         $zoom_akun,
+        Zoom_Service $zoom_service
     )
     {
         $pinjam_zoom = new Pinjam_Zoom();
@@ -92,8 +91,7 @@ class Pinjam_Zoom extends Model
             $pinjam_zoom->confirm_username = Auth::user()->username;
 
             if(in_array($zoom_akun, ['statsulbar', 'sp2020'])){
-                $pinjam_zoom->define_config();
-                $pinjam_zoom->zoom_meta_createMeeting($zoom_akun, $pinjam_zoom);
+                $zoom_service->zoom_meta_createMeeting($zoom_akun, $pinjam_zoom);
             }else{
                 throw new Exception('Gagal membuat zoom');
             }
@@ -114,9 +112,9 @@ class Pinjam_Zoom extends Model
         $waktu_akhir,
         $have_zoom_peran,
         $zoom_akun,
+        Zoom_Service $zoom_service
     )
     {
-        $this->define_config();
 
         $berubahInti = true;
         if($this->tipe == $tipe &&  $this->tanggal == $tanggal
@@ -153,51 +151,49 @@ class Pinjam_Zoom extends Model
             //     $this->zoom_meta_updateMeeting($request->input('zoom_akun'), $pinjamZoom);
             // }else
             if(!$this->zoom_meeting_id){
-                $this->zoom_meta_createMeeting($zoom_akun, $this);
+                $zoom_service->zoom_meta_createMeeting($zoom_akun, $this);
             }else if($this->zoom_meeting_id && $this->zoom_akun != $zoom_akun){
-                $this->zoom_meta_deleteMeeting($this->zoom_akun, $this);
-                $this->zoom_meta_createMeeting($zoom_akun, $this);
+                $zoom_service->zoom_meta_deleteMeeting($this->zoom_akun, $this);
+                $zoom_service->zoom_meta_createMeeting($zoom_akun, $this);
             }else if($this->zoom_meeting_id && $this->zoom_akun == $zoom_akun){
-                $this->zoom_meta_updateMeeting($zoom_akun, $this);
+                $zoom_service->zoom_meta_updateMeeting($zoom_akun, $this);
             }
         }else{
             if($this->zoom_meeting_id){
                 if($berubahInti){
-                    $this->zoom_meta_deleteMeeting($this->zoom_akun, $this);
+                    $zoom_service->zoom_meta_deleteMeeting($this->zoom_akun, $this);
                 }else{
-                     $this->zoom_meta_updateMeeting($zoom_akun, $this);
+                     $zoom_service->zoom_meta_updateMeeting($zoom_akun, $this);
                 }
             }
         }
         $this->save();
     }
 
-    public function helper_hapus($have_zoom_peran){
-        $this->define_config();
+    public function helper_hapus($have_zoom_peran, Zoom_Service $zoom_service){
         if(! ($have_zoom_peran || $this->pembuat_username == Auth::user()->username) ){
             throw new Exception('Gagal menghapus peminjaman zoom!');
         }
 
         if($this->zoom_meeting_id){
-            $this->zoom_meta_deleteMeeting($this->zoom_akun, $this);
+            $zoom_service->zoom_meta_deleteMeeting($this->zoom_akun, $this);
         }
 
         $this->delete();
     }
 
-    public function helper_approval($status, $zoom_akun){
-        $this->define_config();
+    public function helper_approval($status, $zoom_akun, Zoom_Service $zoom_service){
         if($status == 'ditolak'){
             if($this->zoom_meeting_id){
-                $this->zoom_meta_deleteMeeting($this->zoom_akun, $this);
+                $zoom_service->zoom_meta_deleteMeeting($this->zoom_akun, $this);
             }
         }else if($status == 'disetujui'){
             if(!$this->zoom_meeting_id){
-                $this->zoom_meta_createMeeting($zoom_akun, $this);
+                $zoom_service->zoom_meta_createMeeting($zoom_akun, $this);
             }else {
                 if($this->zoom_akun != $zoom_akun){
-                    $this->zoom_meta_deleteMeeting($this->zoom_akun, $this);
-                    $this->zoom_meta_createMeeting($zoom_akun, $this);
+                    $zoom_service->zoom_meta_deleteMeeting($this->zoom_akun, $this);
+                    $zoom_service->zoom_meta_createMeeting($zoom_akun, $this);
                 }
             }
         }
@@ -208,14 +204,14 @@ class Pinjam_Zoom extends Model
     }
 
     public function checkClash($zoom_akun){
-        if($this->type == 'sekali'){
+        if($this->tipe == 'sekali'){
             return Pinjam_Zoom::staticCheckClash($zoom_akun, $this->tanggal, $this->tanggal, $this->waktu_awal, $this->waktu_akhir);
-        }else if($this->type == 'berulang'){
+        }else if($this->tipe == 'berulang'){
             return Pinjam_Zoom::staticCheckClash($zoom_akun, $this->berulang_tanggal_awal, $this->berulang_tanggal_akhir, $this->waktu_awal, $this->waktu_akhir);
         }
     }
 
-    public static function staticCheckClash($zoom_akun, $tanggal_awal, $tanggal_akhir, $waktu_awal, $waktu_akhir){
+    public static function staticCheckClash($zoom_akun, $tanggal_awal, $tanggal_akhir, $waktu_awal, $waktu_akhir, $ignore_id = null){
         $jadwal_daftar = Pinjam_Zoom::where('zoom_akun', $zoom_akun)
                 ->where('status', 'disetujui')
                 ->where(function ($query0) use($tanggal_awal, $tanggal_akhir) {
@@ -229,37 +225,33 @@ class Pinjam_Zoom extends Model
                                     ->where('berulang_tanggal_akhir', '>=', $tanggal_awal);
                             });
                 })
+                ->when($ignore_id, function($query) use ($ignore_id) {
+                    return $query->where('id', '!=', $ignore_id);
+                })
                 ->get();
 
-
-        $awalCarrbon = Carbon::createFromFormat('Y-m-d H:i:s',  $tanggal_awal . ' ' . $waktu_awal);
-        $akhirCarrbon = Carbon::createFromFormat('Y-m-d H:i:s',  $tanggal_akhir . ' ' . $waktu_akhir);
+        $input_waktu_awal = Carbon::createFromFormat('H:i:s', $waktu_awal);
+        $input_waktu_akhir = Carbon::createFromFormat('H:i:s', $waktu_akhir);
 
         $isClash = false;
 
         foreach($jadwal_daftar as $item){
-            if($item->tipe == 'sekali'){
-                if( ( $awalCarrbon < Carbon::createFromFormat('Y-m-d H:i:s', $item->tanggal. ' ' .$item->waktu_akhir)
-                    && $akhirCarrbon > Carbon::createFromFormat('Y-m-d H:i:s', $item->tanggal. ' ' .$item->waktu_awal)))
-                {
-                    $isClash=true;
-                }
-            }else if($item->tipe == 'berulang'){
-                if( ( $awalCarrbon < Carbon::createFromFormat('Y-m-d H:i:s', $item->tanggal_akhir. ' ' .$item->waktu_akhir)
-                    && $akhirCarrbon > Carbon::createFromFormat('Y-m-d H:i:s', $item->tanggal_awal. ' ' .$item->waktu_awal)))
-                {
-                    $isClash=true;
-                }
+
+            $item_waktu_awal = Carbon::createFromFormat('H:i:s', $item->waktu_awal);
+            $item_waktu_akhir = Carbon::createFromFormat('H:i:s', $item->waktu_akhir);
+
+            if ($input_waktu_awal < $item_waktu_akhir && $input_waktu_akhir > $item_waktu_awal) {
+                $isClash = true;
+                break;
             }
         }
 
         return $isClash;
     }
 
-    public function getMeeting(){
-        $this->define_config();
+    public function getMeeting(Zoom_Service $zoom_service){
         if ($this->zoom_meeting_id){
-            return $this->zoom_getMeeting($this->zoom_akun, $this->zoom_meeting_id);
+            return $zoom_service->zoom_getMeeting($this->zoom_akun, $this->zoom_meeting_id);
         }else{
             return [
                 'status' => false,

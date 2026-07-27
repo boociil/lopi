@@ -22,6 +22,8 @@ use App\Model\Umum\Peran;
 use App\Model\Umum\Satuan_Kerja_Tahun;
 use App\Model\Umum\Tim;
 use App\Model\Umum\User;
+use App\Services\Zoom_Service;
+use App\Services\Google_Event_Local_Service;
 use Exception;
 use Inertia\Inertia;
 
@@ -30,7 +32,7 @@ class Jadwal_Controller extends Controller
 
     public $ruang = ['aula', 'pokja', 'pst'];
 
-    public function __construct()
+    public function __construct(protected Zoom_Service $zoom, protected Google_Event_Local_Service $event_service)
     {
     }
 
@@ -282,6 +284,7 @@ class Jadwal_Controller extends Controller
                         $request->input('waktu_akhir'),
                         $have_zoom_peran,
                         in_array($request->input('zoom_akun'), ['statsulbar', 'sp2020']) ? $request->input('zoom_akun') : null,
+                        $this->zoom
                     );
 
                     $jadwal->zoom_pinjam_id = $pinjam_zoom->id;
@@ -315,7 +318,7 @@ class Jadwal_Controller extends Controller
             }
 
 
-            Calendar_Google_Event::saveEventPeserta(
+            $this->event_service->saveEventPeserta(
                 $jadwal,
                 $peserta_arrr
             );
@@ -380,7 +383,7 @@ class Jadwal_Controller extends Controller
         {
              if($request->input('tipe') == 'sekali'){
                 if(Pinjam_Zoom::staticCheckClash($request->input('zoom_akun'), $request->input('tanggal'), $request->input('tanggal')
-                    , $request->input('waktu_awal').':00', $request->input('waktu_akhir').':00'))
+                    , $request->input('waktu_awal').':00', $request->input('waktu_akhir').':00', $jadwal->zoom_pinjam_id))
                 {
                     throw ValidationException::withMessages([
                         'error_clash_zoom' => 'Sudah terdapat peminjaman zoom di tanggal dan waktu tersebut',
@@ -388,7 +391,7 @@ class Jadwal_Controller extends Controller
                 }
              }else{
                 if(Pinjam_Zoom::staticCheckClash($request->input('zoom_akun'), $request->input('tanggal_awal'), $request->input('tanggal_akhir')
-                    , $request->input('waktu_awal').':00', $request->input('waktu_akhir').':00'))
+                    , $request->input('waktu_awal').':00', $request->input('waktu_akhir').':00', $jadwal->zoom_pinjam_id))
                 {
                     throw ValidationException::withMessages([
                         'error_clash_zoom' => 'Sudah terdapat peminjaman zoom di tanggal dan waktu tersebut',
@@ -408,7 +411,7 @@ class Jadwal_Controller extends Controller
         {
              if($request->input('tipe') == 'sekali'){
                 if($this->checkRuangClash($request->input('ruang'), $request->input('tanggal'), $request->input('tanggal')
-                    , $request->input('waktu_awal').':00', $request->input('waktu_akhir').':00'))
+                    , $request->input('waktu_awal').':00', $request->input('waktu_akhir').':00', $jadwal->id))
                 {
                     throw ValidationException::withMessages([
                         'error_clash_ruang' => 'Sudah terdapat peminjaman ruang di tanggal dan waktu tersebut',
@@ -416,7 +419,7 @@ class Jadwal_Controller extends Controller
                 }
              }else{
                 if($this->checkRuangClash($request->input('ruang'), $request->input('tanggal_awal'), $request->input('tanggal_akhir')
-                    , $request->input('waktu_awal').':00', $request->input('waktu_akhir').':00'))
+                    , $request->input('waktu_awal').':00', $request->input('waktu_akhir').':00', $jadwal->id))
                 {
                     throw ValidationException::withMessages([
                         'error_clash_ruang' => 'Sudah terdapat peminjaman ruang di tanggal dan waktu tersebut',
@@ -496,6 +499,7 @@ class Jadwal_Controller extends Controller
                             $request->input('waktu_akhir'),
                             $have_zoom_peran,
                             in_array($request->input('zoom_akun'), ['statsulbar', 'sp2020']) ? $request->input('zoom_akun') : null,
+                            $this->zoom
                         );
 
                         $jadwal->zoom_pinjam_id = $pinjam_zoom->id;
@@ -506,13 +510,13 @@ class Jadwal_Controller extends Controller
             }else{
                 if(in_array($request->input('zoom_status'), ['tidak']) ){
                     $pinjam_zoom = $jadwal->zoom_pinjam;
-                    $pinjam_zoom->helper_hapus($have_zoom_peran);
+                    $pinjam_zoom->helper_hapus($have_zoom_peran, $this->zoom);
 
                     $jadwal->zoom_pinjam_id = null;
                     $jadwal->zoom_status = $request->input('zoom_status');
                 }else if(in_array($request->input('zoom_status'), ['langsung']) ){
                     $pinjam_zoom = $jadwal->zoom_pinjam;
-                    $pinjam_zoom->helper_hapus($have_zoom_peran);
+                    $pinjam_zoom->helper_hapus($have_zoom_peran, $this->zoom);
 
                     $jadwal->zoom_pinjam_id = null;
                     $jadwal->zoom_status = $request->input('zoom_status');
@@ -530,6 +534,7 @@ class Jadwal_Controller extends Controller
                         $request->input('waktu_akhir'),
                         $have_zoom_peran,
                         in_array($request->input('zoom_akun'), ['statsulbar', 'sp2020']) ? $request->input('zoom_akun') : null,
+                        $this->zoom
                     );
 
                     $jadwal->zoom_pinjam_id = $pinjam_zoom->id;
@@ -573,7 +578,7 @@ class Jadwal_Controller extends Controller
             }
 
 
-            Calendar_Google_Event::saveEventPeserta(
+            $this->event_service->saveEventPeserta(
                 $jadwal,
                 $peserta_arrr
             );
@@ -612,17 +617,17 @@ class Jadwal_Controller extends Controller
         {
             if($jadwal->zoom_pinjam_id){
                 $zoom_pinjam = $jadwal->zoom_pinjam;
-                $zoom_pinjam->helper_hapus($have_zoom_peran);
+                $zoom_pinjam->helper_hapus($have_zoom_peran, $this->zoom);
             }
 
             Jadwal_Peserta::where('jadwal_id', $jadwal->id)->delete();
             $jadwal->delete();
-            DB::commit();
-
-            Calendar_Google_Event::saveEventPeserta(
+            $this->event_service->saveEventPeserta(
                 $jadwal,
                 []
             );
+
+            DB::commit();
             return [
                 "_status" => 'Berhasil menghapus peminjaman zoom!'
             ];
@@ -657,7 +662,7 @@ class Jadwal_Controller extends Controller
         {
              if($request->input('tipe') == 'sekali'){
                 if($this->checkRuangClash($jadwal->ruang, $jadwal->tanggal, $jadwal->tanggal
-                    , $jadwal->waktu_awal, $jadwal->waktu_akhir))
+                    , $jadwal->waktu_awal, $jadwal->waktu_akhir, $jadwal->id))
                 {
                     throw ValidationException::withMessages([
                         'error_clash_ruang' => 'Sudah terdapat peminjaman zoom di tanggal dan waktu tersebut',
@@ -665,7 +670,7 @@ class Jadwal_Controller extends Controller
                 }
              }else{
                 if($this->checkRuangClash($jadwal->ruang, $jadwal->berulang_tanggal_awal, $jadwal->berulang_tanggal_akhir
-                    , $jadwal->waktu_awal, $jadwal->waktu_akhir))
+                    , $jadwal->waktu_awal, $jadwal->waktu_akhir, $jadwal->id))
                 {
                     throw ValidationException::withMessages([
                        'error_clash_ruang' => 'Sudah terdapat peminjaman zoom di tanggal dan waktu tersebut',
@@ -734,7 +739,7 @@ class Jadwal_Controller extends Controller
             if($have_zoom_peran){
                 if($jadwal->zoom_pinjam_id){
                     $pinjam_zoom = $jadwal->zoom_pinjam;
-                    $pinjam_zoom->helper_approval($request->input('zoom_status'), $request->input('zoom_akun'));
+                    $pinjam_zoom->helper_approval($request->input('zoom_status'), $request->input('zoom_akun'), $this->zoom);
 
                     $jadwal->zoom_pinjam_id = $pinjam_zoom->id;
                     $jadwal->zoom_status = $pinjam_zoom->status;
@@ -762,9 +767,12 @@ class Jadwal_Controller extends Controller
         }
     }
 
-    public function checkRuangClash($ruang, $tanggal_awal, $tanggal_akhir, $waktu_awal, $waktu_akhir){
-       $jadwal_daftar = Jadwal::where('ruang', $ruang)
+    public function checkRuangClash($ruang, $tanggal_awal, $tanggal_akhir, $waktu_awal, $waktu_akhir, $ignore_id = null){
+        $jadwal_daftar = Jadwal::where('ruang', $ruang)
             ->where('ruang_status', 'disetujui')
+            ->when($ignore_id, function($query) use ($ignore_id) {
+                return $query->where('id', '!=', $ignore_id);
+            })
             ->where(function ($query) use($tanggal_awal, $tanggal_akhir) {
                 $query->orWhere(function (Builder $query) use ($tanggal_awal, $tanggal_akhir){
                             $query->where('tipe', 'sekali')
@@ -778,24 +786,18 @@ class Jadwal_Controller extends Controller
             })
             ->get();
 
-        $awalCarrbon = Carbon::createFromFormat('Y-m-d H:i:s',  $tanggal_awal . ' ' . $waktu_awal);
-        $akhirCarrbon = Carbon::createFromFormat('Y-m-d H:i:s',  $tanggal_akhir . ' ' . $waktu_akhir);
+        $input_waktu_awal = Carbon::createFromFormat('H:i:s', strlen($waktu_awal) == 5 ? $waktu_awal.':00' : $waktu_awal);
+        $input_waktu_akhir = Carbon::createFromFormat('H:i:s', strlen($waktu_akhir) == 5 ? $waktu_akhir.':00' : $waktu_akhir);
 
         $isClash = false;
 
         foreach($jadwal_daftar as $item){
-            if($item->tipe == 'sekali'){
-                if( ( $awalCarrbon < Carbon::createFromFormat('Y-m-d H:i:s', $item->tanggal. ' ' .$item->waktu_akhir)
-                    && $akhirCarrbon > Carbon::createFromFormat('Y-m-d H:i:s', $item->tanggal. ' ' .$item->waktu_awal)))
-                {
-                    $isClash=true;
-                }
-            }else if($item->tipe == 'berulang'){
-                if( ( $awalCarrbon < Carbon::createFromFormat('Y-m-d H:i:s', $item->tanggal_akhir. ' ' .$item->waktu_akhir)
-                    && $akhirCarrbon > Carbon::createFromFormat('Y-m-d H:i:s', $item->tanggal_awal. ' ' .$item->waktu_awal)))
-                {
-                    $isClash=true;
-                }
+            $item_waktu_awal = Carbon::createFromFormat('H:i:s', $item->waktu_awal);
+            $item_waktu_akhir = Carbon::createFromFormat('H:i:s', $item->waktu_akhir);
+
+            if ($input_waktu_awal < $item_waktu_akhir && $input_waktu_akhir > $item_waktu_awal) {
+                $isClash = true;
+                break;
             }
         }
 

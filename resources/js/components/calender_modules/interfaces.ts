@@ -67,7 +67,7 @@ export function produceCalenderUser(user_: User[], satuan_kerja_tahun_: Satuan_K
             name: element.nama,
             type: "user",
             ori: element,
-            picturePath: '/lopi/public/profile'+element.username
+            picturePath: '/lopi/public/img/logo.png'
         })
     });
 

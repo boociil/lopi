@@ -34,7 +34,7 @@ Route::group(
         Route::post('/{pinjamZoom}/ubah', [Pinjam_Zoom_Controller::class, 'ubah'])->name('pinjam-zoom-ubah');
         Route::post('/{pinjamZoom}/hapus', [Pinjam_Zoom_Controller::class, 'hapus'])->name('pinjam-zoom-hapus');
         Route::post('/{pinjamZoom}/approval', [Pinjam_Zoom_Controller::class, 'approval'])->name('pinjam-zoom-approval');
-        Route::post('/get_mmeting', [Pinjam_Zoom_Controller::class, 'get_mmeting'])->name('pinjam-zoom-get-mmeting');
+        Route::post('/get_meeting', [Pinjam_Zoom_Controller::class, 'get_meeting'])->name('pinjam-zoom-get-meeting');
     });
     Route::group(
     [
