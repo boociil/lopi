@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ $page->judul }}</title>
     <meta name="description" content="{{ $page->deskripsi }}">
+    <link id="favicon" rel="icon" href="{{ asset('public/img/favicon.ico') }}" type="image/x-icon" />
 
     <style>
         * { box-sizing: border-box; }
@@ -163,8 +164,9 @@
             color: rgba(255,255,255,.72);
         }
     </style>
+    @vite(['resources/css/app.css'])
 </head>
-<body>
+<body class="font-mono antialiased">
     @php
         /*
          * Nilai database disamakan dengan ICON_OPTIONS di onetap.tsx.
