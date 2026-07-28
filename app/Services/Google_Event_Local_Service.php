@@ -56,7 +56,7 @@ class Google_Event_Local_Service
         $calendar_google_event = Calendar_Google_Event::where('parent_id', $jadwal->id)->get();
 
         $this->client->setUseBatch(true);
-        $batch = new Batch($this->client);
+        $batch = $this->service->createBatch();;
 
         $i = 0;
         foreach ($calendar_google_event as $item) {
@@ -96,13 +96,6 @@ class Google_Event_Local_Service
         $this->client->setUseBatch(false);
 
         foreach ($results as $responseId => $response) {
-
-        Log::error([
-            'responseId' => $responseId,
-            'code' => $response->getCode(),
-            'message' => $response->getMessage(),
-            'errors' => $response->getErrors(),
-        ]);
             $requestId = str_replace('response-', '', $responseId);
 
             if (!array_key_exists($requestId, $insert_keys)) {
@@ -144,7 +137,7 @@ class Google_Event_Local_Service
 
         $peserta = "";
         if (count($peserta_arr_req) > 0) {
-            $peserta = "\nDaftar Peserta : \n";
+            $peserta = "Daftar Peserta : \n";
             foreach ($peserta_arr_req as $item_peserta) {
                 $peserta .= "- " . $item_peserta['peserta_nama'] . "\n";
             }
@@ -156,31 +149,17 @@ class Google_Event_Local_Service
         $start = Carbon::parse("{$tanggal_mulai} {$jadwal->waktu_awal}", 'Asia/Makassar');
         $end = Carbon::parse("{$tanggal_akhir} {$jadwal->waktu_akhir}", 'Asia/Makassar');
 
-        Log::alert([
-            'summary' => $jadwal->kegiatan,
-            'location' => $jadwal->ruang ?: '',
-            'description' => $description. $zoom_url . $peserta,
-            'start' => [
-                'dateTime' => $start->toRfc3339String(),
-                'timeZone' => 'Asia/Makassar',
-            ],
-            'end' => [
-                'dateTime' => $end->toRfc3339String(),
-                'timeZone' => 'Asia/Makassar',
-            ],
-        ]);
-
         $event = new Event([
             'summary' => $jadwal->kegiatan,
             'location' => $jadwal->ruang ?: '',
             'description' => $description. $zoom_url . $peserta,
             'start' => [
                 'dateTime' => $start->toRfc3339String(),
-                'timeZone' => 'Asia/Makassar',
+                'timeZone' => 'UTC',
             ],
             'end' => [
                 'dateTime' => $end->toRfc3339String(),
-                'timeZone' => 'Asia/Makassar',
+                'timeZone' => 'UTC',
             ],
         ]);
 

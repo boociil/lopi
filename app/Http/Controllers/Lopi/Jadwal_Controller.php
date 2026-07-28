@@ -35,7 +35,7 @@ class Jadwal_Controller extends Controller
     {
     }
 
-     public function index(Request $request)
+    public function index(Request $request)
     {
         $validated = $request->validate([
             'selectedDate'  => 'date',
@@ -102,16 +102,17 @@ class Jadwal_Controller extends Controller
             ->where('peran', 'ruang')
             ->first();
 
-        $jadwal_daftar = Jadwal::with(['peserta', 'zoom_pinjam'])-> orWhere(function (Builder $query) use ($tanggal_awal, $tanggal_akhir){
-                    $query->where('tipe', 'sekali')
-                        ->whereBetween('tanggal', [$tanggal_awal->format('Y-m-d'), $tanggal_akhir->format('Y-m-d')]);
-                })
-                ->orWhere(function (Builder $query) use ($tanggal_awal, $tanggal_akhir) {
-                    $query->where('tipe', 'berulang')
-                        ->where('berulang_tanggal_awal', '<=', $tanggal_akhir)
-                        ->where('berulang_tanggal_akhir', '>=', $tanggal_awal);
-                })
-                ->get();
+        $jadwal_daftar = Jadwal::with(['peserta', 'zoom_pinjam'])
+            ->where(function (Builder $query) use ($tanggal_awal, $tanggal_akhir){
+                $query->where('tipe', 'sekali')
+                    ->whereBetween('tanggal', [$tanggal_awal->format('Y-m-d'), $tanggal_akhir->format('Y-m-d')]);
+            })
+            ->orWhere(function (Builder $query) use ($tanggal_awal, $tanggal_akhir) {
+                $query->where('tipe', 'berulang')
+                    ->where('berulang_tanggal_awal', '<=', $tanggal_akhir)
+                    ->where('berulang_tanggal_akhir', '>=', $tanggal_awal);
+            })
+            ->get();
 
         foreach($jadwal_daftar as $item){
             if($item->zoom_pinjam){
@@ -292,11 +293,12 @@ class Jadwal_Controller extends Controller
                 }
             }
 
-            if($jadwal->ruang_status == 'disetujui' && in_array($jadwal->zoom_status, ['langsung', 'disetujui'])){
+            $ruang_ok = in_array($jadwal->ruang_status, ['tidak', 'disetujui']);
+            $zoom_ok = in_array($jadwal->zoom_status, ['tidak', 'langsung', 'disetujui']);
+
+            if ($ruang_ok && $zoom_ok && !($jadwal->ruang_status == 'tidak' && $jadwal->zoom_status == 'tidak')) {
                 $jadwal->status = 'disetujui';
-            }else if($jadwal->ruang_status == 'tidak' && $jadwal->zoom_status == 'tidak'){
-                $jadwal->status = 'disetujui';
-            }else{
+            } else {
                 $jadwal->status = 'menunggu';
             }
 
@@ -316,12 +318,13 @@ class Jadwal_Controller extends Controller
                 }
             }
 
-
-            $this->event_service->saveEventPeserta(
-                $jadwal,
-                $peserta_arrr,
-                $request->input('peserta')
-            );
+            if($jadwal->status == 'disetujui'){
+                $this->event_service->saveEventPeserta(
+                    $jadwal,
+                    $peserta_arrr,
+                    $request->input('peserta')
+                );
+            }
 
             DB::commit();
             return [
@@ -543,24 +546,16 @@ class Jadwal_Controller extends Controller
                 }
             }
 
-            Jadwal_Peserta::where('jadwal_id', $jadwal->id)->delete();
-            if($request->input('peserta')){
-                foreach($request->input('peserta') as $item){
-                    $peserta = new Jadwal_Peserta();
-                    $peserta->id = Str::uuid();
-                    $peserta->peserta_type = $item[0];
-                    $peserta->peserta_id = $item[1];
-                    $peserta->save();
-                }
-            }
 
-            if($jadwal->ruang_status == 'disetujui' && in_array($jadwal->zoom_status, ['langsung', 'disetujui'])){
+            $ruang_ok = in_array($jadwal->ruang_status, ['tidak', 'disetujui']);
+            $zoom_ok = in_array($jadwal->zoom_status, ['tidak', 'langsung', 'disetujui']);
+
+            if ($ruang_ok && $zoom_ok && !($jadwal->ruang_status == 'tidak' && $jadwal->zoom_status == 'tidak')) {
                 $jadwal->status = 'disetujui';
-            }else if($jadwal->ruang_status == 'tidak' && $jadwal->zoom_status == 'tidak'){
-                $jadwal->status = 'disetujui';
-            }else{
+            } else {
                 $jadwal->status = 'menunggu';
             }
+
             $jadwal->save();
 
             Jadwal_Peserta::where('jadwal_id', $jadwal->id)->delete();
@@ -570,19 +565,21 @@ class Jadwal_Controller extends Controller
                     $peserta = new Jadwal_Peserta();
                     $peserta->id = Str::uuid();
                     $peserta->jadwal_id = $jadwal->id;
-                    $peserta->peserta_type = $item[0];
-                    $peserta->peserta_id = $item[1];
+                    $peserta->peserta_type = $item['peserta_type'];
+                    $peserta->peserta_id = $item['peserta_id'];
                     $peserta->save();
                     array_push( $peserta_arrr, $peserta);
                 }
             }
 
 
-            $this->event_service->saveEventPeserta(
-                $jadwal,
-                $peserta_arrr,
-                $request->input('peserta')
-            );
+            if($jadwal->status == 'disetujui'){
+                $this->event_service->saveEventPeserta(
+                    $jadwal,
+                    $peserta_arrr,
+                    $request->input('peserta')
+                );
+            }
             DB::commit();
             return [
                 "_status" => 'Berhasil mengubah peminjaman zoom!',
@@ -662,7 +659,7 @@ class Jadwal_Controller extends Controller
             && $request->input('ruang_status') != 'tidak'
             && in_array($request->input('ruang'), $this->ruang))
         {
-             if($request->input('tipe') == 'sekali'){
+             if($jadwal->tipe == 'sekali'){
                 if($this->checkRuangClash($jadwal->ruang, $jadwal->tanggal, $jadwal->tanggal
                     , $jadwal->waktu_awal, $jadwal->waktu_akhir, $jadwal->id))
                 {
@@ -685,16 +682,47 @@ class Jadwal_Controller extends Controller
         try
         {
             if($have_ruang_peran && in_array($request->ruang_status, ['disetujui', 'ditolak'])){
-                $jadwal->ruang_status = $request->ruang_status;
-                $jadwal->ruang_confirm_username = Auth::user()->username;
+                if ($request->ruang_status == 'disetujui' && in_array($request->input('ruang'), $this->ruang)) {
+                    $jadwal->ruang = $request->input('ruang');
+                    $jadwal->ruang_status = $request->ruang_status;
+                    $jadwal->ruang_confirm_username = Auth::user()->username;
+                }
             }
 
-            if($jadwal->ruang_status == 'disetujui' && in_array($jadwal->zoom_status, ['langsung', 'disetujui'])){
+            $ruang_ok = in_array($jadwal->ruang_status, ['tidak', 'disetujui']);
+            $zoom_ok = in_array($jadwal->zoom_status, ['tidak', 'langsung', 'disetujui']);
+
+            if ($ruang_ok && $zoom_ok && !($jadwal->ruang_status == 'tidak' && $jadwal->zoom_status == 'tidak')) {
                 $jadwal->status = 'disetujui';
-            }else{
+            } else {
                 $jadwal->status = 'menunggu';
             }
+
             $jadwal->save();
+
+            if($jadwal->status == 'disetujui'){
+                $peserta_list = Jadwal_Peserta::with(['satuan_kerja_tahun', 'tim', 'user'])->where('jadwal_id', $jadwal->id)->get();
+                $peserta_arrr = [];
+                $pesertaWithName = [];
+
+                foreach($peserta_list as $item){
+                    array_push($peserta_arrr, $item);
+                    if($item->peserta_type == 'satuan_kerja_tahun' && $item->satuan_kerja_tahun){
+                        array_push($pesertaWithName, ['peserta_id' => $item->peserta_id, 'peserta_nama' => $item->satuan_kerja_tahun->nama]);
+                    }else if($item->peserta_type == 'tim' && $item->tim){
+                        array_push($pesertaWithName, ['peserta_id' => $item->peserta_id, 'peserta_nama' => $item->tim->nama]);
+                    }else if($item->peserta_type == 'user' && $item->user){
+                        array_push($pesertaWithName, ['peserta_id' => $item->peserta_id, 'peserta_nama' => $item->user->nama]);
+                    }
+                }
+
+                $this->event_service->saveEventPeserta(
+                    $jadwal,
+                    $peserta_arrr,
+                    $pesertaWithName
+                );
+            }
+
             DB::commit();
             return [
                 "_status" => 'Berhasil approval peminjaman zoom!',
@@ -749,12 +777,40 @@ class Jadwal_Controller extends Controller
                 }
             }
 
-            if($jadwal->ruang_status == 'disetujui' && in_array($jadwal->zoom_status, ['langsung', 'disetujui'])){
+            $ruang_ok = in_array($jadwal->ruang_status, ['tidak', 'disetujui']);
+            $zoom_ok = in_array($jadwal->zoom_status, ['tidak', 'langsung', 'disetujui']);
+
+            if ($ruang_ok && $zoom_ok && !($jadwal->ruang_status == 'tidak' && $jadwal->zoom_status == 'tidak')) {
                 $jadwal->status = 'disetujui';
-            }else{
+            } else {
                 $jadwal->status = 'menunggu';
             }
+
             $jadwal->save();
+
+            if($jadwal->status == 'disetujui'){
+                $peserta_list = Jadwal_Peserta::with(['satuan_kerja_tahun', 'tim', 'user'])->where('jadwal_id', $jadwal->id)->get();
+                $peserta_arrr = [];
+                $pesertaWithName = [];
+
+                foreach($peserta_list as $item){
+                    array_push($peserta_arrr, $item);
+                    if($item->peserta_type == 'satuan_kerja_tahun' && $item->satuan_kerja_tahun){
+                        array_push($pesertaWithName, ['peserta_id' => $item->peserta_id, 'peserta_nama' => $item->satuan_kerja_tahun->nama]);
+                    }else if($item->peserta_type == 'tim' && $item->tim){
+                        array_push($pesertaWithName, ['peserta_id' => $item->peserta_id, 'peserta_nama' => $item->tim->nama]);
+                    }else if($item->peserta_type == 'user' && $item->user){
+                        array_push($pesertaWithName, ['peserta_id' => $item->peserta_id, 'peserta_nama' => $item->user->nama]);
+                    }
+                }
+
+                $this->event_service->saveEventPeserta(
+                    $jadwal,
+                    $peserta_arrr,
+                    $pesertaWithName
+                );
+            }
+
             DB::commit();
             return [
                 "_status" => 'Berhasil approval peminjaman zoom!',
