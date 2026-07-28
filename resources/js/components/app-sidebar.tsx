@@ -4,7 +4,7 @@ import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import type { NavGeneral, SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { LayoutGrid, CalendarDays, LockKeyholeOpen, SmilePlus, Hospital, UserRoundCog, CalendarCheck, Wallet, PackageSearch, GanttChart, Book, BookOpen } from 'lucide-react';
+import { LayoutGrid, CalendarDays, LockKeyholeOpen, SmilePlus, Hospital, UserRoundCog, CalendarCheck, Wallet, PackageSearch, GanttChart, Book, BookOpen, Link2 } from 'lucide-react';
 import AppLogo from './app-logo';
 import { useEffect, useState } from 'react';
 import { useApi } from '@/lib/API/useApi';
@@ -114,6 +114,12 @@ export function AppSidebar() {
             //     href: '/lopi/timeline',
             //     icon: GanttChart,
             // },
+            {
+                type: 'item',
+                title: 'OneTap',
+                href: '/lopi/onetap',
+                icon: Link2,
+            },
             {
                 type: 'item',
                 title: 'Cek Cuti',

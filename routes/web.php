@@ -77,6 +77,7 @@ Route::group(
 });
 
 require __DIR__.'/modul/admin.php';
+require __DIR__.'/modul/one_tap.php';
 // require __DIR__.'/modul/rumah_link.php';
 require __DIR__.'/modul/appreciate.php';
 require __DIR__.'/modul/cek_cuti.php';

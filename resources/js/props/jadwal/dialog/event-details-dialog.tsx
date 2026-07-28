@@ -669,11 +669,11 @@ export function EventDetailsDialog({
                                         key={idx}
                                         className="flex items-center gap-2 p-2 bg-white border border-slate-100 rounded-2xl hover:border-blue-200 transition-all group"
                                     >
-                                        <div className="w-8 h-8 rounded-xl bg-slate-100 flex items-center justify-center text-slate-500 font-bold text-sm group-hover:bg-blue-500 group-hover:text-white transition-all">
+                                        <div className="w-8 h-8 rounded-xl bg-slate-100 flex items-center justify-center text-slate-500 font-bold text-sm ">
                                             {p ? p.id.charAt(0) : "?"}
                                         </div>
                                         <span className="text-sm  text-slate-700">
-                                            {userDict.get(p.id)?.name}
+                                            {userDict.get(p.peserta_type+'-+-'+p.peserta_id)?.name}
                                         </span>
                                     </div>
                                 ))}
