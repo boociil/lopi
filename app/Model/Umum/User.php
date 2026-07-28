@@ -258,7 +258,7 @@ class User extends Authenticatable
         $data = self::all();
         $return_data = [];
         foreach($data as $item){
-            $return_data[$item->username] = $$item;
+            $return_data[$item->username] = $item;
         }
         return $return_data;
     }

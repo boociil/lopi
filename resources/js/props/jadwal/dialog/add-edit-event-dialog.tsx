@@ -56,8 +56,7 @@ import {
 } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
-import { Popover, PopoverTrigger } from "@/components/ui/popover";
-import { PopoverContent } from "@radix-ui/react-popover";
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import {
     Command,
     CommandEmpty,
@@ -239,7 +238,14 @@ export function AddEditEventDialog({
 
             setData("peserta", []);
             (event as JadwalIEvent).jadwal_ori.peserta.forEach(element => {
-                setData("peserta", [...data.peserta,element.id]);
+                setData("peserta", [...data.peserta,
+                    {
+                        id: element.id,
+                        peserta_type: element.peserta_type,
+                        peserta_id: element.peserta_id,
+                        peserta_nama: userDict.has(element.id) ? userDict.get(element.id)!.name : element.peserta_id
+                    }
+                ]);
             });
 
             if ((event as JadwalIEvent).jadwal_ori) {
@@ -321,7 +327,7 @@ export function AddEditEventDialog({
     function deleteUser(id: string) {
         setData(
             "peserta",
-            data.peserta.filter((item) => item != id),
+            data.peserta.filter((item) => item.id != id),
         );
     }
 
@@ -741,7 +747,6 @@ export function AddEditEventDialog({
                                             <ChevronsUpDown className="opacity-50" />
                                         </Button>
                                     </PopoverTrigger>
-                                    {/* ✅ PERBAIKAN: Mengganti w-full menjadi ukuran trigger popover dan menambah z-[100] untuk mencegah isu layout terpotong/hilang */}
                                     <PopoverContent className="p-0 w-[var(--radix-popover-trigger-width)] z-[100] shadow-2xl">
                                         <Command>
                                             <CommandInput
@@ -761,9 +766,12 @@ export function AddEditEventDialog({
                                                             onSelect={() => {
                                                                 // ✅ PERBAIKAN 2: Akses langsung item.id dari scope map,
                                                                 // tidak perlu users.find() lagi. Ini jauh lebih aman dan efisien.
-                                                                if (!data.peserta.includes(item.id)) {
-                                                                    setData("peserta", [...data.peserta, item.id]);
+                                                                let found = data.peserta.find(item_ => item.id == item_.id)
+                                                                if(!found){
+
+                                                                    setData("peserta", [...data.peserta, {id: item.id, peserta_type: item.type, peserta_id: item.id_ori, peserta_nama: item.name}])
                                                                 }
+
                                                                 setOpenPengguna(false);
                                                             }}
                                                         >
@@ -791,16 +799,16 @@ export function AddEditEventDialog({
                                 <tbody className="divide-y divide-slate-100">
                                     {data.peserta.map((item, index) => (
                                         // ✅ PERBAIKAN: Menambahkan 'key' prop untuk table row
-                                        <tr key={item}>
+                                        <tr key={item.id}>
                                             <td className="px-4 py-3 font-semibold text-slate-700">
-                                                {userDict.has(item)
-                                                    ? userDict.get(item)?.name
+                                                {userDict.has(item.id)
+                                                    ? userDict.get(item.id)?.name
                                                     : "-"}
                                             </td>
                                             <td className="px-4 py-3 text-center">
                                                 <Trash2
                                                     onClick={(e) =>
-                                                        deleteUser(item)
+                                                        deleteUser(item.id)
                                                     }
                                                     size={16}
                                                     className="text-red-400 cursor-pointer mx-auto"

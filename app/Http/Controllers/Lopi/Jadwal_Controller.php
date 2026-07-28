@@ -309,8 +309,8 @@ class Jadwal_Controller extends Controller
                     $peserta = new Jadwal_Peserta();
                     $peserta->id = Str::uuid();
                     $peserta->jadwal_id = $jadwal->id;
-                    $peserta->peserta_type = $item[0];
-                    $peserta->peserta_id = $item[1];
+                    $peserta->peserta_type = $item['peserta_type'];
+                    $peserta->peserta_id = $item['peserta_id'];
                     $peserta->save();
                     array_push( $peserta_arrr, $peserta);
                 }
@@ -319,7 +319,8 @@ class Jadwal_Controller extends Controller
 
             $this->event_service->saveEventPeserta(
                 $jadwal,
-                $peserta_arrr
+                $peserta_arrr,
+                $request->input('peserta')
             );
 
             DB::commit();
@@ -579,7 +580,8 @@ class Jadwal_Controller extends Controller
 
             $this->event_service->saveEventPeserta(
                 $jadwal,
-                $peserta_arrr
+                $peserta_arrr,
+                $request->input('peserta')
             );
             DB::commit();
             return [
@@ -623,6 +625,7 @@ class Jadwal_Controller extends Controller
             $jadwal->delete();
             $this->event_service->saveEventPeserta(
                 $jadwal,
+                [],
                 []
             );
 

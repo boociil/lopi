@@ -4,7 +4,7 @@ import { DndProvider } from "@/components/calender_modules/contexts/dnd-context"
 import { CalendarHeader } from "@/components/calender_modules/header/calendar-header";
 import { pairIEventDenganUser, CutiIEvent, produceCutiIEvent, cuti } from "./types";
 import { type User } from "@/types";
-import { CalenderUser, produceCalenderUser, SettingCalender, type IEvent, type IUser } from "@/components/calender_modules/interfaces";
+import { produceCalenderUser, SettingCalender, type IEvent, type IUser } from "@/components/calender_modules/interfaces";
 import { AddEditEventDialog } from "./dialog/add-edit-event-dialog";
 import DeleteEventDialog from "./dialog/delete-event-dialog";
 import { DndConfirmationDialog } from "./dialog/dnd-confirmation-dialog";
@@ -40,7 +40,7 @@ export function CutiCalender({
     }
 
 
-    const _user: IUser[] = produceCalenderUser(user);
+    const _user: IUser[] = produceCalenderUser(user, [], []);
     const [_allEvents, _setAllEvents] = useState<CutiIEvent[]>([])
 
     useEffect(() => {
@@ -51,9 +51,9 @@ export function CutiCalender({
             axiosClient.post(route("cek-cuti-index"))
                 .then(function (response: any) {
                     try {
-                        const _allEvents_: CutiIEvent[] = produceCutiIEvent(response.data.cuti_daftar, _user as CalenderUser[]);
+                        const _allEvents_: CutiIEvent[] = produceCutiIEvent(response.data.cuti_daftar, _user);
 
-                        pairIEventDenganUser(_allEvents as CutiIEvent[], _user as CalenderUser[])
+                        pairIEventDenganUser(_allEvents as CutiIEvent[], _user)
 
                         _setAllEvents(_allEvents_)
                         progress.finish()

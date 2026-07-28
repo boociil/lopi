@@ -6,14 +6,12 @@ use App\Model\Lopi\Jadwal;
 use App\Model\Lopi\Sync_Google\Calendar_Google_Event;
 use App\Model\Lopi\Sync_Google\Calendar_User;
 use App\Model\Umum\Peran;
-use App\Model\Umum\Satuan_Kerja_Tahun;
-use App\Model\Umum\Tim;
-use App\Model\Umum\User;
 use Carbon\Carbon;
 use Google\Client;
 use Google\Service\Calendar;
 use Google\Service\Calendar\Event;
 use Google\Http\Batch;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class Google_Event_Local_Service
@@ -42,7 +40,7 @@ class Google_Event_Local_Service
         $eventModel->delete();
     }
 
-   public function saveEventPeserta(Jadwal $jadwal, $peserta_arr)
+   public function saveEventPeserta(Jadwal $jadwal, $peserta_arr, $peserta_arr_req)
     {
         $peserta_ids = collect($peserta_arr)->pluck('peserta_id')->toArray();
         $peran = Peran::whereIn('parent_id', $peserta_ids)->get();
@@ -75,17 +73,12 @@ class Google_Event_Local_Service
 
 
         if(count($peserta_arr) > 0) {
-            $user_dict = User::getDataDict();
-            $satuan_kerja_tahun_dict = Satuan_Kerja_Tahun::getDataDict();
-            $tim_dict = Tim::getDataDict();
-
-            $event_obj = $this->buildEvent($jadwal, $peserta_arr, $user_dict, $satuan_kerja_tahun_dict, $tim_dict);
-
+            $event_obj = $this->buildEvent($jadwal, $peserta_arr_req);
+            $i = 0;
             foreach ($calendar_user_add as $item) {
                 $insRequest = $this->service->events->insert(
                     $item->google_calendar_id,
-                    $event_obj,
-                    ['fields' => 'id']
+                    $event_obj
                 );
                 $batchKey = "ins_$i";
                 $batch->add($insRequest, $batchKey);
@@ -103,6 +96,13 @@ class Google_Event_Local_Service
         $this->client->setUseBatch(false);
 
         foreach ($results as $responseId => $response) {
+
+        Log::error([
+            'responseId' => $responseId,
+            'code' => $response->getCode(),
+            'message' => $response->getMessage(),
+            'errors' => $response->getErrors(),
+        ]);
             $requestId = str_replace('response-', '', $responseId);
 
             if (!array_key_exists($requestId, $insert_keys)) {
@@ -128,28 +128,25 @@ class Google_Event_Local_Service
         }
     }
 
-    private function buildEvent(Jadwal $jadwal, $peserta_arr, $user_dict, $satuan_kerja_tahun_dict, $tim_dict)
+    private function buildEvent(Jadwal $jadwal, $peserta_arr_req)
     {
         $zoom_url = '';
         if ($jadwal->zoom_langsung_join_url) {
-            $zoom_url = "\nLink Zoom : \n" . $jadwal->zoom_langsung_join_url;
+            $zoom_url = "\nLink Zoom : \n" . $jadwal->zoom_langsung_join_url. "\n";
         } else if ($jadwal->zoom_pinjam) {
-            $zoom_url = "\nLink Zoom : \n" . $jadwal->zoom_pinjam->zoom_join_url;
+            $zoom_url = "\nLink Zoom : \n" . $jadwal->zoom_pinjam->zoom_join_url. "\n";
+        }
+
+        $description = '';
+        if($jadwal->description){
+            $description = $jadwal->description. "\n";
         }
 
         $peserta = "";
-        if (count($peserta_arr) > 0) {
-            $peserta = "\n\nDaftar Peserta : \n";
-            foreach ($peserta_arr as $item_peserta) {
-                if (array_key_exists($item_peserta->peserta_id, $satuan_kerja_tahun_dict)) {
-                    $peserta .= "- " . $satuan_kerja_tahun_dict[$item_peserta->peserta_id] . "\n";
-                } else if (array_key_exists($item_peserta->peserta_id, $tim_dict)) {
-                    $peserta .= "- " . $tim_dict[$item_peserta->peserta_id] . "\n";
-                } else if (array_key_exists($item_peserta->peserta_id, $user_dict)) {
-                    $peserta .= "- " . $user_dict[$item_peserta->peserta_id] . "\n";
-                } else {
-                    $peserta .= "- \n";
-                }
+        if (count($peserta_arr_req) > 0) {
+            $peserta = "\nDaftar Peserta : \n";
+            foreach ($peserta_arr_req as $item_peserta) {
+                $peserta .= "- " . $item_peserta['peserta_nama'] . "\n";
             }
         }
 
@@ -159,10 +156,24 @@ class Google_Event_Local_Service
         $start = Carbon::parse("{$tanggal_mulai} {$jadwal->waktu_awal}", 'Asia/Makassar');
         $end = Carbon::parse("{$tanggal_akhir} {$jadwal->waktu_akhir}", 'Asia/Makassar');
 
+        Log::alert([
+            'summary' => $jadwal->kegiatan,
+            'location' => $jadwal->ruang ?: '',
+            'description' => $description. $zoom_url . $peserta,
+            'start' => [
+                'dateTime' => $start->toRfc3339String(),
+                'timeZone' => 'Asia/Makassar',
+            ],
+            'end' => [
+                'dateTime' => $end->toRfc3339String(),
+                'timeZone' => 'Asia/Makassar',
+            ],
+        ]);
+
         $event = new Event([
             'summary' => $jadwal->kegiatan,
             'location' => $jadwal->ruang ?: '',
-            'description' => $jadwal->description . "\n" . $zoom_url . $peserta,
+            'description' => $description. $zoom_url . $peserta,
             'start' => [
                 'dateTime' => $start->toRfc3339String(),
                 'timeZone' => 'Asia/Makassar',

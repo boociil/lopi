@@ -53,6 +53,14 @@ export interface jadwal {
     peserta: jadwal_peserta [],
 }
 
+export interface jadwal_peserta_req {
+    id: string;
+    peserta_type: string;
+    peserta_id: string;
+    peserta_nama: string;
+}
+
+
 export interface jadwal_req {
     id: string;
     kegiatan: string;
@@ -73,7 +81,7 @@ export interface jadwal_req {
     zoom_langsung_join_url: null | string;
     zoom_password:  null | string;
     zoom_akun: 'statsulbar' | 'sp2020' | null;
-    peserta: string [],
+    peserta: jadwal_peserta_req [],
     error_clash_zoom: string,
     error_clash_ruang: string,
 }
