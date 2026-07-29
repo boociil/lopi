@@ -22,7 +22,6 @@ class CalenderProxyImage extends Seeder
                 $q->where('parent_id', '0224eb80-e470-11f0-904b-1315527b7f2d');
             })->get();
         foreach($all_user as $user){
-            Log::info($user->nama);
             $service->create_calender($user);
         }
     }
