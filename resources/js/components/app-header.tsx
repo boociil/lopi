@@ -156,7 +156,7 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                             <DropdownMenuTrigger asChild>
                                 <Button variant="ghost" className="size-10 rounded-full p-1">
                                     <Avatar className="size-8 overflow-hidden rounded-full">
-                                        <AvatarImage src={'https://simpeg.bps.go.id/apis/pegawai/avatar/'+auth.user.nip_lama} alt={auth.user.nama} />
+                                        <AvatarImage src={'/lopi/proxy_image/'+auth.user.username} alt={auth.user.nama} />
                                         <AvatarFallback className="rounded-lg bg-neutral-200 text-black dark:bg-neutral-700 dark:text-white">
                                             {getInitials(auth.user.nama)}
                                         </AvatarFallback>

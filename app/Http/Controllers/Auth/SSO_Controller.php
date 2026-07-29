@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Request;
 use App\Model\Umum\User;
+use App\Services\Google_Event_Local_Service;
 use Exception;
 use JKD\SSO\Client\Provider\Keycloak;
 
@@ -21,7 +22,7 @@ class SSO_Controller extends Controller
 {
     private $provider;
 
-    public function __construct()
+    public function __construct(protected Google_Event_Local_Service $service)
     {
         $this->provider = new Keycloak([
             'authServerUrl'         => env('SSO_Url'),
@@ -109,18 +110,7 @@ class SSO_Controller extends Controller
                         $user->golonagan = $data_owner_arr['golongan'];
                     }
 
-                    $url = "https://simpeg.bps.go.id/apis/pegawai/avatar/" . $data_owner_arr['nip-lama'];
-                    $imageData = @file_get_contents($url);
-
-                    if ($imageData !== false) {
-                        // 1. Buat nama file yang aman (misalnya NIP + random string agar tidak bentrok)
-                        // Asumsi gambar dari BPS berupa JPG/PNG.
-                        $filename = 'avatars/' . $data_owner_arr['username'];
-                        if (Storage::disk('public')->exists($filename)) {
-                            Storage::disk('public')->delete($filename);
-                        }
-                        Storage::disk('public')->put($filename, $imageData);
-                    }
+                    $this->service->create_calender($user);
 
                     $user->save();
                     DB::commit();

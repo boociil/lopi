@@ -3,16 +3,20 @@
 namespace App\Services;
 
 use App\Model\Lopi\Jadwal;
+use App\Model\Lopi\Jadwal_Peserta;
 use App\Model\Lopi\Sync_Google\Calendar_Google_Event;
 use App\Model\Lopi\Sync_Google\Calendar_User;
 use App\Model\Umum\Peran;
+use App\Model\Umum\Satuan_Kerja_Tahun;
+use App\Model\Umum\Tim;
+use App\Model\Umum\User;
 use Carbon\Carbon;
 use Google\Client;
 use Google\Service\Calendar;
 use Google\Service\Calendar\Event;
-use Google\Http\Batch;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use Illuminate\Database\Eloquent\Builder;
 
 class Google_Event_Local_Service
 {
@@ -173,5 +177,115 @@ class Google_Event_Local_Service
         }
 
         return $event;
+    }
+
+    public function create_calender(User $user){
+        $user_calender = Calendar_User::where('username', $user->username)->first();
+
+        if(!$user_calender){
+            Log::alert($user->username);
+            $calendar = new \Google\Service\Calendar\Calendar([
+                'summary' => 'Lopi - '.$user->nama,
+                'timeZone' => 'Asia/Makassar',
+            ]);
+
+            $created = $this->service->calendars->insert($calendar);
+
+            $rule = new \Google\Service\Calendar\AclRule([
+                'scope' => [
+                    'type' => 'default',
+                ],
+                'role' => 'reader',
+            ]);
+
+            $this->service->acl->insert($created->getId(), $rule);
+
+            $calendar = new Calendar_User();
+            $calendar->id = Str::uuid();
+            $calendar->google_calendar_id = $created->getId();
+            $calendar->username = $user->username;
+            $calendar->save();
+
+            $parent_id_arr_before_pluck = Peran::where('pemilik_username', $user->username)
+                ->whereIn('tipe_peran', ['satuan_kerja_tahun', 'tim'])
+                ->where('tahun', session('tahun_active'))
+                ->select('tipe_peran', 'parent_id', 'peran')
+                ->distinct()
+                ->get();
+            $parent_id = [];
+            foreach($parent_id_arr_before_pluck as $item){
+                array_push($parent_id, $item->parent_id);
+            }
+
+            $tanggal_awal = Carbon::now()->startOfMonth();
+
+            $jadwal_daftar = Jadwal::with(['zoom_pinjam', 'peserta'])
+                ->whereHas('peserta', function (Builder $query) use ($parent_id, $user){
+                        $query->orWhereIn('peserta_id', $parent_id);
+                        $query->orWhere('peserta_id', $user->username);
+                    })
+                ->where(function (Builder $query0) use ($tanggal_awal){
+                    $query0->orWhere(function (Builder $query) use ($tanggal_awal){
+                        $query->where('tipe', 'sekali')
+                            ->where('tanggal', $tanggal_awal->format('Y-m-d'));
+                    })
+                    ->orWhere(function (Builder $query) use ($tanggal_awal) {
+                        $query->where('tipe', 'berulang')
+                            ->where('berulang_tanggal_akhir', '>=', $tanggal_awal);
+                    });
+                })
+                ->get();
+
+            $user = User::all();
+            $user_dict = [];
+            foreach($user as $item){
+                $user_dict[$item->username] = $item->nama;
+            }
+
+            $satuan_kerja_tahun = Satuan_Kerja_Tahun::where('tahun', session('tahun_active'))->get();
+            $satuan_kerja_tahun_dict = [];
+            foreach($satuan_kerja_tahun as $item){
+                $satuan_kerja_tahun_dict[$item->id] = $item->nama;
+            }
+
+            $tim = Tim::where('tahun', session('tahun_active'))->get();
+            $tim_dict = [];
+            foreach($tim as $item){
+                $tim_dict[$item->id] = $item->nama;
+            }
+
+            foreach($jadwal_daftar as $item_daftar){
+                $peserta_list = Jadwal_Peserta::with(['satuan_kerja_tahun', 'tim', 'user'])->where('jadwal_id', $item_daftar->id)->get();
+                $peserta_arrr = [];
+                $pesertaWithName = [];
+
+                foreach($peserta_list as $item){
+                    array_push($peserta_arrr, $item);
+                    if($item->peserta_type == 'satuan_kerja_tahun' && $item->satuan_kerja_tahun){
+                        array_push($pesertaWithName, ['peserta_id' => $item->peserta_id, 'peserta_nama' => $item->satuan_kerja_tahun->nama]);
+                    }else if($item->peserta_type == 'tim' && $item->tim){
+                        array_push($pesertaWithName, ['peserta_id' => $item->peserta_id, 'peserta_nama' => $item->tim->nama]);
+                    }else if($item->peserta_type == 'user' && $item->user){
+                        array_push($pesertaWithName, ['peserta_id' => $item->peserta_id, 'peserta_nama' => $item->user->nama]);
+                    }
+                }
+                $this->saveEventPeserta(
+                    $item_daftar,
+                    $peserta_arrr,
+                    $pesertaWithName
+                );
+            }
+
+            return $calendar->google_calendar_id;
+        }
+    }
+
+    public function create_calender_7600(){
+        $user_all = User::all();
+
+        foreach($user_all as $item_user){
+            $this->create_calender($item_user);
+        }
+
     }
 }

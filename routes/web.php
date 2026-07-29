@@ -5,6 +5,7 @@ use App\Http\Controllers\Auth\SSO_Controller;
 use App\Http\Controllers\Umum\Beranda_Controller;
 use App\Http\Controllers\Lopi\Notif_Controller;
 use App\Http\Controllers\Lopi\Profile_Controller;
+use App\Http\Controllers\WebController;
 
 /*
 |--------------------------------------------------------------------------
@@ -50,6 +51,7 @@ Route::get('/maintenance', function(){
 
 
 Route::get('/', [Beranda_Controller::class, 'redirect_func'])->middleware('auth');
+Route::get('/proxy_image/{username}', [Profile_Controller::class, 'proxy_image'])->middleware('auth');
 
 Route::get('tahun/{tahun}/ubah', function ($tahun) {
     $tahun_array = explode(",", env("TAHUN_ARRAY"));

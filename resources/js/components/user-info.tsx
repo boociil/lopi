@@ -8,7 +8,7 @@ export function UserInfo({ user, showEmail = false, showResp = false }: { user: 
     return (
         <>
             <Avatar className="h-8 w-8 overflow-hidden rounded-full">
-                <AvatarImage src={'https://simpeg.bps.go.id/apis/pegawai/avatar/'+user.nip_lama} alt={user.nama} />
+                <AvatarImage src={'/lopi/proxy_image/'+user.username} alt={user.nama} />
                 <AvatarFallback className="rounded-lg bg-neutral-200 text-black dark:bg-neutral-700 dark:text-white">
                     {getInitials(user.nama)}
                 </AvatarFallback>

@@ -2,22 +2,16 @@
 
 namespace App\Http\Controllers\Lopi;
 
-use App\Model\Lopi\Sync_Google\Calendar_Google_Event;
 use App\Model\Lopi\Sync_Google\Calendar_User;
 
-use Illuminate\Database\Eloquent\Builder;
 use App\Http\Controllers\Controller;
-use App\Model\Lopi\Jadwal;
 use App\Model\Lopi\User_Setting;
-use App\Model\Umum\Peran;
-use App\Model\Umum\Satuan_Kerja_Tahun;
-use App\Model\Umum\Tim;
 use App\Model\Umum\User;
 use Illuminate\Support\Facades\Auth;
-use Carbon\Carbon;
-use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
 
 class Profile_Controller extends Controller
 {
@@ -45,95 +39,54 @@ class Profile_Controller extends Controller
             ]);
     }
 
-    public function create_calender(){
-        $user_calender = Calendar_User::where('username', Auth::user()->username)->first();
 
-        if(!$user_calender){
-            $client = new \Google\Client();
-            $client->setAuthConfig('lopiservice-48fe7bfdaa73.json');
-            $client->addScope(\Google\Service\Calendar::CALENDAR);
+    public function proxy_image($username)
+    {
 
-            $service = new \Google\Service\Calendar($client);
+        // Tentukan path cache di storage lokal
+        $cachePath = 'image-cache/' . $username;
 
-            $calendar = new \Google\Service\Calendar\Calendar([
-                'summary' => 'Lopi - '.Auth::user()->nama,
-                'timeZone' => 'Asia/Makassar',
-            ]);
-
-            $created = $service->calendars->insert($calendar);
-
-            $rule = new \Google\Service\Calendar\AclRule([
-                'scope' => [
-                    'type' => 'default',
-                ],
-                'role' => 'reader',
-            ]);
-
-            $service->acl->insert($created->getId(), $rule);
-
-
-
-            $calendar = new Calendar_User();
-            $calendar->id = Str::uuid();
-            $calendar->google_calendar_id = $created->getId();
-            $calendar->username = Auth::user()->username;
-            $calendar->save();
-
-            $parent_id_arr_before_pluck = Peran::where('pemilik_username', Auth::user()->username)
-                ->whereIn('tipe_peran', ['satuan_kerja_tahun', 'tim'])
-                ->where('tahun', session('tahun_active'))
-                ->select('tipe_peran', 'parent_id', 'peran')
-                ->distinct()
-                ->get();
-            $parent_id = [];
-            foreach($parent_id_arr_before_pluck as $item){
-                array_push($parent_id, $item->parent_id);
-            }
-
-            $tanggal_awal = Carbon::now()->startOfMonth();
-
-            $jadwal_daftar = Jadwal::with(['zoom_pinjam', 'peserta'])
-                ->whereHas('peserta', function (Builder $query) use ($parent_id){
-                        $query->orWhereIn('peserta_id', $parent_id);
-                        $query->orWhere('peserta_id', Auth::user()->username);
-                    })
-                ->where(function (Builder $query0) use ($tanggal_awal){
-                    $query0->orWhere(function (Builder $query) use ($tanggal_awal){
-                        $query->where('tipe', 'sekali')
-                            ->where('tanggal', $tanggal_awal->format('Y-m-d'));
-                    })
-                    ->orWhere(function (Builder $query) use ($tanggal_awal) {
-                        $query->where('tipe', 'berulang')
-                            ->where('berulang_tanggal_akhir', '>=', $tanggal_awal);
-                    });
-                })
-                ->get();
-
-            $user = User::all();
-            $user_dict = [];
-            foreach($user as $item){
-                $user_dict[$item->username] = $item->nama;
-            }
-
-            $satuan_kerja_tahun = Satuan_Kerja_Tahun::where('tahun', session('tahun_active'))->get();
-            $satuan_kerja_tahun_dict = [];
-            foreach($satuan_kerja_tahun as $item){
-                $satuan_kerja_tahun_dict[$item->id] = $item->nama;
-            }
-
-            $tim = Tim::where('tahun', session('tahun_active'))->get();
-            $tim_dict = [];
-            foreach($tim as $item){
-                $tim_dict[$item->id] = $item->nama;
-            }
-
-            foreach($jadwal_daftar as $item_daftar){
-                Calendar_Google_Event::saveEvent($item_daftar, $service,  $calendar->google_calendar_id
-                    , Auth::user()->username, $user_dict, $satuan_kerja_tahun_dict, $tim_dict);
-            }
-
-            return $calendar->google_calendar_id;
+        // 1. Cek apakah gambar sudah ada di cache lokal
+        if (Storage::disk('public')->exists($cachePath)) {
+            return response()->file(storage_path('app/public/' . $cachePath));
         }
-        return "";
+
+        $user = User::where('username', $username)->first();
+        // 2. Jika belum ada, definisikan URL asli di luar (yang butuh VPN)
+        // Anda bisa memetakan $filename kembali ke URL asli atau menyimpannya berdasar parameter
+        $targetUrl =  "https://simpeg.bps.go.id/apis/pegawai/avatar/" . $user->nip_lama ;
+
+        try {
+            // 3. Ambil gambar dari server luar (pastikan server inside yang menjalankan ini memiliki akses VPN)
+            // Tambahkan timeout atau header tambahan jika diperlukan
+            $response = Http::timeout(15)->get($targetUrl);
+
+            if ($response->failed()) {
+                abort(404, 'Image not found on remote server.');
+            }
+
+            $imageContent = $response->body();
+
+            // 4. Deteksi MIME type secara otomatis dari binary data gambar asli
+            // (mengatasi masalah URL tanpa mime type)
+            $finfo = new \finfo(FILEINFO_MIME_TYPE);
+            $mimeType = $finfo->buffer($imageContent);
+
+            // Validasi apakah benar-benar file gambar
+            if (!str_starts_with($mimeType, 'image/')) {
+                abort(400, 'Invalid image format.');
+            }
+
+            // 5. Simpan ke storage lokal (cache server inside)
+            Storage::disk('public')->put($cachePath, $imageContent);
+
+            // 6. Return file beserta MIME type yang benar ke browser
+            return response($imageContent, 200)
+                ->header('Content-Type', $mimeType)
+                ->header('Cache-Control', 'public, max-age=31536000'); // Cache browser 1 tahun
+
+        } catch (\Exception $e) {
+            abort(500, 'Failed to fetch image: ' . $e->getMessage());
+        }
     }
 }
