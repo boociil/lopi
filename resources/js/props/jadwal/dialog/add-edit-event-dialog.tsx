@@ -801,8 +801,8 @@ export function AddEditEventDialog({
                                         // ✅ PERBAIKAN: Menambahkan 'key' prop untuk table row
                                         <tr key={item.id}>
                                             <td className="px-4 py-3 font-semibold text-slate-700">
-                                                {userDict.has(item.id)
-                                                    ? userDict.get(item.id)?.name
+                                                {userDict.has(item.peserta_type+'-+-'+item.peserta_id)
+                                                    ? userDict.get(item.peserta_type+'-+-'+item.peserta_id)?.name
                                                     : "-"}
                                             </td>
                                             <td className="px-4 py-3 text-center">

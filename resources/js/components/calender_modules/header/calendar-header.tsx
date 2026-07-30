@@ -63,7 +63,7 @@ export function CalendarHeader() {
 
                     <div className="flex flex-row items-center gap-1 md:gap-2 justify-end lg:w-96">
                         {settingCalender.show_filter_user && (
-                            <div className="grow min-w-0 max-w-full">
+                            <div className="grow min-w-0">
                                 <UserSelect />
                             </div>
                         )}
