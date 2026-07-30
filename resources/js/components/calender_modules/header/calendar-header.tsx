@@ -50,37 +50,65 @@ export function CalendarHeader() {
 			>
 				<div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-2 w-full">
                     {/* Bagian Kiri: FilterEvents & Views */}
-                    <div className="flex flex-row items-center gap-1 md:gap-2">
-                        {settingCalender.show_filter && (
-                            <div>
-                                <FilterEvents />
-                            </div>
-                        )}
-                        <div className="grow">
-                            <Views />
-                        </div>
-                    </div>
 
-                    <div className="flex flex-row items-center gap-1 md:gap-2 justify-end lg:w-96">
-                        {settingCalender.show_filter_user && (
-                            <div className="grow min-w-0">
-                                <UserSelect />
+                    {!settingCalender.show_filter_user &&  (
+                        <>
+                            <div className="flex flex-row items-center gap-1 md:gap-2 justify-end lg:w-96">
+                                 {settingCalender.show_filter && (
+                                    <div>
+                                        <FilterEvents />
+                                    </div>
+                                )}
+                                <div className="grow">
+                                    <Views />
+                                </div>
+                                {canAdd() && (
+                                    <div className="">
+                                        <AddEditEventDialog>
+                                            <Button>
+                                                <Plus className="h-4 w-4" />
+                                                <span className="hidden md:block">
+                                                    Tambah {capitalizeWords(settingCalender.name_event)}
+                                                </span>
+                                            </Button>
+                                        </AddEditEventDialog>
+                                    </div>
+                                )}
                             </div>
-                        )}
+                        </>
+                    )}
+                    {settingCalender.show_filter_user &&  (
+                        <>
+                            <div className="flex flex-row items-center gap-1 md:gap-2">
+                                {settingCalender.show_filter && (
+                                    <div>
+                                        <FilterEvents />
+                                    </div>
+                                )}
+                                <div className="grow">
+                                    <Views />
+                                </div>
+                            </div>
 
-                        {canAdd() && (
-                            <div className="">
-                                <AddEditEventDialog>
-                                    <Button>
-                                        <Plus className="h-4 w-4" />
-                                        <span className="hidden md:block">
-                                            Tambah {capitalizeWords(settingCalender.name_event)}
-                                        </span>
-                                    </Button>
-                                </AddEditEventDialog>
+                            <div className="flex flex-row items-center gap-1 md:gap-2 justify-end lg:w-96">
+                                <div className="grow min-w-0">
+                                    <UserSelect />
+                                </div>
+                                {canAdd() && (
+                                    <div className="">
+                                        <AddEditEventDialog>
+                                            <Button>
+                                                <Plus className="h-4 w-4" />
+                                                <span className="hidden md:block">
+                                                    Tambah {capitalizeWords(settingCalender.name_event)}
+                                                </span>
+                                            </Button>
+                                        </AddEditEventDialog>
+                                    </div>
+                                )}
                             </div>
-                        )}
-                    </div>
+                        </>
+                    )}
                 </div>
 				{/* <Settings /> */}
 			</motion.div>

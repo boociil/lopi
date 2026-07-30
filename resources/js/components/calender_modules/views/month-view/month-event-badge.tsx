@@ -9,7 +9,7 @@ import type { IEvent } from "@/components/calender_modules/interfaces";
 import {EventBullet} from "@/components/calender_modules/views/month-view/event-bullet";
 
 const eventBadgeVariants = cva(
-	"mx-1 flex size-auto h-6.5 select-none items-center justify-between gap-1.5 truncate whitespace-nowrap rounded-md border px-2 text-xs",
+	"mx-1 flex size-auto h-4.5 md:h-6.5 select-none items-center justify-between gap-1.5 truncate whitespace-nowrap rounded-xs md:rounded-md border px-0 md:px-2 text-xs",
 	{
 		variants: {
 			color: {
@@ -114,7 +114,7 @@ export function MonthEventBadge({
 							)}
 
 						{renderBadgeText && (
-							<p className="flex-1 truncate font-semibold">
+							<p className="flex-1 truncate font-semibold text-[10px] md:text-sm">
 								{eventCurrentDay && (
 									<span className="text-xs">
 										Day {eventCurrentDay} of {eventTotalDays} •{" "}
@@ -125,7 +125,7 @@ export function MonthEventBadge({
 						)}
 					</div>
 
-					<div className="hidden sm:block">
+					<div className="hidden xl:block">
 						{ (renderBadgeTime && settingCalender.showTime) && (
 							<span className="tracking-tight">
                                 {formatTime(new Date(event.startDate), use24HourFormat)}-{formatTime(new Date(event.endDate), use24HourFormat)}

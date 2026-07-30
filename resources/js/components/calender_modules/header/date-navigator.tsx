@@ -83,12 +83,21 @@ export function DateNavigator({ view, events }: IProps) {
 				</MotionButton>
 
 				<motion.p
-					className="text-sm text-muted-foreground"
+					className="hidden md:inline text-sm text-muted-foreground"
 					initial={{ opacity: 0 }}
 					animate={{ opacity: 1 }}
 					transition={transition}
 				>
-					{rangeText(view, selectedDate)}
+                    {rangeText(view, selectedDate)}
+				</motion.p>
+
+                <motion.p
+					className="inline md:hidden text-sm text-muted-foreground"
+					initial={{ opacity: 0 }}
+					animate={{ opacity: 1 }}
+					transition={transition}
+				>
+                    {rangeText(view, selectedDate, false)}
 				</motion.p>
 
 				<MotionButton

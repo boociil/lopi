@@ -67,46 +67,43 @@ export function DayCell({ cell, events, eventPositions }: IProps) {
 
   // Memoize event rendering for each position with animation
   const renderEventAtPosition = useCallback(
-    (position: number) => {
-      const event = cellEvents.find((e) => e.position === position);
-      if (!event) {
-        return (
-          <motion.div
-            key={`empty-${position}`}
-            className="lg:flex-1"
-            initial={false}
-            animate={false}
-          />
-        );
-      }
-      const showBullet = isSameMonth(
-        new Date(event.startDate),
-        currentCellMonth
-      );
+		(position: number) => {
+			const event = cellEvents.find((e) => e.position === position);
+			if (!event) {
+				return (
+					<motion.div
+						key={`empty-${position}`}
+						className="lg:flex-1"
+						initial={false}
+						animate={false}
+					/>
+				);
+			}
+			const showBadge = isSameMonth(
+				new Date(event.startDate),
+				currentCellMonth
+			);
 
-      return (
-        <motion.div
-          key={`event-${event.id}-${position}`}
-          className="lg:flex-1"
-          initial={{ opacity: 0, x: -10 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: position * 0.1, ...transition }}
-        >
-          <>
-            {showBullet && (
-              <EventBullet className="lg:hidden" color={event.color} />
-            )}
-            <MonthEventBadge
-              className="hidden lg:flex"
-              event={event}
-              cellDate={startOfDay(date)}
-            />
-          </>
-        </motion.div>
-      );
-    },
-    [cellEvents, currentCellMonth, date]
-  );
+			return (
+				<motion.div
+					key={`event-${event.id}-${position}`}
+					className="flex-1" // Mengubah agar fleksibel di semua ukuran layar
+					initial={{ opacity: 0, x: -10 }}
+					animate={{ opacity: 1, x: 0 }}
+					transition={{ delay: position * 0.1, ...transition }}
+				>
+					{showBadge && (
+						<MonthEventBadge
+							className="flex" // Menampilkan MonthEventBadge di semua ukuran layar (menghapus "hidden lg:flex")
+							event={event}
+							cellDate={startOfDay(date)}
+						/>
+					)}
+				</motion.div>
+			);
+		},
+		[cellEvents, currentCellMonth, date]
+	);
 
   const showMoreCount = cellEvents.length - MAX_VISIBLE_EVENTS;
 
@@ -139,7 +136,7 @@ export function DayCell({ cell, events, eventPositions }: IProps) {
 
           <motion.div
             className={cn(
-              "flex h-fit gap-1 px-2 mt-1 lg:h-[94px] lg:flex-col lg:gap-2 lg:px-0",
+              "flex h-fit flex-col gap-1 px-0 md:px-1 mt-1 lg:h-[94px] lg:gap-2 lg:px-0",
               !currentMonth && "opacity-50"
             )}
           >

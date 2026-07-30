@@ -37,7 +37,7 @@ import type {
 
 const FORMAT_STRING = "MMM d, yyyy";
 
-export function rangeText(view: TCalendarView, date: Date): string {
+export function rangeText(view: TCalendarView, date: Date, old_format: boolean = true): string {
 	let start: Date;
 	let end: Date;
 
@@ -64,7 +64,20 @@ export function rangeText(view: TCalendarView, date: Date): string {
 			return "Error while formatting";
 	}
 
-	return `${format(start, FORMAT_STRING)} - ${format(end, FORMAT_STRING)}`;
+
+
+    if(old_format){
+        return `${format(start, FORMAT_STRING)} - ${format(end, FORMAT_STRING)}`;
+    }else{
+        const formatterUS = new Intl.DateTimeFormat('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric'
+        });
+
+        return formatterUS.formatRange(start, end);
+    }
+
 }
 
 export function navigateDate(
