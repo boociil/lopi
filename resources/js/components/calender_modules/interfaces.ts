@@ -98,8 +98,6 @@ export function produceCalenderUser(user_: User[], satuan_kerja_tahun_: Satuan_K
         })
     });
 
-    console.log(retur_data)
-
     return retur_data
 }
 

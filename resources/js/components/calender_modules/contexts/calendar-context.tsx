@@ -257,10 +257,14 @@ export function CalendarProvider({
                         if(item.id == selectedUserId){
                             return true
                         }
-                        const child_arr: string[] = item.child_arr ?? []
-                        if(child_arr.includes(selectedUserId)){
-                            return true
+
+                        if(item.type == "satuan_kerja_tahun" || item.type == "tim"){
+                            const child_arr: string[] = item.child_arr ?? []
+                            if(child_arr.includes(selectedUserId)){
+                                return true
+                            }
                         }
+
 
                         return false
 

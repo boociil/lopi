@@ -31,7 +31,7 @@ export function CalendarHeader() {
 	return (
 		<div className="flex flex-col gap-4 border-b border-accent-foreground p-4 lg:flex-row lg:items-center lg:justify-between">
 			<motion.div
-				className="flex items-center gap-3"
+				className="flex items-center gap-3 grow"
 				variants={slideFromLeft}
 				initial="initial"
 				animate="animate"
@@ -42,35 +42,46 @@ export function CalendarHeader() {
 			</motion.div>
 
 			<motion.div
-				className="flex flex-col gap-4 lg:flex-row lg:items-center lg:gap-1.5"
+				className="flex flex-col gap-4 lg:flex-row lg:items-end lg:gap-1.5"
 				variants={slideFromRight}
 				initial="initial"
 				animate="animate"
 				transition={transition}
 			>
-				<div className="options flex-wrap flex items-center gap-4 md:gap-2">
-                    { settingCalender.show_filter &&
-                        <FilterEvents />
-                    }
-					<Views />
-				</div>
-
-				<div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:gap-1.5">
-                    { settingCalender.show_filter_user &&
-                        <div className="min-w-0 w-full lg:w-48 xl:w-56">
-                            <UserSelect />
+				<div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-2 w-full">
+                    {/* Bagian Kiri: FilterEvents & Views */}
+                    <div className="flex flex-row items-center gap-1 md:gap-2">
+                        {settingCalender.show_filter && (
+                            <div>
+                                <FilterEvents />
+                            </div>
+                        )}
+                        <div className="grow">
+                            <Views />
                         </div>
-                    }
+                    </div>
 
-                    {canAdd() &&
-                        <AddEditEventDialog>
-                            <Button>
-                                <Plus className="h-4 w-4" />
-                                Tambah {capitalizeWords(settingCalender.name_event)}
-                            </Button>
-                        </AddEditEventDialog>
-                    }
-				</div>
+                    <div className="flex flex-row items-center gap-1 md:gap-2 justify-end lg:w-96">
+                        {settingCalender.show_filter_user && (
+                            <div className="grow min-w-0 max-w-full">
+                                <UserSelect />
+                            </div>
+                        )}
+
+                        {canAdd() && (
+                            <div className="">
+                                <AddEditEventDialog>
+                                    <Button>
+                                        <Plus className="h-4 w-4" />
+                                        <span className="hidden md:block">
+                                            Tambah {capitalizeWords(settingCalender.name_event)}
+                                        </span>
+                                    </Button>
+                                </AddEditEventDialog>
+                            </div>
+                        )}
+                    </div>
+                </div>
 				{/* <Settings /> */}
 			</motion.div>
 		</div>

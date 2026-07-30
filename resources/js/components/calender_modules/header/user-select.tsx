@@ -14,19 +14,19 @@ export function UserSelect() {
 
 	return (
 		<Select value={selectedUserId!} onValueChange={filterEventsBySelectedUser}>
-			<SelectTrigger className="w-full">
+			<SelectTrigger className="w-full text-wrap">
 				<SelectValue placeholder="Select a user" />
 			</SelectTrigger>
 			<SelectContent align="end">
 				<SelectItem value="all">
 					<AvatarGroup className="mx-2 flex items-center" max={3}>
 						{users.map((user) => (
-							<Avatar key={user.id} className="size-6 text-xxs">
+							<Avatar key={user.id} className="size-6 text-xs">
 								<AvatarImage
 									src={user.picturePath ?? undefined}
 									alt={user.name}
 								/>
-								<AvatarFallback className="text-xxs">
+								<AvatarFallback className="text-xs">
 									{user.name[0]}
 								</AvatarFallback>
 							</Avatar>
@@ -47,7 +47,7 @@ export function UserSelect() {
 									src={user.picturePath ?? undefined}
 									alt={user.name}
 								/>
-								<AvatarFallback className="text-xxs">
+								<AvatarFallback className="text-xs">
 									{user.name[0]}
 								</AvatarFallback>
 							</Avatar>
