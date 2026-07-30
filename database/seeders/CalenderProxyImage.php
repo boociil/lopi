@@ -21,6 +21,7 @@ class CalenderProxyImage extends Seeder
         $all_user = User::whereHas('peran', function($q){
                 $q->where('parent_id', '0224eb80-e470-11f0-904b-1315527b7f2d');
             })->get();
+            Log::alert($all_user);
         foreach($all_user as $user){
             $service->create_calender($user);
         }

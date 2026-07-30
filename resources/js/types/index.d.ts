@@ -75,6 +75,7 @@ export interface Satuan_Kerja_Tahun {
     kode_satuan_kerja: string;
     type: string;
     parent_id: string?;
+    peran?: Peran[]
 }
 
 export interface Tim {
@@ -82,6 +83,7 @@ export interface Tim {
     nama: string;
     tahun: number;
     satuan_kerja_tahun_id: string;
+    peran?: Peran[]
 }
 
 export interface Jurnal_Harian_Proyek {

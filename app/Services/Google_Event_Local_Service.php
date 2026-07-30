@@ -275,7 +275,7 @@ class Google_Event_Local_Service
                     $pesertaWithName
                 );
             }
-
+            sleep(12);
             return $calendar->google_calendar_id;
         }
     }

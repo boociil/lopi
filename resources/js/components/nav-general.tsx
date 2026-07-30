@@ -28,7 +28,7 @@ export function NavGeneralTS({ item , countMenu}: { item: NavGeneral , countMenu
         );
     }else if(item.type == 'group'){
         return (
-            <Collapsible key={item.title} asChild defaultOpen={false} className="group/collapsible">
+            <Collapsible key={item.title} asChild defaultOpen={page.url.startsWith(item.href)} className="group/collapsible">
                 <SidebarMenuItem>
                     <CollapsibleTrigger asChild>
                         <SidebarMenuButton isActive={page.url.startsWith(item.href)} tooltip={item.title}>

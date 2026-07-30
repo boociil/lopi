@@ -156,4 +156,8 @@ class Tim extends Model
         return $return_data;
     }
 
+    public function peran()
+    {
+        return $this->hasMany(Peran::class,'parent_id','id');
+    }
 }

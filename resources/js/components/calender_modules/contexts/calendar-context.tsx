@@ -10,7 +10,6 @@ import type {
 } from "@/components/calender_modules/types";
 import { Add_Edit_Event_IProps, Delete_Event_Dialog_IProps, Event_Details_Dialog_IProps, Event_Drop_Confirmation_Dialog_IProps, Event_List_Dialog_IProps } from "../dialogs/props-dialog";
 import { useApi } from '@/lib/API/useApi';
-import { AxiosInstance } from 'axios';
 
 interface ICalendarContext {
 	selectedDate: Date;
@@ -254,7 +253,18 @@ export function CalendarProvider({
                     if(event.user == null){
                         return true
                     }
-                    const found = event.user.find(item => item.id == selectedUserId)
+                    const found = event.user.find(item => {
+                        if(item.id == selectedUserId){
+                            return true
+                        }
+                        const child_arr: string[] = item.child_arr ?? []
+                        if(child_arr.includes(selectedUserId)){
+                            return true
+                        }
+
+                        return false
+
+                    })
                     if(found){
                         return true
                     }

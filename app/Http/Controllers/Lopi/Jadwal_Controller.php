@@ -122,11 +122,13 @@ class Jadwal_Controller extends Controller
 
 
         if($request->isMethod('get')){
-            $satuan_kerja_tahun = Satuan_Kerja_Tahun::where('tahun', session('tahun_active'))
+            $satuan_kerja_tahun = Satuan_Kerja_Tahun::with(['peran'])
+                        ->where('tahun', session('tahun_active'))
                         ->whereIn('id', $satuan_kerja_tahun_kode)
                         ->get();
 
-            $tim = Tim::where('tahun', session('tahun_active'))
+            $tim = Tim::with(['peran'])
+                        ->where('tahun', session('tahun_active'))
                         ->whereIn('satuan_kerja_tahun_id', $satuan_kerja_tahun_kode)
                         ->get();
 

@@ -159,4 +159,9 @@ class Satuan_Kerja_Tahun extends Model
         return $return_data;
     }
 
+    public function peran()
+    {
+        return $this->hasMany(Peran::class,'parent_id','id');
+    }
+
 }

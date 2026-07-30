@@ -7,6 +7,7 @@ export interface IUser {
 	name: string;
     type: "user" | "tim" | "satuan_kerja_tahun";
 	picturePath: string | null;
+    child_arr: string[];
     ori: any;
 }
 
@@ -44,24 +45,45 @@ export interface SettingCalender {
 export function produceCalenderUser(user_: User[], satuan_kerja_tahun_: Satuan_Kerja_Tahun[], tim_: Tim[]): IUser[]{
     let retur_data: IUser[] = []
     satuan_kerja_tahun_.forEach(element => {
+        const child_arr: string[] = []
+        const peran_arr = element.peran ?? [];
+        peran_arr.forEach(element => {
+            if(element.pemilik_username ){
+                if(!child_arr.includes(element.pemilik_username)){
+                    child_arr.push(element.pemilik_username)
+                }
+            }
+        });
         retur_data.push({
             id: "satuan_kerja_tahun-+-"+element.id,
             id_ori: element.id,
             name: element.nama,
             type: "satuan_kerja_tahun",
             ori: element,
-            picturePath: null
+            picturePath: null,
+            child_arr: child_arr
         })
     });
 
     tim_.forEach(element => {
+        const child_arr: string[] = []
+        const peran_arr = element.peran ?? [];
+        peran_arr.forEach(element => {
+            if(element.pemilik_username ){
+                if(!child_arr.includes(element.pemilik_username)){
+                    child_arr.push(element.pemilik_username)
+                }
+            }
+        });
+
         retur_data.push({
             id: "tim-+-"+element.id,
             id_ori: element.id,
             name: element.nama,
             type: "tim",
             ori: element,
-            picturePath: null
+            picturePath: null,
+            child_arr: child_arr
         })
     });
     user_.forEach(element => {
@@ -71,9 +93,12 @@ export function produceCalenderUser(user_: User[], satuan_kerja_tahun_: Satuan_K
             name: element.nama,
             type: "user",
             ori: element,
-            picturePath: '/lopi/proxy_image/'+element.username
+            picturePath: '/lopi/proxy_image/'+element.username,
+            child_arr: []
         })
     });
+
+    console.log(retur_data)
 
     return retur_data
 }
