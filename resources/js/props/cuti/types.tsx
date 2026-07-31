@@ -1,4 +1,4 @@
-import { CalenderUser, IEvent } from "@/components/calender_modules/interfaces";
+import { IEvent, IUser } from "@/components/calender_modules/interfaces";
 import { TEventColor } from "@/components/calender_modules/types";
 
 export interface cuti {
@@ -26,7 +26,7 @@ export interface cuti_dialog_event {
 
 export function produceCutiIEvent(
     cuti: cuti[],
-    users: CalenderUser[],
+    users: IUser[],
 ): CutiIEvent[] {
     const colors = ["blue", "green", "red", "yellow", "purple", "orange"];
 
@@ -39,7 +39,7 @@ export function produceCutiIEvent(
 
             const user = users.find(
                 (e) =>
-                    e.nip_lama ==
+                    e.ori.nip_lama ==
                     element.p_niplama,
             );
 
@@ -57,10 +57,10 @@ export function produceCutiIEvent(
                 _endDate: tanggal_akhir,
                 _startTime: '00:00:00',
                 _endTime: '23:59:59',
-                title: user ? user.nama : "",
+                title: user ? user.ori.nama : "",
                 color:  colors[Math.floor(Math.random() * colors.length)] as TEventColor,
                 description: element.p_nmcuti+' ('+element.p_jmlcuti+')',
-                user: null,
+                user: user ? [user] : [],
                 cuti_ori: element,
                 oriKey: 'cuti_ori',
             });
@@ -72,16 +72,16 @@ export function produceCutiIEvent(
 
 export function pairIEventDenganUser(
     cuti_event: CutiIEvent[],
-    users: CalenderUser[],
+    users: IUser[],
 ) {
     for (let i = 0; i < cuti_event.length; i++) {
         const user = users.find(
             (e) =>
-                e.nip_lama ==
+                e.ori.nip_lama ==
                 cuti_event[i].cuti_ori?.p_niplama,
         );
         if (user) {
-            cuti_event[i].user = user;
+            cuti_event[i].user = [user];
         }
     }
 }

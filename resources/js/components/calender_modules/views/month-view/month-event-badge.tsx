@@ -35,10 +35,10 @@ const eventBadgeVariants = cva(
 			},
 			multiDayPosition: {
 				first:
-					"relative z-10 mr-0 rounded-r-none border-r-0 [&>span]:mr-2.5",
+					"relative z-10 mr-0 md:mr-0  rounded-r-none md:rounded-r-none border-r-0 [&>span]:mr-2.5",
 				middle:
-					"relative z-10 mx-0 w-[calc(100%_+_1px)] rounded-none border-x-0",
-				last: "ml-0 rounded-l-none border-l-0",
+					"relative z-10 mx-0 md:mx-0 px-0 md:px-0 w-[calc(100%_+_1px)] rounded-none md:rounded-none border-x-0",
+				last: "ml-0 md:ml-0 rounded-l-none md:rounded-l-none border-l-0",
 				none: "",
 			},
 		},
@@ -114,7 +114,7 @@ export function MonthEventBadge({
 							)}
 
 						{renderBadgeText && (
-							<p className="flex-1 truncate font-semibold text-[10px] md:text-sm">
+							<p className="flex-1 truncate font-semibold text-[10px] md:text-xs">
 								{eventCurrentDay && (
 									<span className="text-xs">
 										Day {eventCurrentDay} of {eventTotalDays} •{" "}

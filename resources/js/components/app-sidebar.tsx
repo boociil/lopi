@@ -142,10 +142,10 @@ export function AppSidebar() {
                         title: 'Pemakaian Zoom',
                         href: '/lopi/pinjam/zoom',
                     },
-                    {
-                        title: 'Pemakaian Ruang',
-                        href: '/lopi/pinjam/ruang',
-                    },
+                    // {
+                    //     title: 'Pemakaian Ruang',
+                    //     href: '/lopi/pinjam/ruang',
+                    // },
                     {
                          title: 'Pemakaian Mobil',
                         href: '/lopi/pinjam/mobil',
