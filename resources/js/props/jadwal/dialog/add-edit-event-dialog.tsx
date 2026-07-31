@@ -488,58 +488,54 @@ export function AddEditEventDialog({
                 return (
                     <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
                         <div className="grid grid-cols-1 gap-3">
-                            {!havePeran("ruang") && (
-                                <>
-                                    {["tidak", "menunggu"].map((status) => (
-                                        <Label
-                                            key={status}
-                                            className={`flex items-center p-4 border rounded-2xl cursor-pointer transition-all ${data.ruang_status === status ? "border-blue-500 bg-blue-50 ring-2 ring-blue-200" : "border-slate-200 hover:bg-slate-50"}`}
-                                        >
-                                            <Input
-                                                type="radio"
-                                                className="hidden"
-                                                name="ruang_status"
-                                                value={status}
-                                                checked={
-                                                    data.ruang_status === status
-                                                }
-                                                onChange={(e) => {
-                                                    setData(
-                                                        "ruang_status",
-                                                        e.target.value as
-                                                            | "tidak"
-                                                            | "menunggu",
-                                                    );
-                                                    if (
-                                                        e.target.value ==
-                                                        "tidak"
-                                                    ) {
-                                                        setData("ruang", null);
-                                                    }
-                                                }}
-                                            />
-                                            <div className="flex-1">
-                                                <p className="font-black text-slate-800">
-                                                    {status === "tidak"
-                                                        ? "Tanpa Ruangan"
-                                                        : "Pinjam Ruangan"}
-                                                </p>
-                                                <p className="text-xs text-slate-500">
-                                                    {status === "tidak"
-                                                        ? "Kegiatan dilaksanakan daring atau diluar kantor"
-                                                        : "Memerlukan persetujuan admin ruangan"}
-                                                </p>
-                                            </div>
-                                            {data.ruang_status === status && (
-                                                <CheckCircle
-                                                    className="text-blue-600"
-                                                    size={20}
-                                                />
-                                            )}
-                                        </Label>
-                                    ))}
-                                </>
-                            )}
+                            {["tidak", "menunggu"].map((status) => (
+                                <Label
+                                    key={status}
+                                    className={`flex items-center p-4 border rounded-2xl cursor-pointer transition-all ${data.ruang_status === status ? "border-blue-500 bg-blue-50 ring-2 ring-blue-200" : "border-slate-200 hover:bg-slate-50"}`}
+                                >
+                                    <Input
+                                        type="radio"
+                                        className="hidden"
+                                        name="ruang_status"
+                                        value={status}
+                                        checked={
+                                            data.ruang_status === status
+                                        }
+                                        onChange={(e) => {
+                                            setData(
+                                                "ruang_status",
+                                                e.target.value as
+                                                    | "tidak"
+                                                    | "menunggu",
+                                            );
+                                            if (
+                                                e.target.value ==
+                                                "tidak"
+                                            ) {
+                                                setData("ruang", null);
+                                            }
+                                        }}
+                                    />
+                                    <div className="flex-1">
+                                        <p className="font-black text-slate-800">
+                                            {status === "tidak"
+                                                ? "Tanpa Ruangan"
+                                                : "Pinjam Ruangan"}
+                                        </p>
+                                        <p className="text-xs text-slate-500">
+                                            {status === "tidak"
+                                                ? "Kegiatan dilaksanakan daring atau diluar kantor"
+                                                : "Memerlukan persetujuan admin ruangan"}
+                                        </p>
+                                    </div>
+                                    {data.ruang_status === status && (
+                                        <CheckCircle
+                                            className="text-blue-600"
+                                            size={20}
+                                        />
+                                    )}
+                                </Label>
+                            ))}
                         </div>
                         {(data.ruang_status === "menunggu" ||
                             data.ruang_status === "disetujui") && (

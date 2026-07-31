@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Lopi\Lopi_Controller;
+use App\Http\Controllers\Admin\Lopi_Controller;
 
 Route::group(
 [
