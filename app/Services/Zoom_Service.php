@@ -73,13 +73,13 @@ class Zoom_Service
 
         $status = true;
         if(Carbon::today() < Carbon::parse($from)  && Carbon::today() < Carbon::parse($to)){
-            $get1 = $this->zoom_getAllMeeting_helper($path, $from, $to, 'previous_meetings');
-            $data1 = $get1['data'];
-            $status = $status && $get1['status'];
-        }else if(Carbon::parse($from) < Carbon::today() && Carbon::parse($to) < Carbon::today() ){
             $get2 = $this->zoom_getAllMeeting_helper($path, $from, $to, 'upcoming_meetings');
             $data2 = $get2['data'];
             $status = $status && $get2['status'];
+        }else if(Carbon::parse($from) < Carbon::today() && Carbon::parse($to) < Carbon::today() ){
+            $get1 = $this->zoom_getAllMeeting_helper($path, $from, $to, 'previous_meetings');
+            $data1 = $get1['data'];
+            $status = $status && $get1['status'];
         }else {
             $get1 = $this->zoom_getAllMeeting_helper($path, $from, $to, 'previous_meetings');
             $data1 = $get1['data'];

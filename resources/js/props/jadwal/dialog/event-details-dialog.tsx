@@ -467,7 +467,6 @@ export function EventDetailsDialog({
                             <div></div>
                         </div>
                     </div>
-                    `
                 </TooltipContent>
             </Tooltip>
             <DialogContent>

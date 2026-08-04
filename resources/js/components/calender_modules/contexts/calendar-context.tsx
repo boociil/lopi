@@ -1,7 +1,7 @@
 "use client";
 
 import type React from "react";
-import { createContext, JSX, MemoExoticComponent, useContext, useEffect, useState } from "react";
+import { createContext, JSX, MemoExoticComponent, useContext, useEffect, useMemo, useState } from "react";
 import { useLocalStorage } from "@/components/calender_modules/hooks";
 import type { CalendarSettings, IEvent, IUser, SettingCalender } from "@/components/calender_modules/interfaces";
 import type {
@@ -28,7 +28,7 @@ interface ICalendarContext {
 	filterEventsBySelectedColors: (colors: TEventColor) => void;
 	filterEventsBySelectedUser: (userId: IUser["id"] | "all") => void;
 	users: IUser[];
-    userDict: Map<string, IUser>
+    userDict: Map<string, IUser>;
 	events: IEvent[];
 	addEvent: (event: IEvent) => void;
     updateEventDragRezise: (event: IEvent) => void;
@@ -92,20 +92,16 @@ export function CalendarProvider({
     canApprove: (event: IEvent) => boolean;
     children: React.ReactNode;
 }) {
-
-    const [users, setUsers] = useState<IUser[]>(_user);
-    const [userDict, setUserDict] = useState<Map<string, IUser>>(new Map<string, IUser>);
-
-    useEffect(() => {
-        let dictUse = new Map<string, IUser>();
-        users.forEach(element => {
-            dictUse.set(element.id, element)
-        });
-        setUserDict(dictUse)
-    }, [users]);
-
+    const [users, setUsers] = useState<IUser[]>(_user || []);
     const [allEvents, setAllEvents] = useState<IEvent[]>(_allEvents || []);
     const [filteredEvents, setFilteredEvents] = useState<IEvent[]>(_allEvents || []);
+
+    const userDict = useMemo(() => {
+        const dict = new Map<string, IUser>();
+        users.forEach((u) => dict.set(u.id, u));
+        return dict;
+    }, [users]);
+
 
     const [settings, setSettings] = useLocalStorage<CalendarSettings>(
         "pinjam_mobil_calender",
@@ -117,30 +113,18 @@ export function CalendarProvider({
         },
     );
 
-    const [badgeVariant, setBadgeVariantState] = useState<"dot" | "colored">(
-        settings.badgeVariant,
-    );
-    const [currentView, setCurrentViewState] = useState<TCalendarView>(
-        settings.view,
-    );
-    const [use24HourFormat, setUse24HourFormatState] = useState<boolean>(
-        settings.use24HourFormat,
-    );
-    const [agendaModeGroupBy, setAgendaModeGroupByState] = useState<
-        "date" | "color"
-    >(settings.agendaModeGroupBy);
+    const [badgeVariant, setBadgeVariantState] = useState<"dot" | "colored">(settings.badgeVariant);
+    const [currentView, setCurrentViewState] = useState<TCalendarView>(settings.view);
+    const [use24HourFormat, setUse24HourFormatState] = useState<boolean>(settings.use24HourFormat);
+    const [agendaModeGroupBy, setAgendaModeGroupByState] = useState<"date" | "color">(settings.agendaModeGroupBy);
 
     const [selectedDate, setSelectedDate] = useState(new Date());
-    const [selectedUserId, setSelectedUserId] = useState<IUser["id"] | "all">(
-        "all",
-    );
+    const [selectedUserId, setSelectedUserId] = useState<IUser["id"] | "all">("all");
     const [selectedColors, setSelectedColors] = useState<TEventColor[]>([]);
 
-
     useEffect(() => {
-        runFilter()
-    }, [allEvents, selectedUserId, selectedColors]);
-
+        runFilter();
+    }, [allEvents, selectedUserId, selectedDate, selectedColors]);
 
 	const updateSettings = (newPartialSettings: Partial<CalendarSettings>) => {
 		setSettings({
@@ -157,7 +141,7 @@ export function CalendarProvider({
 	const setView = (newView: TCalendarView) => {
 		setCurrentViewState(newView);
 		updateSettings({ view: newView });
-        reload_data(selectedDate, newView, setAllEventsOri)
+        reload_data(selectedDate, newView, setAllEventsOri);
 	};
 
 	const toggleTimeFormat = () => {
@@ -177,34 +161,30 @@ export function CalendarProvider({
 			? selectedColors.filter((c) => c !== color)
 			: [...selectedColors, color];
 		setSelectedColors(newColors);
-
-        runFilter();
+        // runFilter() dihapus dari sini karena sudah di-handle oleh useEffect
 	};
 
 	const filterEventsBySelectedUser = (userId: IUser["id"] | "all") => {
-        if(userId == null){
-            return
-        }
+        if (userId == null) return;
 		setSelectedUserId(userId);
 	};
 
 	const handleSelectDate = (date: Date | undefined) => {
 		if (!date) return;
 		setSelectedDate(date);
-        reload_data(date, currentView, setAllEventsOri)
+        reload_data(date, currentView, setAllEventsOri);
 	};
 
 	const addEvent = (event: IEvent) => {
         setAllEvents((prev) => [...prev, event]);
-		// setFilteredEvents([...filteredEvents, ...event]);
 	};
 
-    const getEvent = (eventId: String) => {
-        return allEvents.find(item => item.id == eventId)
+    const getEvent = (eventId: string) => {
+        return allEvents.find((item) => item.id === eventId);
 	};
 
     const updateEventDragRezise = (event: IEvent) => {
-        updateDataRequest(event, use24HourFormat, updateEvent, runFilter)
+        updateDataRequest(event, use24HourFormat, updateEvent, runFilter);
 	};
 
     const updateEvent = (newEvent: IEvent) => {
@@ -222,15 +202,7 @@ export function CalendarProvider({
 	};
 
     const removeEvent = (eventId: string) => {
-        const item = allEvents.find(e => e.id == eventId)
-        if(!item){
-            return
-        }
-       	setAllEvents(allEvents.filter((e) => {
-            if(e.id !== eventId){
-                return true
-            }
-        }));
+       	setAllEvents((prev) => prev.filter((e) => e.id !== eventId));
 	};
 
 	const clearFilter = () => {
@@ -240,42 +212,30 @@ export function CalendarProvider({
 	};
 
     function setAllEventsOri(_oriAllEvent: IEvent[]){
-        setAllEvents(_oriAllEvent)
+        setAllEvents(_oriAllEvent);
     }
 
     function runFilter(){
-		if (selectedUserId === "all" && selectedColors.length == 0) {
+		if (selectedUserId === "all" && selectedColors.length === 0) {
 			setFilteredEvents(allEvents);
-		}else {
+		} else {
 			let filtered = allEvents;
-            if(selectedUserId != 'all'){
+            if (selectedUserId !== 'all'){
                 filtered = filtered.filter((event) => {
-                    if(event.user == null){
-                        return true
-                    }
-                    const found = event.user.find(item => {
-                        if(item.id == selectedUserId){
-                            return true
+                    if (!event.user) return true;
+
+                    return event.user.some((item) => {
+                        if (item.id === selectedUserId) return true;
+
+                        if (item.type === "satuan_kerja_tahun" || item.type === "tim"){
+                            const child_arr: string[] = item.child_arr ?? [];
+                            if (child_arr.includes(selectedUserId)) return true;
                         }
-
-                        if(item.type == "satuan_kerja_tahun" || item.type == "tim"){
-                            const child_arr: string[] = item.child_arr ?? []
-                            if(child_arr.includes(selectedUserId)){
-                                return true
-                            }
-                        }
-
-
-                        return false
-
-                    })
-                    if(found){
-                        return true
-                    }
-                    return false
+                        return false;
+                    });
                 });
             }
-            if(selectedColors.length > 0){
+            if (selectedColors.length > 0){
                 filtered = filtered.filter((event) => {
                     const eventColor = event.color || "blue";
                     return selectedColors.includes(eventColor);

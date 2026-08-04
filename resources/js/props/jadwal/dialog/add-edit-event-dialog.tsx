@@ -237,16 +237,20 @@ export function AddEditEventDialog({
             setData("waktu_akhir", formatTime(event.endDate, use24HourFormat));
 
             setData("peserta", []);
-            (event as JadwalIEvent).jadwal_ori.peserta.forEach(element => {
-                setData("peserta", [...data.peserta,
-                    {
-                        id: element.id,
-                        peserta_type: element.peserta_type,
-                        peserta_id: element.peserta_id,
-                        peserta_nama: userDict.has(element.id) ? userDict.get(element.id)!.name : element.peserta_id
-                    }
-                ]);
+            const newPeserta = (event as JadwalIEvent).jadwal_ori.peserta.map((element) => {
+                const userKey = `${element.peserta_type}-+-${element.peserta_id}`;
+                return {
+                    id: element.id,
+                    peserta_type: element.peserta_type,
+                    peserta_id: element.peserta_id,
+                    peserta_nama: userDict.has(userKey) ? userDict.get(userKey)!.name : element.peserta_id,
+                };
             });
+
+            setData((prevData) => ({
+                ...prevData,
+                peserta: newPeserta,
+            }));
 
             if ((event as JadwalIEvent).jadwal_ori) {
                 setData("zoom_status", event_.jadwal_ori.zoom_status);
@@ -764,13 +768,23 @@ export function AddEditEventDialog({
                                                                 // tidak perlu users.find() lagi. Ini jauh lebih aman dan efisien.
                                                                 let found = data.peserta.find(item_ => item.id == item_.id)
                                                                 if(!found){
-
-                                                                    setData("peserta", [...data.peserta, {id: item.id, peserta_type: item.type, peserta_id: item.id_ori, peserta_nama: item.name}])
+                                                                    setData((prevData) => ({
+                                                                        ...prevData,
+                                                                        peserta: [
+                                                                            ...prevData.peserta,
+                                                                            {
+                                                                                id: item.id,
+                                                                                peserta_type: item.type,
+                                                                                peserta_id: item.id_ori,
+                                                                                peserta_nama: item.name,
+                                                                            },
+                                                                        ],
+                                                                    }));
                                                                 }
 
                                                                 setOpenPengguna(false);
                                                             }}
-                                                        >
+                                                      >
                                                             {item.name}
                                                         </CommandItem>
                                                     ))}

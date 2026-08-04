@@ -305,7 +305,7 @@ class Zoom_Controller extends Controller
     public function approval(Request $request, Pinjam_Zoom $pinjamZoom)
     {
         $validated = $request->validate([
-            'status'              => 'required|in:disetujui,ditolak',
+            'zoom_status'              => 'required|in:disetujui,ditolak',
             'zoom_akun'         => 'in:statsulbar,sp2020'
         ]);
 
@@ -319,7 +319,7 @@ class Zoom_Controller extends Controller
             ]);
         }
 
-        if($have_zoom_peran && $request->input('status') == 'disetujui'){
+        if($have_zoom_peran && $request->input('zoom_status') == 'disetujui'){
            if($pinjamZoom->checkClash($request->input('zoom_akun'))){
                 throw ValidationException::withMessages([
                     'error_clash' => 'Sudah terdapat peminjaman di tanggal dan waktu tersebut',
@@ -331,9 +331,9 @@ class Zoom_Controller extends Controller
         DB::beginTransaction();
         try
         {
-            $pinjamZoom->status = $request->input('status');
+            $pinjamZoom->status = $request->input('zoom_status');
             $pinjamZoom->zoom_akun = $request->input('zoom_akun');
-            $pinjamZoom->helper_approval($request->input('status'), $request->input('zoom_akun'), $this->zoom);
+            $pinjamZoom->helper_approval($request->input('zoom_status'), $request->input('zoom_akun'), $this->zoom);
 
             $jadwal = Jadwal::where('zoom_pinjam_id', $pinjamZoom->id)->first();
             if($jadwal){

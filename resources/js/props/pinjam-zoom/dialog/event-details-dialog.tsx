@@ -130,16 +130,16 @@ export function EventDetailsDialog({ _event, children }: Event_Details_Dialog_IP
                     updateEvent(return_data[0])
 
                     progressIndikator.finish()
-                    toast.success('Berhasil mengubah data')
+                    toast.success('Berhasil approval data')
                 } catch (error) {
                     console.log(error)
                     progressIndikator.finish()
-                    toast.error('Gagal mengubah data')
+                    toast.error('Gagal approval data')
                 }
             })
             .catch(function () {
                 progressIndikator.finish()
-                toast.error("Kesalahan saat menghapus "+capitalizeWords(settingCalender.name_event)+".");
+                toast.error("Kesalahan saat approval "+capitalizeWords(settingCalender.name_event)+".");
             });
     };
 
