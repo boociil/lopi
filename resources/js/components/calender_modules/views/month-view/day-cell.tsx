@@ -114,78 +114,136 @@ export function DayCell({ cell, events, eventPositions }: IProps) {
   const showDesktopMore = !isMobile && currentMonth && showMoreCount > 0;
   const { AddEditEventDialog, EventListDialog, canAdd , settingCalender} = useCalendar();
 
-  const cellContent = useMemo(
-    () => (
-      <motion.div
-        className={cn(
-          "flex h-full lg:min-h-[10rem] flex-col gap-1 border-l border-t border-accent-foreground text-accent-foreground",
-          isSunday(date) && "border-l-0"
-        )}
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={transition}
-      >
-        <DroppableArea date={date} className="w-full h-full py-2">
-          <motion.span
-            className={cn(
-              "h-6 px-1 text-xs font-semibold lg:px-2 text-accent-foreground",
-              !currentMonth && "opacity-20",
-              isToday(date) &&
-                "flex w-6 translate-x-1 items-center justify-center rounded-full bg-primary px-0 font-bold text-primary-foreground"
-            )}
-          >
-            {day}
-          </motion.span>
-
-          <motion.div
-            className={cn(
-              "flex h-fit flex-col gap-1 mt-1 lg:h-[94px] lg:gap-2 lg:px-0",
-              !currentMonth && "opacity-50"
-            )}
-          >
-            {(cellEvents.length === 0 && !isMobile) ? (
-              <div className="w-full h-full flex justify-center items-center group">
-                 {canAdd() &&
-                    <AddEditEventDialog startDate={date}>
-                    <Button
-                        variant="ghost"
-                        className="border border-accent-foreground text-accent-foreground opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+    const cellContent = useMemo(() => {
+        if (isMobile) {
+            return <motion.div
+                    className={cn(
+                    "flex h-full lg:min-h-[10rem] flex-col gap-1 border-l border-t border-accent-foreground text-accent-foreground",
+                    isSunday(date) && "border-l-0"
+                    )}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={transition}
+                >
+                    <div className="w-full h-full py-2">
+                    <motion.span
+                        className={cn(
+                        "h-6 px-1 text-xs font-semibold lg:px-2 text-accent-foreground",
+                        !currentMonth && "opacity-20",
+                        isToday(date) &&
+                            "flex w-6 translate-x-1 items-center justify-center rounded-full bg-primary px-0 font-bold text-primary-foreground"
+                        )}
                     >
-                        <Plus className="h-4 w-4" />
-                        <span className="max-sm:hidden">{toCapitalize(settingCalender.name_event)}</span>
-                    </Button>
-                    </AddEditEventDialog>
-                }
-              </div>
-            ) : (
-              [0, 1, 2].map(renderEventAtPosition)
-            )}
-          </motion.div>
+                        {day}
+                    </motion.span>
 
-          {showMobileMore && (
-            <div className="flex justify-end items-end mx-2">
-              <span className="text-[0.6rem] font-semibold text-accent-foreground">
-                +{showMoreCount}
-              </span>
-            </div>
-          )}
+                    <motion.div
+                        className={cn(
+                        "flex h-fit flex-col gap-1 mt-1 lg:h-[94px] lg:gap-2 lg:px-0",
+                        !currentMonth && "opacity-50"
+                        )}
+                    >
+                        {(cellEvents.length === 0 && !isMobile) ? (
+                        <div className="w-full h-full flex justify-center items-center group">
+                            {canAdd() &&
+                                <AddEditEventDialog startDate={date}>
+                                <Button
+                                    variant="ghost"
+                                    className="border border-accent-foreground text-accent-foreground opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                                >
+                                    <Plus className="h-4 w-4" />
+                                    <span className="max-lg:hidden">{toCapitalize(settingCalender.name_event)}</span>
+                                </Button>
+                                </AddEditEventDialog>
+                            }
+                        </div>
+                        ) : (
+                        [0, 1, 2].map(renderEventAtPosition)
+                        )}
+                    </motion.div>
 
-          {showDesktopMore && (
-            <motion.div
-              className={cn(
-                "h-4.5 px-1.5 my-2 text-end text-xs font-semibold text-muted-foreground",
-                !currentMonth && "opacity-50"
-              )}
-              initial={{ opacity: 0, y: 5 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3, ...transition }}
-            >
-              <EventListDialog date={date} events={cellEvents} />
-            </motion.div>
-          )}
-        </DroppableArea>
-      </motion.div>
-    ),
+                    {showMobileMore && (
+                        <div className="flex justify-end items-end mx-2">
+                        <span className="text-[0.6rem] font-semibold text-accent-foreground">
+                            +{showMoreCount}
+                        </span>
+                        </div>
+                    )}
+
+                    </div>
+                </motion.div>
+        } else {
+            return <motion.div
+                    className={cn(
+                    "flex h-full lg:min-h-[10rem] flex-col gap-1 border-l border-t border-accent-foreground text-accent-foreground",
+                    isSunday(date) && "border-l-0"
+                    )}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={transition}
+                >
+                    <DroppableArea date={date} className="w-full h-full py-2">
+                    <motion.span
+                        className={cn(
+                        "h-6 px-1 text-xs font-semibold lg:px-2 text-accent-foreground",
+                        !currentMonth && "opacity-20",
+                        isToday(date) &&
+                            "flex w-6 translate-x-1 items-center justify-center rounded-full bg-primary px-0 font-bold text-primary-foreground"
+                        )}
+                    >
+                        {day}
+                    </motion.span>
+
+                    <motion.div
+                        className={cn(
+                        "flex h-fit flex-col gap-1 mt-1 lg:h-[94px] lg:gap-2 lg:px-0",
+                        !currentMonth && "opacity-50"
+                        )}
+                    >
+                        {(cellEvents.length === 0 && !isMobile) ? (
+                        <div className="w-full h-full flex justify-center items-center group">
+                            {canAdd() &&
+                                <AddEditEventDialog startDate={date}>
+                                <Button
+                                    variant="ghost"
+                                    className="border border-accent-foreground text-accent-foreground opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                                >
+                                    <Plus className="h-4 w-4" />
+                                    <span className="max-lg:hidden">{toCapitalize(settingCalender.name_event)}</span>
+                                </Button>
+                                </AddEditEventDialog>
+                            }
+                        </div>
+                        ) : (
+                        [0, 1, 2].map(renderEventAtPosition)
+                        )}
+                    </motion.div>
+
+                    {showMobileMore && (
+                        <div className="flex justify-end items-end mx-2">
+                        <span className="text-[0.6rem] font-semibold text-accent-foreground">
+                            +{showMoreCount}
+                        </span>
+                        </div>
+                    )}
+
+                    {showDesktopMore && (
+                        <motion.div
+                        className={cn(
+                            "h-4.5 px-1.5 my-2 text-end text-xs font-semibold text-muted-foreground",
+                            !currentMonth && "opacity-50"
+                        )}
+                        initial={{ opacity: 0, y: 5 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.3, ...transition }}
+                        >
+                        <EventListDialog date={date} events={cellEvents} />
+                        </motion.div>
+                    )}
+                    </DroppableArea>
+                </motion.div>
+        }
+    },
     [
       date,
       day,
@@ -195,6 +253,7 @@ export function DayCell({ cell, events, eventPositions }: IProps) {
       showDesktopMore,
       showMoreCount,
       renderEventAtPosition,
+      isMobile,
     ]
   );
 

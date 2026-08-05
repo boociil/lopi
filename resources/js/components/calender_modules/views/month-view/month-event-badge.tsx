@@ -7,6 +7,7 @@ import { DraggableEvent } from "@/components/calender_modules/dnd/draggable-even
 import { formatTime } from "@/components/calender_modules/helpers";
 import type { IEvent } from "@/components/calender_modules/interfaces";
 import {EventBullet} from "@/components/calender_modules/views/month-view/event-bullet";
+import { useMediaQuery } from "../../hooks";
 
 const eventBadgeVariants = cva(
 	"mx-1 flex size-auto h-4.5 md:h-6.5 select-none items-center justify-between gap-1.5 truncate whitespace-nowrap rounded-xs md:rounded-md border px-0 md:px-2 text-xs",
@@ -73,6 +74,7 @@ export function MonthEventBadge({
 
 	const itemStart = startOfDay(parseISO(event.startDate));
 	const itemEnd = endOfDay(parseISO(event.endDate));
+    const isMobile = useMediaQuery("(max-width: 768px)");
 
 	if (cellDate < itemStart || cellDate > itemEnd) return null;
 
@@ -102,6 +104,38 @@ export function MonthEventBadge({
 	const eventBadgeClasses = cn(
 		eventBadgeVariants({ color, multiDayPosition: position, className }),
 	);
+
+    if(isMobile){
+        return (
+            <div role="button" tabIndex={0} className={eventBadgeClasses}>
+                <div className="flex items-center gap-1.5 truncate">
+                    {!["middle", "last"].includes(position) &&
+                        badgeVariant === "dot" && (
+                            <EventBullet color={event.color} />
+                        )}
+
+                    {renderBadgeText && (
+                        <p className="flex-1 truncate font-semibold text-[10px] md:text-xs">
+                            {eventCurrentDay && (
+                                <span className="text-xs">
+                                    Day {eventCurrentDay} of {eventTotalDays} •{" "}
+                                </span>
+                            )}
+                            {event.title}
+                        </p>
+                    )}
+                </div>
+
+                <div className="hidden xl:block">
+                    { (renderBadgeTime && settingCalender.showTime) && (
+                        <span className="tracking-tight">
+                            {formatTime(new Date(event.startDate), use24HourFormat)}-{formatTime(new Date(event.endDate), use24HourFormat)}
+                        </span>
+                    )}
+                </div>
+            </div>
+	    );
+    }
 
 	return (
 		<DraggableEvent event={event}>
