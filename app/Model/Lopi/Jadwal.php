@@ -2,11 +2,14 @@
 
 namespace App\Model\Lopi;
 
+use App\Observers\JadwalObserver;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+#[ObservedBy([JadwalObserver::class])]
 class Jadwal extends Model
 {
     use SoftDeletes;

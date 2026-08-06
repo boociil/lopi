@@ -27,7 +27,7 @@ export default function Profile({
     const { auth } = usePage<SharedData>().props;
     const user = auth.user
 
-    const [calendarId, setCalendarId] = useState(calendar_id);
+    const [calendarUrl, setCalendarUrl] = useState("https://calendar.google.com/calendar/embed?src="+calendar_id+"&ctz=Asia%2FMakassar");
     const axiosClient = useApi();
     const {setIsLoading} = useLoading();
 
@@ -35,7 +35,7 @@ export default function Profile({
         setIsLoading(true)
         axiosClient.post(route('profile-create-calender'))
             .then(function (response) {
-                setCalendarId(response.data as string)
+                setCalendarUrl("https://calendar.google.com/calendar/embed?src="+(response.data as string)+"&ctz=Asia%2FMakassar")
                 setIsLoading(false)
                 toast.success("Berhasil memperbarui data.");
             })
@@ -84,14 +84,14 @@ export default function Profile({
                             <div className="mt-8 pt-6 border-t border-slate-100 text-left">
                                 <h2 className="text-xs font-semibold text-slate-700 uppercase tracking-wider mb-3">Sinkronisasi Kalender</h2>
                                 <div className="flex flex-col sm:flex-row gap-2.5">
-                                    <Button onClick={() => {handleIntegrasiCalendar()}} disabled={calendarId != ''} variant="default">
+                                    <Button onClick={() => {handleIntegrasiCalendar()}} disabled={calendarUrl != ''} variant="default">
                                         <i className="ph ph-calendar-plus text-lg"></i>
                                         <span>Integrasi</span>
                                     </Button>
-                                    <Button variant="outline" onClick={() => {navigator.clipboard.writeText(calendarId as string); toast.success("Copy calender id.");}}  title="Salin Kode Kalender">
+                                    <a href={calendarUrl} target='_blank' title="Buka Kalender" className="px-2 inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-[color,box-shadow] disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive bg-secondary text-secondary-foreground shadow-xs hover:bg-secondary/80">
                                         <i className="ph ph-copy text-lg text-slate-400"></i>
-                                        <span>Copy Code</span>
-                                    </Button>
+                                        <span>Kalendar Url</span>
+                                    </a>
                                 </div>
                                 <p className="text-[11px] text-slate-400 mt-2.5 leading-relaxed">Hubungkan jadwal secara otomatis atau salin kode unik Anda untuk setup manual.</p>
                             </div>

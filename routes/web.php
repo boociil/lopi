@@ -26,6 +26,7 @@ use App\Http\Controllers\WebController;
 Route::get('/login', [SSO_Controller::class, 'showLoginForm'])->name('login');
 Route::get('/sso', [SSO_Controller::class, 'sso'])->name('sso');
 Route::get('/logout', [SSO_Controller::class, 'logout'])->name('logout');
+// Route::get('/sso_back', [SSO_Controller::class, 'back'])->name('logout');
 
 
 

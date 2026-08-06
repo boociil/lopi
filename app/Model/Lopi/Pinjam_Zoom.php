@@ -3,7 +3,9 @@
 namespace App\Model\Lopi;
 
 use App\Model\Umum\User;
+use App\Observers\PinjamZoomObserver;
 use App\Services\Zoom_Service;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Auth;
@@ -13,6 +15,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Carbon\Carbon;
 use Exception;
 
+#[ObservedBy([PinjamZoomObserver::class])]
 class Pinjam_Zoom extends Model
 {
     use SoftDeletes;
