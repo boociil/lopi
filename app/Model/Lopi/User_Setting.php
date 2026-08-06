@@ -12,8 +12,4 @@ class User_Setting extends Model
     protected $keyType = 'string';
 
     protected $fillable = ['id', 'username', 'category', 'key', 'data', 'satuan_kerja_tahun_id'];
-
-    protected $casts = [
-        'data' => 'array', // auto encode/decode JSON
-    ];
 }

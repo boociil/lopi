@@ -1,2 +1,4 @@
 *.sqlite
 *.sqlite-journal
+phone.xlsx
+.~lock.phone.xlsx#
