@@ -49,7 +49,8 @@ interface ICalendarContext {
     havePeran: (peran: string) => boolean;
     canAdd: () => boolean;
     canChange: (event: IEvent) => boolean;
-    canApprove: (event: IEvent) => boolean;
+    canDelete: (event: IEvent) => boolean;
+    canApprove: (event: IEvent, type?: string) => boolean;
 
     axiosClient: any;
 }
@@ -71,6 +72,7 @@ export function CalendarProvider({
     havePeran,
     canAdd,
     canChange,
+    canDelete,
     canApprove,
     children,
 }: {
@@ -89,7 +91,8 @@ export function CalendarProvider({
     havePeran: (peran: string) => boolean;
     canAdd: () => boolean;
     canChange: (event: IEvent) => boolean;
-    canApprove: (event: IEvent) => boolean;
+    canDelete: (event: IEvent) => boolean;
+    canApprove: (event: IEvent, type?: string) => boolean;
     children: React.ReactNode;
 }) {
     const [users, setUsers] = useState<IUser[]>(_user || []);
@@ -285,6 +288,7 @@ export function CalendarProvider({
             havePeran,
             canAdd,
             canChange,
+            canDelete,
             canApprove,
             axiosClient,
         }}>

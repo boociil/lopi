@@ -80,6 +80,7 @@ export function EventDetailsDialog({
         AddEditEventDialog,
         canChange,
         canApprove,
+        canDelete,
         axiosClient,
         users,
         userDict,
@@ -128,12 +129,12 @@ export function EventDetailsDialog({
 
     const approvalRuangEvent = (
         event_id: string,
-        status: "disetujui" | "ditolak",
+        ruang_status: "disetujui" | "ditolak",
     ) => {
         progressIndikator.start();
         axiosClient
             .post(route("jadwal-approval-ruang", { jadwal: event_id }), {
-                status: status,
+                ruang_status: ruang_status,
             })
             .then(function (response: any) {
                 try {
@@ -166,12 +167,12 @@ export function EventDetailsDialog({
 
     const approvalZoomEvent = (
         event_id: string,
-        status: "disetujui" | "ditolak",
+        zoom_status: "disetujui" | "ditolak",
     ) => {
         progressIndikator.start();
         axiosClient
             .post(route("jadwal-approval-zoom", { jadwal: event_id }), {
-                status: status,
+                zoom_status: zoom_status,
                 zoom_akun: zoomAkun,
             })
             .then(function (response: any) {
@@ -662,7 +663,7 @@ export function EventDetailsDialog({
                                     ORANG
                                 </span>
                             </div>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-32">
                                 {event.jadwal_ori.peserta?.map((p, idx) => (
                                     <div
                                         key={idx}
@@ -680,175 +681,144 @@ export function EventDetailsDialog({
                         </div>
                     </div>
                 </ScrollArea>
-                <div className="flex justify-end gap-2">
-                    {havePeran("ruang") && (
+                <div className="flex flex-wrap justify-end gap-2">
+                    {/* Approval Ruang */}
+                    {canApprove(event, "ruang") && (
+                        <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                            <Button
+                                    variant="outline"
+                                    className="text-secondary"
+                                >
+                                Approval Ruang
+                            </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
+                                <AlertDialogTitle className="text-secondary">
+                                    Konfirmasi Tindakan
+                                </AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    Apakah Anda menyetujui atau menolak permintaan pemakaian ruangan?
+                                </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                                <AlertDialogCancel className="text-secondary">
+                                    Tutup
+                                </AlertDialogCancel>
+                                <AlertDialogAction
+                                    onClick={() => approvalRuangEvent(event.id, "ditolak")}
+                                >
+                                    Tolak
+                                </AlertDialogAction>
+                                <AlertDialogAction
+                                    onClick={() => approvalRuangEvent(event.id, "disetujui")}
+                                >
+                                    Setujui
+                                </AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                        </AlertDialog>
+                    )}
+
+                    {canApprove(event, 'zoom') && !["tidak", "langsung"].includes(event.jadwal_ori?.zoom_status) && (
                         <AlertDialog>
                             <AlertDialogTrigger asChild>
                                 <Button
                                     variant="outline"
                                     className="text-secondary"
                                 >
-                                    Approval Ruang
+                                    Approval Zoom
                                 </Button>
                             </AlertDialogTrigger>
                             <AlertDialogContent>
                                 <AlertDialogHeader>
                                     <AlertDialogTitle className="text-secondary">
-                                        Konfirmasi tindakan
+                                        Konfirmasi Tindakan
                                     </AlertDialogTitle>
                                     <AlertDialogDescription>
-                                        Apakah Anda menyetujui atau menolak
-                                        permintaan pemakaian ruangan?
+                                        Pilih akun Zoom, lalu setujui atau tolak permintaan ini.
                                     </AlertDialogDescription>
                                 </AlertDialogHeader>
+                                <div className="grid gap-3">
+                                    <Label
+                                        className="text-secondary"
+                                        htmlFor="zoom-account-select"
+                                        >
+                                        Zoom Akun
+                                    </Label>
+                                    <Select
+                                        name="tipe"
+                                        value={zoomAkun}
+                                        onValueChange={(value) =>
+                                            setZoomAkun(value as "statsulbar" | "sp2020")
+                                        }
+                                    >
+                                    <SelectTrigger
+                                        id="zoom-account-select"
+                                        className="text-secondary">
+                                        <SelectValue placeholder="Pilih Akun" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectGroup>
+                                            <SelectItem value="statsulbar">
+                                                statsulbar
+                                            </SelectItem>
+                                            <SelectItem value="sp2020">
+                                                sp2020
+                                            </SelectItem>
+                                        </SelectGroup>
+                                    </SelectContent>
+                                    </Select>
+                                </div>
                                 <AlertDialogFooter>
                                     <AlertDialogCancel className="text-secondary">
                                         Tutup
                                     </AlertDialogCancel>
                                     <AlertDialogAction
-                                        onClick={() =>
-                                            approvalRuangEvent(
-                                                event.id,
-                                                "ditolak",
-                                            )
-                                        }
-                                    >
+                                        onClick={() => approvalZoomEvent(event.id, "ditolak")}
+                                        >
                                         Tolak
                                     </AlertDialogAction>
                                     <AlertDialogAction
-                                        onClick={() =>
-                                            approvalRuangEvent(
-                                                event.id,
-                                                "disetujui",
-                                            )
-                                        }
+                                        disabled={!zoomAkun}
+                                        onClick={() => approvalZoomEvent(event.id, "disetujui")}
                                     >
-                                        Setujui
+                                    Setujui
                                     </AlertDialogAction>
                                 </AlertDialogFooter>
                             </AlertDialogContent>
                         </AlertDialog>
-                    )}
-                    {havePeran("zoom") &&
-                        !["tidak", "langsung"].includes(
-                            event.jadwal_ori.zoom_status,
-                        ) && (
-                            <AlertDialog>
-                                <AlertDialogTrigger asChild>
-                                    <Button
-                                        variant="outline"
-                                        className="text-secondary"
-                                    >
-                                        Approval Zoom
-                                    </Button>
-                                </AlertDialogTrigger>
-                                <AlertDialogContent>
-                                    <AlertDialogHeader>
-                                        <AlertDialogTitle className="text-secondary">
-                                            Konfirmasi tindakan
-                                        </AlertDialogTitle>
-                                        <AlertDialogDescription>
-                                            Apakah Anda ingin menyetujui atau
-                                            menolak permintaan ini?
-                                        </AlertDialogDescription>
-                                    </AlertDialogHeader>
-                                    <div className="grid gap-3">
-                                        <Label
-                                            className="text-secondary"
-                                            htmlFor="tipe-1"
-                                        >
-                                            Zoom Akun
-                                        </Label>
-                                        <Select
-                                            name="tipe"
-                                            required
-                                            value={zoomAkun}
-                                            onValueChange={(value) => {
-                                                console.log(value);
-                                                setZoomAkun(
-                                                    value as
-                                                        | "statsulbar"
-                                                        | "sp2020"
-                                                        | undefined,
-                                                );
-                                            }}
-                                        >
-                                            <SelectTrigger
-                                                name="zoom_status"
-                                                className="text-secondary"
-                                            >
-                                                <SelectValue placeholder="Pilih Akun" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectGroup>
-                                                    <SelectItem value="statsulbar">
-                                                        statsulbar
-                                                    </SelectItem>
-                                                    <SelectItem value="sp2020">
-                                                        sp2020
-                                                    </SelectItem>
-                                                </SelectGroup>
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-                                    <AlertDialogFooter>
-                                        <AlertDialogCancel className="text-secondary">
-                                            Tutup
-                                        </AlertDialogCancel>
-                                        <AlertDialogAction
-                                            onClick={() =>
-                                                approvalZoomEvent(
-                                                    event.id,
-                                                    "ditolak",
-                                                )
-                                            }
-                                        >
-                                            Tolak
-                                        </AlertDialogAction>
-                                        <AlertDialogAction
-                                            onClick={() =>
-                                                approvalZoomEvent(
-                                                    event.id,
-                                                    "disetujui",
-                                                )
-                                            }
-                                        >
-                                            Setujui
-                                        </AlertDialogAction>
-                                    </AlertDialogFooter>
-                                </AlertDialogContent>
-                            </AlertDialog>
                         )}
+
+                    {/* Ubah Event */}
                     {canChange(event) && (
                         <AddEditEventDialog
-                            event={event}
-                            onUpdateOpenChange={(_event: IEvent) =>
-                                setEvent(_event as JadwalIEvent)
-                            }
+                        event={event}
+                        onUpdateOpenChange={(_event: IEvent) =>
+                            setEvent(_event as JadwalIEvent)
+                        }
                         >
-                            <Button
-                                variant="outline"
-                                className="text-accent-foreground"
-                            >
-                                Ubah
-                            </Button>
+                        <Button
+                            variant="outline"
+                            className="text-accent-foreground">
+                            Ubah
+                        </Button>
                         </AddEditEventDialog>
                     )}
 
-                    {canApprove(event) && (
+                    {canDelete(event) && (
                         <Button
                             variant="destructive"
-                            onClick={() => {
-                                deleteEvent(event.id);
-                            }}
-                        >
-                            Hapus
+                            onClick={() => deleteEvent(event.id)}
+                            >
+                        Hapus
                         </Button>
                     )}
                     <DialogClose asChild>
                         <Button variant="outline">Tutup</Button>
                     </DialogClose>
-                </div>
+                    </div>
                 <DialogClose />
             </DialogContent>
         </Dialog>

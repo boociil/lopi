@@ -165,6 +165,23 @@ export function PinjamZoomCalender({
         if(!event_.pinjam_zoom_ori){
             return false
         }
+        if(event_.pinjam_zoom_ori.jadwal_id){
+            return false
+        }
+        if(have_zoom_peran || event_.pinjam_zoom_ori.pembuat_username == auth.user.username){
+            return true
+        }else{
+            return false
+        }
+    }
+    function canDelete(event: IEvent):  boolean{
+        const event_ = event as PinjamZoomIEvent
+        if(!event_.pinjam_zoom_ori){
+            return false
+        }
+        if(event_.pinjam_zoom_ori.jadwal_id){
+            return false
+        }
         if(have_zoom_peran || event_.pinjam_zoom_ori.pembuat_username == auth.user.username){
             return true
         }else{
@@ -200,6 +217,7 @@ export function PinjamZoomCalender({
                 havePeran={havePeran}
                 canAdd={canAdd}
                 canChange={canChange}
+                canDelete={canDelete}
                 canApprove={canApprove}
             >
                 <DndProvider showConfirmation={true}>

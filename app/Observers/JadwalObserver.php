@@ -45,9 +45,7 @@ Terima kasih.";
             $no_wa_send =  User_Setting::whereIn('username', $peranRuang)->where('category', 'profile')->where('key', 'no_wa')->get()->pluck('data')->toArray();
 
             foreach($no_wa_send as $itemWa){
-                if($itemWa == '6282195195502'){
-                    $wa_service->sendSimpleText($itemWa, $wa_teks);
-                }
+                $wa_service->sendSimpleText($itemWa, $wa_teks);
             }
         }
 
@@ -73,9 +71,7 @@ Terima kasih.";
 
             $no_wa_send =  User_Setting::whereIn('username', [$jadwal->pembuat_username])->where('category', 'profile')->where('key', 'no_wa')->get()->pluck('data')->toArray();
             foreach($no_wa_send as $itemWa){
-                if($itemWa == '6282195195502'){
-                    $wa_service->sendSimpleText($itemWa, $wa_teks);
-                }
+                $wa_service->sendSimpleText($itemWa, $wa_teks);
             }
         }
     }
@@ -115,9 +111,7 @@ Terima kasih.";
             $no_wa_send =  User_Setting::whereIn('username', $peranRuang)->where('category', 'profile')->where('key', 'no_wa')->get()->pluck('data')->toArray();
 
             foreach($no_wa_send as $itemWa){
-                if($itemWa == '6282195195502'){
-                    $wa_service->sendSimpleText($itemWa, $wa_teks);
-                }
+                $wa_service->sendSimpleText($itemWa, $wa_teks);
             }
         }
 
@@ -144,9 +138,7 @@ Terima kasih.";
 
             $no_wa_send =  User_Setting::whereIn('username', [$jadwal->pembuat_username])->where('category', 'profile')->where('key', 'no_wa')->get()->pluck('data')->toArray();
             foreach($no_wa_send as $itemWa){
-                if($itemWa == '6282195195502'){
-                    $wa_service->sendSimpleText($itemWa, $wa_teks);
-                }
+                $wa_service->sendSimpleText($itemWa, $wa_teks);
             }
         }
     }

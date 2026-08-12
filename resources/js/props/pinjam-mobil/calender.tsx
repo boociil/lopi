@@ -129,6 +129,14 @@ export function PinjamMobilCalender({
             return false
         }
     }
+    function canDelete(event: IEvent):  boolean{
+        const event_ = event as PinjamMobilIEvent
+        if(havePinjamMobilPeran || event_.pinjam_mobil_ori.pembuat_username == auth.user.username){
+            return true
+        }else{
+            return false
+        }
+    }
     function canApprove(event: IEvent):  boolean{
         const event_ = event as PinjamMobilIEvent
         if(havePinjamMobilPeran && event_.pinjam_mobil_ori.status == 'menunggu'){
@@ -154,6 +162,7 @@ export function PinjamMobilCalender({
                 havePeran={havePeran}
                 canAdd={canAdd}
                 canChange={canChange}
+                canDelete={canDelete}
                 canApprove={canApprove}
             >
             <DndProvider showConfirmation={true}>

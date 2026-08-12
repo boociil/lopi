@@ -120,6 +120,18 @@ export function produceJadwalIEvent(
                 }
             }
 
+            const peserta_ : jadwal_peserta[] = []
+
+            element.peserta.forEach(element2 => {
+                peserta_.push({
+                    id: element2.peserta_type+"-+-"+element2.peserta_id,
+                    jadwal_id: element2.jadwal_id,
+                    peserta_type: element2.peserta_type,
+                    peserta_id: element2.peserta_id,
+                })
+            });
+            element.peserta = peserta_
+
             retur_data.push({
                 id: element.id,
                 startDate: `${tanggal_awal}T${element.waktu_awal}`,
@@ -150,6 +162,25 @@ export function pairIEventDenganUser(
         const user = users.filter(
             (e) =>
                 e.id ==jadwal_event[i].jadwal_ori?.pembuat_username,
+        );
+        if (user) {
+            jadwal_event[i].user = user;
+        }
+    }
+}
+
+export function pairIEventDenganPeserta(
+    jadwal_event: JadwalIEvent[],
+    users: IUser[],
+) {
+    for (let i = 0; i < jadwal_event.length; i++) {
+        const user_id: string[] = [];
+        (jadwal_event[i].jadwal_ori as jadwal).peserta.forEach(element => {
+            user_id.push(element.id)
+        });
+        const user = users.filter(
+            (e) =>
+                user_id.includes(e.id)
         );
         if (user) {
             jadwal_event[i].user = user;

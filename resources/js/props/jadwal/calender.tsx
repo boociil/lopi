@@ -2,7 +2,7 @@ import { CalendarBody } from "@/components/calender_modules/calendar-body";
 import { CalendarProvider } from "@/components/calender_modules/contexts/calendar-context";
 import { DndProvider } from "@/components/calender_modules/contexts/dnd-context";
 import { CalendarHeader } from "@/components/calender_modules/header/calendar-header";
-import { jadwal, pairIEventDenganUser, JadwalIEvent, produceJadwalIEvent, SettingCalenderJadwal } from "./types";
+import { jadwal, pairIEventDenganUser, JadwalIEvent, produceJadwalIEvent, SettingCalenderJadwal, pairIEventDenganPeserta } from "./types";
 import { Satuan_Kerja_Tahun, Tim, type SharedData, type User } from "@/types";
 import { produceCalenderUser, SettingCalender, type IEvent, type IUser } from "@/components/calender_modules/interfaces";
 import { AddEditEventDialog } from "./dialog/add-edit-event-dialog";
@@ -53,8 +53,7 @@ export function JadwalCalender({
 
     const _user: IUser[] = produceCalenderUser(user, satuan_kerja_tahun, tim);
     const _allEvents: JadwalIEvent[] = produceJadwalIEvent(jadwal_data);
-
-    pairIEventDenganUser(_allEvents as JadwalIEvent[], _user)
+    pairIEventDenganPeserta(_allEvents as JadwalIEvent[], _user)
 
     /////////////////////
     function reload_data(selectedDate: Date, currentView: TCalendarView, setAllEventsOri: (_allEvents: IEvent[]) => void){
@@ -150,16 +149,38 @@ export function JadwalCalender({
             return false
         }
     }
-    function canApprove(event: IEvent):  boolean{
+    function canDelete(event: IEvent):  boolean{
         const event_ = event as JadwalIEvent
         if(!event_.jadwal_ori){
             return false
         }
-        if(have_zoom_peran && event_.jadwal_ori.status == 'menunggu'){
+        if(event_.jadwal_ori.pembuat_username == auth.user.username){
             return true
         }else{
             return false
         }
+    }
+    function canApprove(event: IEvent, type?: string):  boolean{
+        const event_ = event as JadwalIEvent
+        if(!event_.jadwal_ori){
+            return false
+        }
+        if (type == null){
+            return false
+        }else if(type == 'zoom'){
+            if(have_zoom_peran && event_.jadwal_ori.zoom_status == 'menunggu'){
+                return true
+            }else{
+                return false
+            }
+        }else if(type == 'ruang'){
+            if(have_zoom_peran && event_.jadwal_ori.ruang_status == 'menunggu'){
+                return true
+            }else{
+                return false
+            }
+        }
+        return false
     }
 
     return (
@@ -178,6 +199,7 @@ export function JadwalCalender({
                 havePeran={havePeran}
                 canAdd={canAdd}
                 canChange={canChange}
+                canDelete={canDelete}
                 canApprove={canApprove}
             >
             <DndProvider showConfirmation={true}>

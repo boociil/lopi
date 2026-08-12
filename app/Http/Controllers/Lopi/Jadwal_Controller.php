@@ -260,6 +260,7 @@ class Jadwal_Controller extends Controller
             $jadwal->pembuat_username = Auth::user()->username;
 
             $jadwal->ruang_status = 'tidak';
+            $jadwal->ruang = null;
             if($request->input('ruang_status') != 'tidak'){
                 $jadwal->ruang_status = 'menunggu';
                 $jadwal->ruang = $request->input('ruang');
@@ -298,7 +299,7 @@ class Jadwal_Controller extends Controller
             $ruang_ok = in_array($jadwal->ruang_status, ['tidak', 'disetujui']);
             $zoom_ok = in_array($jadwal->zoom_status, ['tidak', 'langsung', 'disetujui']);
 
-            if ($ruang_ok && $zoom_ok && !($jadwal->ruang_status == 'tidak' && $jadwal->zoom_status == 'tidak')) {
+            if ($ruang_ok && $zoom_ok) {
                 $jadwal->status = 'disetujui';
             } else {
                 $jadwal->status = 'menunggu';
@@ -480,20 +481,58 @@ class Jadwal_Controller extends Controller
                 }
             }
 
-            $jadwal->zoom_status = 'tidak';
+            $inputZoomStatus = $request->input('zoom_status');
 
-            if( in_array($jadwal->zoom_status, ['tidak', 'langsung', 'menunggu', 'ditolak']) ){
-                if(in_array($jadwal->zoom_status, ['menunggu', 'ditolak'])){
+            if (in_array($jadwal->zoom_status, ['tidak', 'langsung', 'menunggu', 'ditolak'])) {
+                if ($jadwal->zoom_pinjam) {
                     $jadwal->zoom_pinjam->delete();
                     $jadwal->zoom_pinjam_id = null;
                 }
+
                 $jadwal->zoom_status = 'tidak';
-                if($request->input('zoom_status') != 'tidak'){
-                    if($request->input('zoom_status') == 'langsung' && $request->input('zoom_langsung_join_url')){
-                        $jadwal->zoom_status = 'langsung';
+
+                if ($inputZoomStatus === 'langsung' && $request->input('zoom_langsung_join_url')) {
+                    $jadwal->zoom_status = 'langsung';
+                    $jadwal->zoom_langsung_join_url = $request->input('zoom_langsung_join_url');
+
+                } elseif ($inputZoomStatus !== 'tidak') {
+                    $pinjam_zoom = Pinjam_Zoom::helper_tambah(
+                        $request->input('kegiatan'),
+                        $request->input('tipe'),
+                        $request->input('zoom_password'),
+                        $request->input('tanggal'),
+                        $request->input('tanggal_awal'),
+                        $request->input('tanggal_akhir'),
+                        $request->input('waktu_awal'),
+                        $request->input('waktu_akhir'),
+                        $have_zoom_peran,
+                        in_array($request->input('zoom_akun'), ['statsulbar', 'sp2020']) ? $request->input('zoom_akun') : null,
+                        $this->zoom
+                    );
+
+                    $jadwal->zoom_pinjam_id = $pinjam_zoom->id;
+                    $jadwal->zoom_status = $pinjam_zoom->status;
+                    $jadwal->zoom_confirm_username = $pinjam_zoom->confirm_username;
+                }
+
+            } else {
+                $pinjam_zoom = $jadwal->zoom_pinjam;
+
+                if (in_array($inputZoomStatus, ['tidak', 'langsung'])) {
+                    if ($pinjam_zoom) {
+                        $pinjam_zoom->helper_hapus($have_zoom_peran, $this->zoom);
+                    }
+
+                    $jadwal->zoom_pinjam_id = null;
+                    $jadwal->zoom_status = $inputZoomStatus;
+
+                    if ($inputZoomStatus === 'langsung') {
                         $jadwal->zoom_langsung_join_url = $request->input('zoom_langsung_join_url');
-                    }else{
-                        $pinjam_zoom = Pinjam_Zoom::helper_tambah(
+                    }
+
+                } elseif ($inputZoomStatus === 'menunggu') {
+                    if ($pinjam_zoom) {
+                        $pinjam_zoom->helper_ubah(
                             $request->input('kegiatan'),
                             $request->input('tipe'),
                             $request->input('zoom_password'),
@@ -512,47 +551,13 @@ class Jadwal_Controller extends Controller
                         $jadwal->zoom_confirm_username = $pinjam_zoom->confirm_username;
                     }
                 }
-            }else{
-                if(in_array($request->input('zoom_status'), ['tidak']) ){
-                    $pinjam_zoom = $jadwal->zoom_pinjam;
-                    $pinjam_zoom->helper_hapus($have_zoom_peran, $this->zoom);
-
-                    $jadwal->zoom_pinjam_id = null;
-                    $jadwal->zoom_status = $request->input('zoom_status');
-                }else if(in_array($request->input('zoom_status'), ['langsung']) ){
-                    $pinjam_zoom = $jadwal->zoom_pinjam;
-                    $pinjam_zoom->helper_hapus($have_zoom_peran, $this->zoom);
-
-                    $jadwal->zoom_pinjam_id = null;
-                    $jadwal->zoom_status = $request->input('zoom_status');
-                    $jadwal->zoom_langsung_join_url = $request->input('zoom_langsung_join_url');
-                }else if(in_array($request->input('zoom_status'), ['menunggu']) ){
-                    $pinjam_zoom = $jadwal->zoom_pinjam;
-                    $pinjam_zoom->helper_ubah(
-                        $request->input('kegiatan'),
-                        $request->input('tipe'),
-                        $request->input('zoom_password'),
-                        $request->input('tanggal'),
-                        $request->input('tanggal_awal'),
-                        $request->input('tanggal_akhir'),
-                        $request->input('waktu_awal'),
-                        $request->input('waktu_akhir'),
-                        $have_zoom_peran,
-                        in_array($request->input('zoom_akun'), ['statsulbar', 'sp2020']) ? $request->input('zoom_akun') : null,
-                        $this->zoom
-                    );
-
-                    $jadwal->zoom_pinjam_id = $pinjam_zoom->id;
-                    $jadwal->zoom_status = $pinjam_zoom->status;
-                    $jadwal->zoom_confirm_username = $pinjam_zoom->confirm_username;
-                }
             }
 
 
             $ruang_ok = in_array($jadwal->ruang_status, ['tidak', 'disetujui']);
             $zoom_ok = in_array($jadwal->zoom_status, ['tidak', 'langsung', 'disetujui']);
 
-            if ($ruang_ok && $zoom_ok && !($jadwal->ruang_status == 'tidak' && $jadwal->zoom_status == 'tidak')) {
+            if ($ruang_ok && $zoom_ok) {
                 $jadwal->status = 'disetujui';
             } else {
                 $jadwal->status = 'menunggu';
@@ -684,17 +689,14 @@ class Jadwal_Controller extends Controller
         try
         {
             if($have_ruang_peran && in_array($request->ruang_status, ['disetujui', 'ditolak'])){
-                if ($request->ruang_status == 'disetujui' && in_array($request->input('ruang'), $this->ruang)) {
-                    $jadwal->ruang = $request->input('ruang');
-                    $jadwal->ruang_status = $request->ruang_status;
-                    $jadwal->ruang_confirm_username = Auth::user()->username;
-                }
+                $jadwal->ruang_status = $request->ruang_status;
+                $jadwal->ruang_confirm_username = Auth::user()->username;
             }
 
             $ruang_ok = in_array($jadwal->ruang_status, ['tidak', 'disetujui']);
             $zoom_ok = in_array($jadwal->zoom_status, ['tidak', 'langsung', 'disetujui']);
 
-            if ($ruang_ok && $zoom_ok && !($jadwal->ruang_status == 'tidak' && $jadwal->zoom_status == 'tidak')) {
+            if ($ruang_ok && $zoom_ok) {
                 $jadwal->status = 'disetujui';
             } else {
                 $jadwal->status = 'menunggu';
@@ -724,8 +726,9 @@ class Jadwal_Controller extends Controller
                     $pesertaWithName
                 );
             }
-
             DB::commit();
+            $jadwal->peserta;
+            $jadwal->zoom_pinjam;
             return [
                 "_status" => 'Berhasil approval peminjaman zoom!',
                 "data" => $jadwal
@@ -814,6 +817,8 @@ class Jadwal_Controller extends Controller
             }
 
             DB::commit();
+            $jadwal->peserta;
+            $jadwal->zoom_pinjam;
             return [
                 "_status" => 'Berhasil approval peminjaman zoom!',
                 "data" => $jadwal
@@ -833,21 +838,21 @@ class Jadwal_Controller extends Controller
             ->when($ignore_id, function($query) use ($ignore_id) {
                 return $query->where('id', '!=', $ignore_id);
             })
-            ->where(function ($query) use($tanggal_awal, $tanggal_akhir) {
-                $query->orWhere(function (Builder $query) use ($tanggal_awal, $tanggal_akhir){
-                            $query->where('tipe', 'sekali')
-                                ->whereBetween('tanggal', [$tanggal_awal, $tanggal_akhir]);
-                        })
-                        ->orWhere(function (Builder $query) use ($tanggal_awal, $tanggal_akhir) {
-                            $query->where('tipe', 'berulang')
-                                ->where('berulang_tanggal_awal', '<=', $tanggal_akhir)
-                                ->where('berulang_tanggal_akhir', '>=', $tanggal_awal);
-                        });
-            })
+            ->where(function ($query0) use($tanggal_awal, $tanggal_akhir) {
+                    $query0->orWhere(function (Builder $query) use ($tanggal_awal, $tanggal_akhir){
+                                $query->where('tipe', 'sekali')
+                                    ->whereBetween('tanggal', [$tanggal_awal, $tanggal_akhir]);
+                            })
+                            ->orWhere(function (Builder $query) use ($tanggal_awal, $tanggal_akhir) {
+                                $query->where('tipe', 'berulang')
+                                    ->where('berulang_tanggal_awal', '<=', $tanggal_akhir)
+                                    ->where('berulang_tanggal_akhir', '>=', $tanggal_awal);
+                            });
+                })
             ->get();
 
-        $input_waktu_awal = Carbon::createFromFormat('H:i:s', strlen($waktu_awal) == 5 ? $waktu_awal.':00' : $waktu_awal);
-        $input_waktu_akhir = Carbon::createFromFormat('H:i:s', strlen($waktu_akhir) == 5 ? $waktu_akhir.':00' : $waktu_akhir);
+        $input_waktu_awal = Carbon::createFromFormat('H:i:s', $waktu_awal);
+        $input_waktu_akhir = Carbon::createFromFormat('H:i:s', $waktu_akhir);
 
         $isClash = false;
 

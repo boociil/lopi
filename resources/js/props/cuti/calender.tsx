@@ -96,6 +96,9 @@ export function CutiCalender({
     function canChange(event: IEvent):  boolean{
          return false;
     }
+    function canDelete(event: IEvent):  boolean{
+         return false;
+    }
     function canApprove(event: IEvent):  boolean{
          return false;
     }
@@ -118,6 +121,7 @@ export function CutiCalender({
                 havePeran={havePeran}
                 canAdd={canAdd}
                 canChange={canChange}
+                canDelete={canDelete}
                 canApprove={canApprove}
             >
                 <DndProvider showConfirmation={true}>

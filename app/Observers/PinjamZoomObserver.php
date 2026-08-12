@@ -48,9 +48,7 @@ Terima kasih.";
             $no_wa_send =  User_Setting::whereIn('username', $peranZoom)->where('category', 'profile')->where('key', 'no_wa')->get()->pluck('data')->toArray();
 
             foreach($no_wa_send as $itemWa){
-                if($itemWa == '6282195195502'){
-                    $wa_service->sendSimpleText($itemWa, $wa_teks);
-                }
+                $wa_service->sendSimpleText($itemWa, $wa_teks);
             }
         }else if($pinjamZoom->status == 'disetujui'){
             $nama_pengaju = Auth::user()->nama;
@@ -72,9 +70,7 @@ Terima kasih.";
 
             $no_wa_send =  User_Setting::whereIn('username', [$pinjamZoom->pembuat_username])->where('category', 'profile')->where('key', 'no_wa')->get()->pluck('data')->toArray();
             foreach($no_wa_send as $itemWa){
-                if($itemWa == '6282195195502'){
-                    $wa_service->sendSimpleText($itemWa, $wa_teks);
-                }
+                $wa_service->sendSimpleText($itemWa, $wa_teks);
             }
         }
     }
@@ -113,9 +109,7 @@ Terima kasih.";
 
             $no_wa_send =  User_Setting::whereIn('username', $peranZoom)->where('category', 'profile')->where('key', 'no_wa')->get()->pluck('data')->toArray();
             foreach($no_wa_send as $itemWa){
-                if($itemWa == '6282195195502'){
-                    $wa_service->sendSimpleText($itemWa, $wa_teks);
-                }
+                $wa_service->sendSimpleText($itemWa, $wa_teks);
             }
         }else if($pinjamZoom->status == 'disetujui'){
             $nama_pengaju = Auth::user()->nama;
@@ -137,9 +131,7 @@ Terima kasih.";
 
             $no_wa_send =  User_Setting::whereIn('username', [$pinjamZoom->pembuat_username])->where('category', 'profile')->where('key', 'no_wa')->get()->pluck('data')->toArray();
             foreach($no_wa_send as $itemWa){
-                if($itemWa == '6282195195502'){
-                    $wa_service->sendSimpleText($itemWa, $wa_teks);
-                }
+                $wa_service->sendSimpleText($itemWa, $wa_teks);
             }
         }
     }
