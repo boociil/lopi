@@ -56,72 +56,45 @@ class Google_Event_Local_Service
 
         $peserta_arr_full_uni = array_unique($peserta_arr_full);
         $calendar_user_add = Calendar_User::whereIn('username', $peserta_arr_full_uni)->get();
-
         $calendar_google_event = Calendar_Google_Event::where('parent_id', $jadwal->id)->get();
 
-        $this->client->setUseBatch(true);
-        $batch = $this->service->createBatch();;
 
-        $i = 0;
         foreach ($calendar_google_event as $item) {
             try {
-                $delRequest = $this->service->events->delete($item->google_calendar_id, $item->event_id);
-                $batch->add($delRequest, "del_$i");
-                $i++;
-            } catch (\Exception $e) {}
+                $this->service->events->delete(
+                    $item->google_calendar_id,
+                    $item->event_id
+                );
+            } catch (\Google\Service\Exception $e) {
+                Log::alert($e);
+            } catch (\Exception $e) {
+                Log::error($e);
+            }
         }
-
         Calendar_Google_Event::where('parent_id', $jadwal->id)->delete();
 
-        $insert_keys = [];
-
-
-        if(count($peserta_arr) > 0) {
+        if (count($peserta_arr) > 0) {
             $event_obj = $this->buildEvent($jadwal, $peserta_arr_req);
-            $i = 0;
             foreach ($calendar_user_add as $item) {
-                $insRequest = $this->service->events->insert(
-                    $item->google_calendar_id,
-                    $event_obj
-                );
-                $batchKey = "ins_$i";
-                $batch->add($insRequest, $batchKey);
-
-                $insert_keys[$batchKey] = [
-                    'username' => $item->username,
-                    'calendar_id' => $item->google_calendar_id,
-                    'jadwal_id' => $jadwal->id,
-                ];
-                $i++;
+                try {
+                    $response = $this->service->events->insert(
+                        $item->google_calendar_id,
+                        $event_obj
+                    );
+                    Calendar_Google_Event::create([
+                        'id' => Str::uuid(),
+                        'parent_tipe' => 'jadwal',
+                        'parent_id' => $jadwal->id,
+                        'google_calendar_id' => $item->google_calendar_id,
+                        'event_id' => $response->id,
+                        'username' => $item->username,
+                    ]);
+                } catch (\Google\Service\Exception $e) {
+                    Log::alert($e);
+                } catch (\Exception $e) {
+                    Log::error($e);
+                }
             }
-        }
-
-        $results = $batch->execute();
-        $this->client->setUseBatch(false);
-
-        foreach ($results as $responseId => $response) {
-            $requestId = str_replace('response-', '', $responseId);
-
-            if (!array_key_exists($requestId, $insert_keys)) {
-                continue;
-            }
-
-            if ($response instanceof \Google\Service\Exception) {
-                // Consider logging API exceptions here
-                continue;
-            }
-
-            $info = $insert_keys[$requestId];
-            $event_id = $response->id;
-
-            Calendar_Google_Event::create([
-                'id' => Str::uuid(),
-                'parent_tipe' => 'jadwal',
-                'parent_id' => $jadwal->id,
-                'google_calendar_id' => $info['calendar_id'],
-                'event_id' => $event_id,
-                'username' => $info['username'],
-            ]);
         }
     }
 
