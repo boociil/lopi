@@ -46,7 +46,7 @@ export function JadwalCalender({
         name_event: 'kegiatan',
         calender_show: ["week", "month","agenda"],
         show_filter: true,
-        filter_name: [['green', 'statsulbar'], ['yellow', 'sp2020']],
+        filter_name: [['purple', 'Tanpa zoom dan ruang'], ['green', 'Menggunakan zoom dan ruang'], ['yellow', 'Menggunakan zoom'], ['blue', 'Menggunakan ruang']],
         show_filter_user: true,
         ruang: ruang
     }

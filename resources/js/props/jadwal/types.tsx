@@ -1,6 +1,7 @@
 import { IEvent, IUser, SettingCalender } from "@/components/calender_modules/interfaces";
 import { User } from "@/types";
 import { pinjam_zoom } from "../pinjam-zoom/types";
+import { TEventColor } from "@/components/calender_modules/types";
 
 
 export type JadwalProps = {
@@ -132,6 +133,15 @@ export function produceJadwalIEvent(
             });
             element.peserta = peserta_
 
+            let color_ : TEventColor = "purple"
+            if(element.zoom_status != 'tidak' && element.ruang_status != 'tidak'){
+                color_ = "green"
+            }else if(element.zoom_status != 'tidak'){
+                color_ = "yellow"
+            }else if(element.ruang_status != 'tidak'){
+                color_ = "blue"
+            }
+
             retur_data.push({
                 id: element.id,
                 startDate: `${tanggal_awal}T${element.waktu_awal}`,
@@ -142,7 +152,7 @@ export function produceJadwalIEvent(
                 _startTime: element.waktu_awal,
                 _endTime: element.waktu_akhir,
                 title: element.kegiatan,
-                color: element.status == "disetujui" ? "green" : "blue",
+                color: color_,
                 description: "Peminjaman Zoom",
                 user: [],
                 jadwal_ori: element,

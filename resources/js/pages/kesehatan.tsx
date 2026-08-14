@@ -312,7 +312,7 @@ export default function Index({
                                         <CardTitle className="font-semibold text-accent-foreground">Analisis Metabolik</CardTitle>
                                         <CardDescription>Tren gula darah dan asam urat dalam beberapa bulan terakhir.</CardDescription>
                                     </CardHeader>
-                                    <CardContent className="h-[300px]">
+                                    <CardContent className="h-75">
                                     <ResponsiveContainer width="100%" height="100%">
                                         <LineChart data={[...healthData]}>
                                         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
@@ -341,7 +341,7 @@ export default function Index({
                                         <CardTitle className="font-semibold  text-accent-foreground">Komposisi Tubuh</CardTitle>
                                         <CardDescription>Monitor berat badan dan lingkar perut.</CardDescription>
                                     </CardHeader>
-                                    <CardContent className="h-[300px]">
+                                    <CardContent className="h-75">
                                     <ResponsiveContainer width="100%" height="100%">
                                         <AreaChart data={[...healthData]}>
                                         <defs>
