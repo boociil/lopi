@@ -13,22 +13,39 @@ use Illuminate\Validation\Rule;
 
 use App\Model\Lopi\Jadwal;
 use App\Model\Umum\Peran;
+use App\Model\Umum\Satuan_Kerja_Tahun;
+use App\Model\Umum\Tim;
 use App\Model\Umum\User;
 use Inertia\Inertia;
 
 class Ruang_Controller extends Controller
 {
+    public $ruang = ['aula', 'pokja', 'pst'];
+
     public function __construct()
     {
     }
 
-     public function index(Request $request)
+    public function index(Request $request)
     {
-         $validated = $request->validate([
+        $validated = $request->validate([
             'selectedDate'  => 'date',
             'view'          => 'string',
             'view'          => Rule::in(['day', 'week', 'month', 'year', 'agenda'])
         ]);
+
+        $satuan_kerja_tahun_kode = [];
+        $peran_satuan_kerja = Peran::get_my_peran_satuan_kerja_kerja_tahun();
+
+        foreach($peran_satuan_kerja as $item){
+            if(!in_array($item->parent_id, $satuan_kerja_tahun_kode)){
+                array_push($satuan_kerja_tahun_kode, $item->parent_id);
+            }
+        }
+
+        if(count($satuan_kerja_tahun_kode) != 1){
+            return abort(401);
+        }
 
         $selectedDate = null;
         $view = null;
@@ -71,13 +88,7 @@ class Ruang_Controller extends Controller
             ->where('peran', 'ruang')
             ->first();
 
-        if($request->isMethod('get')){
-            return Inertia::render('pinjam/ruang', [
-                "user" => User::all(),
-                "have_ruang_peran" => $have_ruang_peran,
-            ]);
-        }else if($request->isMethod('post')){
-            $jadwal_ruang = Jadwal::where(function (Builder $query0) use ($tanggal_awal, $tanggal_akhir){
+        $jadwal_data = Jadwal::where(function (Builder $query0) use ($tanggal_awal, $tanggal_akhir){
                     $query0->orWhere(function (Builder $query) use ($tanggal_awal, $tanggal_akhir){
                             $query->where('tipe', 'sekali')
                                 ->whereBetween('tanggal', [$tanggal_awal->format('Y-m-d'), $tanggal_akhir->format('Y-m-d')]);
@@ -91,10 +102,21 @@ class Ruang_Controller extends Controller
                 ->whereNotNull('ruang')
                 ->get();
 
+        if($request->isMethod('get')){
+            return Inertia::render('pinjam/ruang', [
+                "ruang" => $this->ruang,
+                "user" => User::whereHas('peran', function (Builder $query) use ($satuan_kerja_tahun_kode) {
+                        $query->where('tipe_peran', 'satuan_kerja_tahun');
+                        $query->whereIn('parent_id', $satuan_kerja_tahun_kode);
+                    })->get(),
+                "have_ruang_peran" => $have_ruang_peran,
+                "jadwal_data" => $jadwal_data,
+            ]);
+        }else if($request->isMethod('post')){
 
             return [
                 "have_ruang_peran" => $have_ruang_peran,
-                "jadwal_ruang" => $jadwal_ruang,
+                "jadwal_data" => $jadwal_data,
             ];
         }
     }

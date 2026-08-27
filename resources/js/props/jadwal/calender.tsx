@@ -174,7 +174,7 @@ export function JadwalCalender({
                 return false
             }
         }else if(type == 'ruang'){
-            if(have_zoom_peran && event_.jadwal_ori.ruang_status == 'menunggu'){
+            if(have_ruang_peran && event_.jadwal_ori.ruang_status == 'menunggu'){
                 return true
             }else{
                 return false

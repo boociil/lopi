@@ -158,7 +158,7 @@ export function PinjamZoomCalender({
         return have_zoom_peran
     }
     function canAdd():  boolean{
-        return true
+        return false
     }
     function canChange(event: IEvent):  boolean{
         const event_ = event as PinjamZoomIEvent

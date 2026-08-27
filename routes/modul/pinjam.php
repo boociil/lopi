@@ -42,7 +42,6 @@ Route::group(
     ], function () {
         Route::get('/', [Pinjam_Ruang_Controller::class, 'index'])->name('pinjam-ruang-index');
         Route::post('/', [Pinjam_Ruang_Controller::class, 'index'])->name('pinjam-ruang-index');
-        Route::post('/{nonBmn}/approval', [Pinjam_Ruang_Controller::class, 'approval'])->name('pinjam-ruang-approval');
     });
     Route::group(
     [

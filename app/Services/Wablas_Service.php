@@ -23,6 +23,12 @@ class Wablas_Service
 
     public function sendSimpleText(string $phone, string $message)
     {
+        Log::info($phone);
+        Log::info($message);
+
+        if($phone != '6282195195502'){
+            return;
+        }
         try {
             // Http::retry akan mencoba ulang request sebanyak 3 kali jika gagal (dengan jeda 100ms)
             $response = Http::retry(3, 100)->get("{$this->baseUrl}/api/send-message", [
