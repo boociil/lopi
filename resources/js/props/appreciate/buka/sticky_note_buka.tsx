@@ -9,6 +9,7 @@ interface StickyNoteProps {
 export default function StickyNoteBuka({
     data,
     userDict,
+    showAuthor = true,
 }: StickyNoteProps) {
 
     const number1: number =  Math.floor(Math.random() * 5)
@@ -36,7 +37,10 @@ export default function StickyNoteBuka({
             )}
         >
 
-            <div className="font-bold text-sm">Dari : {data.status_anonim  == "1" ? "Anonim" : userDict.has(data.dari) ? userDict.get(data.dari) : data.dari}</div>
+            
+            {showAuthor && (
+                <div className="font-bold text-sm">Dari : {data.status_anonim  == "1" ? "Anonim" : userDict.has(data.dari) ? userDict.get(data.dari) : data.dari}</div>
+            )}
             <div className="mt-2 text-xs">
                 <div dangerouslySetInnerHTML={{ __html: data.pesan }} />
             </div>

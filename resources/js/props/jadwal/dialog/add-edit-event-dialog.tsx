@@ -136,8 +136,20 @@ export function AddEditEventDialog({
             error_clash_ruang: '',
         });
 
+    const [hanyaDaring, setHanyaDaring] = useState(true);
+
     const submit: React.FormEventHandler = (e) => {
         e.preventDefault();
+        if (
+            data.ruang_status === "tidak" &&
+            !hanyaDaring &&
+            !data.ruang?.trim()
+        ) {
+            setStep(2);
+            setError("ruang", "Tempat pelaksanaan wajib diisi.");
+            return;
+        }
+
         if (!isEditing) {
             toast.info("Mencoba menambahkan data baru");
             progressIndikator.start();
@@ -279,6 +291,10 @@ export function AddEditEventDialog({
 
                 setData("ruang_status", event_.jadwal_ori.ruang_status);
                 setData("ruang", event_.jadwal_ori.ruang);
+                setHanyaDaring(
+                    event_.jadwal_ori.ruang_status === "tidak" &&
+                        !event_.jadwal_ori.ruang,
+                );
             } else {
                 setData("zoom_status", "tidak");
                 setData("zoom_password", null);
@@ -286,6 +302,7 @@ export function AddEditEventDialog({
 
                 setData("ruang_status", "tidak");
                 setData("ruang", null);
+                setHanyaDaring(true);
             }
 
             setData('error_clash_zoom', '');
@@ -308,6 +325,7 @@ export function AddEditEventDialog({
 
             setData("ruang_status", "tidak");
             setData("ruang", null);
+            setHanyaDaring(true);
 
             setData("zoom_status", "tidak");
             setData("zoom_password", null);
@@ -337,7 +355,19 @@ export function AddEditEventDialog({
 
     const [openPengguna, setOpenPengguna] = useState(false);
 
-    const nextStep = () => setStep((s) => Math.min(s + 1, 4));
+    const nextStep = () => {
+        if (
+            step === 2 &&
+            data.ruang_status === "tidak" &&
+            !hanyaDaring &&
+            !data.ruang?.trim()
+        ) {
+            setError("ruang", "Tempat pelaksanaan wajib diisi.");
+            return;
+        }
+
+        setStep((s) => Math.min(s + 1, 4));
+    };
     const prevStep = () => setStep((s) => Math.max(s - 1, 1));
 
     const renderStepContent = () => {
@@ -512,10 +542,12 @@ export function AddEditEventDialog({
                                                     | "tidak"
                                                     | "menunggu",
                                             );
+                                            clearErrors("ruang");
                                             if (
                                                 e.target.value ==
                                                 "tidak"
                                             ) {
+                                                setHanyaDaring(true);
                                                 setData("ruang", null);
                                             }
                                         }}
@@ -541,6 +573,64 @@ export function AddEditEventDialog({
                                 </Label>
                             ))}
                         </div>
+                        {data.ruang_status === "tidak" && (
+                            <div className="space-y-3 animate-in slide-in-from-top-2">
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                                        Hanya Daring
+                                    </label>
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setHanyaDaring(true);
+                                                setData("ruang", null);
+                                                clearErrors("ruang");
+                                            }}
+                                            className={`py-2 rounded-xl text-xs font-bold border transition-all ${hanyaDaring ? "bg-blue-600 border-blue-600 text-white" : "bg-white border-slate-200 text-slate-500"}`}
+                                        >
+                                            Ya
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setHanyaDaring(false);
+                                                clearErrors("ruang");
+                                            }}
+                                            className={`py-2 rounded-xl text-xs font-bold border transition-all ${!hanyaDaring ? "bg-blue-600 border-blue-600 text-white" : "bg-white border-slate-200 text-slate-500"}`}
+                                        >
+                                            Tidak
+                                        </button>
+                                    </div>
+                                    <p className="mt-1.5 text-xs text-slate-500">
+                                        {hanyaDaring
+                                            ? "Kegiatan dilaksanakan sepenuhnya secara daring."
+                                            : "Isi tempat pelaksanaan kegiatan."}
+                                    </p>
+                                </div>
+                                {!hanyaDaring && (
+                                    <div className="animate-in slide-in-from-top-2">
+                                        <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                                            Tempat Pelaksanaan
+                                        </label>
+                                        <Input
+                                            type="text"
+                                            className="w-full px-3 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none"
+                                            value={data.ruang ?? ""}
+                                            onChange={(e) => {
+                                                setData(
+                                                    "ruang",
+                                                    e.target.value || null,
+                                                );
+                                                clearErrors("ruang");
+                                            }}
+                                            placeholder="Contoh: Halaman Depan"
+                                        />
+                                        <InputError message={errors.ruang} />
+                                    </div>
+                                )}
+                            </div>
+                        )}
                         {(data.ruang_status === "menunggu" ||
                             data.ruang_status === "disetujui") && (
                             <div className="animate-in slide-in-from-top-2">

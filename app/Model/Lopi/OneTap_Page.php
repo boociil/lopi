@@ -27,6 +27,7 @@ class OneTap_Page extends Model
         'tema',
         'foto_url',
         'warna_latar',
+        'visibilitas',
     ];
 
     protected $casts = [
@@ -43,4 +44,10 @@ class OneTap_Page extends Model
             'id'
         );
     }
+
+    public function pengguna()
+    {
+        return $this->hasMany(OneTap_Pengguna::class, 'page_id');
+    }
+    
 }

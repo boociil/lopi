@@ -167,6 +167,7 @@ class Jadwal_Controller extends Controller
             'waktu_akhir'       => 'required|date_format:H:i|after:waktu_awal',
 
             'ruang_status' => 'in:tidak,menunggu,disetujui,ditolak',
+            'ruang' => 'nullable|string|max:255',
 
             'zoom_status'  => 'in:tidak,langsung,menunggu,disetujui,ditolak',
             'zoom_langsung_join_url'     => 'nullable|string',
@@ -260,7 +261,7 @@ class Jadwal_Controller extends Controller
             $jadwal->pembuat_username = Auth::user()->username;
 
             $jadwal->ruang_status = 'tidak';
-            $jadwal->ruang = null;
+            $jadwal->ruang = $request->filled('ruang') ? $request->input('ruang') : null;
             if($request->input('ruang_status') != 'tidak'){
                 $jadwal->ruang_status = 'menunggu';
                 $jadwal->ruang = $request->input('ruang');
@@ -356,6 +357,7 @@ class Jadwal_Controller extends Controller
             'waktu_akhir'       => 'required|date_format:H:i|after:waktu_awal',
 
             'ruang_status' => 'in:tidak,menunggu,disetujui,ditolak',
+            'ruang' => 'nullable|string|max:255',
 
             'zoom_status'  => 'in:tidak,langsung,menunggu,disetujui,ditolak',
             'zoom_langsung_join_url'     => 'nullable|string',
@@ -465,7 +467,7 @@ class Jadwal_Controller extends Controller
 
             if($request->input('ruang_status') == 'tidak'){
                 $jadwal->ruang_status = 'tidak';
-                $jadwal->ruang = null;
+                $jadwal->ruang = $request->filled('ruang') ? $request->input('ruang') : null;
                 $jadwal->ruang_confirm_username = null;
             }else if($request->input('ruang_status') != 'tidak'){
                 if($have_ruang_peran && in_array($request->input('ruang'), $this->ruang)){

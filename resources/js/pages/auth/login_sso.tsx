@@ -57,10 +57,10 @@ export default function Login({ tahun_array, tahun_default }: LoginProps) {
                                 <div className="grid gap-2">
                                     <Label htmlFor="tahun">Tahun</Label>
                                     <Select
-                                        name='tahun'
-                                        value={tahun_default}
+                                        name="tahun"
+                                        value={data.tahun}
                                         onValueChange={(e) => setData('tahun', e)}
-                                        >
+                                    >
                                         <SelectTrigger id="tahun">
                                             <SelectValue placeholder="Tahun" />
                                         </SelectTrigger>
@@ -78,17 +78,24 @@ export default function Login({ tahun_array, tahun_default }: LoginProps) {
 
 
 
-                                <Button type="submit" className="mt-4 w-full focus-visible:ring-ring bg-primary text-primary-foreground hover:bg-primary/90" tabIndex={4} disabled={processing}>
+                                <Button type="submit" className="mt-4 w-full cursor-pointer focus-visible:ring-ring bg-primary text-primary-foreground hover:bg-primary/90" tabIndex={4} disabled={processing}>
                                     {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}
-                                    Log in
+                                    Login SSO
                                 </Button>
                             </div>
-
                         </form>
+                        <Button
+                            asChild
+                            className="mt-4 w-full cursor-pointer focus-visible:ring-ring bg-blue-500 text-primary-foreground hover:bg-blue-400"
+                        >
+                            <a href={route('sso_new', { tahun: data.tahun })} tabIndex={5}>
+                                Login SSO Baru
+                            </a>
+                        </Button>
                     </CardContent>
-                    {status && <div className="mb-4 text-center text-sm font-medium text-green-600">{status}</div>}
                 </Card>
             </div>
         </div>
     );
 }
+

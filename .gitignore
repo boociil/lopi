@@ -16,3 +16,5 @@ Homestead.yaml
 npm-debug.log
 yarn-error.log
 lopiservice-48fe7bfdaa73.json
+*.sql
+*.zip

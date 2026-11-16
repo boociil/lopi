@@ -57,7 +57,7 @@ export default function Index({
                                         <div className="overflow-hidden rounded-md flex flex-wrap gap-4">
                                             {item_data.data.map((item, index)  => {
                                                 return (
-                                                    <StickyNoteBuka data={item} userDict={userDict}>
+                                                    <StickyNoteBuka data={item} userDict={userDict} showAuthor={false} >
                                                     </StickyNoteBuka>
                                                 )
                                             })}

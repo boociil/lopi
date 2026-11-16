@@ -278,6 +278,13 @@ export function EventDetailsDialog({
       }
     }, [openDialog, openToolbox]);
 
+    const hasRuang = Boolean(event.jadwal_ori.ruang);
+    const lokasiUtama = hasRuang
+        ? capitalizeWords(event.jadwal_ori.ruang as string)
+        : event.jadwal_ori.zoom_status !== "tidak"
+          ? "Hanya Daring"
+          : "Hanya Online";
+
     return (
         <Dialog open={openDialog} onOpenChange={setOpenDialog}>
              <Tooltip open={openToolbox} onOpenChange={setOpenToolbox}>
@@ -351,19 +358,10 @@ export function EventDetailsDialog({
                                             size={18}
                                         />
                                         <span className="flex items-start gap-1.5 bg-slate-50  rounded-xl border border-slate-100 w-fit text-sm text-slate-700 font-medium">
-                                            {event.jadwal_ori.ruang_status !==
-                                            "tidak"
-                                                ? capitalizeWords(
-                                                      event.jadwal_ori
-                                                          .ruang as string,
-                                                  )
-                                                : "Hanya Online"}
+                                            {lokasiUtama}
                                         </span>
                                     </div>
-                                    {!(
-                                        event.jadwal_ori.ruang_status !==
-                                        "tidak"
-                                    ) && (
+                                    {!hasRuang && (
                                         <p className="flex items-start gap-1.5 bg-slate-50  rounded-xl border border-slate-100 w-fit text-xs text-slate-700 font-medium italic">
                                             *Tidak menggunakan fasilitas ruang
                                         </p>
@@ -536,19 +534,10 @@ export function EventDetailsDialog({
                                         size={18}
                                     />
                                     <span className="flex items-start gap-1.5 bg-slate-50  rounded-xl border border-slate-100 w-fit text-sm text-slate-700 font-medium">
-                                        {event.jadwal_ori.ruang_status !==
-                                        "tidak"
-                                            ? capitalizeWords(
-                                                    event.jadwal_ori
-                                                        .ruang as string,
-                                                )
-                                            : "Hanya Online"}
+                                        {lokasiUtama}
                                     </span>
                                 </div>
-                                {!(
-                                    event.jadwal_ori.ruang_status !==
-                                    "tidak"
-                                ) && (
+                                {!hasRuang && (
                                     <p className="flex items-start gap-1.5 bg-slate-50  rounded-xl border border-slate-100 w-fit text-xs text-slate-700 font-medium italic">
                                         *Tidak menggunakan fasilitas ruang
                                     </p>

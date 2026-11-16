@@ -4,6 +4,10 @@ namespace App\Http\Controllers\Lopi;
 
 use App\Http\Controllers\Controller;
 use App\Model\Lopi\OneTap_Page;
+use App\Model\Umum\Peran;
+use App\Model\Umum\Tim;
+use App\Model\Umum\User;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -23,9 +27,19 @@ class OneTap_Controller extends Controller
         abort_unless($user, 401);
 
         $pages = OneTap_Page::query()
-            ->where('pembuat_username', $user->username)
+            ->where(function ($query) use ($user) {
+                $query->where('pembuat_username', $user->username)
+                    ->orWhere('visibilitas', 'publik')
+                    ->orWhere(function ($query) use ($user) {
+                        $query->where('visibilitas', 'internal')
+                            ->whereHas('pengguna', function ($query) use ($user) {
+                                $query->where('pengguna_username', $user->username);
+                            });
+                    });
+            })
             ->with([
                 'buttons' => fn ($query) => $query->orderBy('urutan'),
+                'pengguna',
             ])
             ->latest('updated_at')
             ->get();
@@ -34,13 +48,50 @@ class OneTap_Controller extends Controller
             ->where('pembuat_username', $user->username)
             ->with([
                 'buttons' => fn ($query) => $query->orderBy('urutan'),
+                'pengguna',
             ])
             ->latest('deleted_at')
             ->get();
 
+        $satuan_kerja_tahun_kode = Peran::get_my_peran_satuan_kerja_kerja_tahun()
+            ->pluck('parent_id')
+            ->unique()
+            ->values();
+
+        $tim = Tim::with(['peran'])
+            ->where('tahun', session('tahun_active'))
+            ->whereIn('satuan_kerja_tahun_id', $satuan_kerja_tahun_kode)
+            ->get();
+
+        $timUsernames = $tim
+            ->flatMap(fn (Tim $item) => $item->peran->pluck('pemilik_username'))
+            ->filter()
+            ->unique()
+            ->values();
+
         return Inertia::render('onetap', [
             'data' => $pages,
             'trash' => $trash,
+            'users' => User::query()
+                ->whereHas('peran', function (Builder $query) use ($satuan_kerja_tahun_kode) {
+                    $query->where('tipe_peran', 'satuan_kerja_tahun')
+                        ->whereIn('parent_id', $satuan_kerja_tahun_kode);
+                })
+                ->select('username', 'nama')
+                ->orderBy('nama')
+                ->get(),
+            'userNames' => User::query()
+                ->whereIn('username', $timUsernames)
+                ->pluck('nama', 'username'),
+            'tim' => $tim->map(fn (Tim $item) => [
+                'id' => $item->id,
+                'nama' => $item->nama,
+                'anggota' => $item->peran
+                    ->pluck('pemilik_username')
+                    ->filter()
+                    ->unique()
+                    ->values(),
+            ]),
         ]);
     }
 
@@ -66,6 +117,7 @@ class OneTap_Controller extends Controller
                         $validated['deskripsi'] ?? null
                     ),
                     'akses' => $validated['akses'],
+                    'visibilitas' => $validated['visibilitas'],
                     'tema' => $validated['tema'],
                     'foto_url' => $this->nullableTrim(
                         $validated['foto_url'] ?? null
@@ -80,8 +132,14 @@ class OneTap_Controller extends Controller
                     $validated['buttons'] ?? []
                 );
 
+                $this->syncPengguna(
+                    $page,
+                    $validated['pengguna'] ?? []
+                );
+
                 return $page->load([
                     'buttons' => fn ($query) => $query->orderBy('urutan'),
+                    'pengguna',
                 ]);
             });
 
@@ -117,6 +175,7 @@ class OneTap_Controller extends Controller
                         $validated['deskripsi'] ?? null
                     ),
                     'akses' => $validated['akses'],
+                    'visibilitas' => $validated['visibilitas'],
                     'tema' => $validated['tema'],
                     'foto_url' => $this->nullableTrim(
                         $validated['foto_url'] ?? null
@@ -131,8 +190,14 @@ class OneTap_Controller extends Controller
                     $validated['buttons'] ?? []
                 );
 
+                $this->syncPengguna(
+                    $page,
+                    $validated['pengguna'] ?? []
+                );
+
                 return $page->fresh()->load([
                     'buttons' => fn ($query) => $query->orderBy('urutan'),
+                    'pengguna',
                 ]);
             });
 
@@ -181,6 +246,7 @@ class OneTap_Controller extends Controller
 
             $page = $page->fresh()->load([
                 'buttons' => fn ($query) => $query->orderBy('urutan'),
+                'pengguna',
             ]);
 
             return response()->json([
@@ -205,6 +271,7 @@ class OneTap_Controller extends Controller
         try {
             DB::transaction(function () use ($page): void {
                 $page->buttons()->delete();
+                $page->pengguna()->delete();
                 $page->forceDelete();
             });
 
@@ -235,6 +302,29 @@ class OneTap_Controller extends Controller
 
         if ($page->akses === 'private' && !$request->user()) {
             return redirect()->guest(route('login'));
+        }
+
+        if ($page->visibilitas !== 'publik') {
+            $user = $request->user();
+
+            if (!$user) {
+                return redirect()->guest(route('login'));
+            }
+
+            if ($page->pembuat_username !== $user->username) {
+                if ($page->visibilitas === 'privat') {
+                    abort(403);
+                }
+
+                if (
+                    $page->visibilitas === 'internal'
+                    && !$page->pengguna()
+                        ->where('pengguna_username', $user->username)
+                        ->exists()
+                ) {
+                    abort(403);
+                }
+            }
         }
 
         return view('onetap', [
@@ -269,6 +359,12 @@ class OneTap_Controller extends Controller
                 'required',
                 Rule::in(['public', 'private']),
             ],
+            'visibilitas' => [
+                'required',
+                Rule::in(['publik', 'internal', 'privat']),
+            ],
+            'pengguna' => ['nullable', 'array', 'max:500'],
+            'pengguna.*' => ['string', 'max:100'],
             'tema' => [
                 'required',
                 Rule::in(['orange', 'blue', 'green']),
@@ -369,6 +465,27 @@ class OneTap_Controller extends Controller
                 ...$payload,
             ]);
         }
+    }
+
+    private function syncPengguna(
+        OneTap_Page $page,
+        array $usernames
+    ): void {
+        $page->pengguna()->delete();
+
+        if ($page->visibilitas !== 'internal') {
+            return;
+        }
+
+        collect($usernames)
+            ->map(fn ($username) => trim((string) $username))
+            ->filter()
+            ->unique()
+            ->each(function (string $username) use ($page): void {
+                $page->pengguna()->create([
+                    'pengguna_username' => $username,
+                ]);
+            });
     }
 
     private function getOwnedPage(

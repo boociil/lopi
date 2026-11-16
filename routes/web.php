@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\SSO_Controller;
+use App\Http\Controllers\Auth\SSO_Controller_new;
 use App\Http\Controllers\Umum\Beranda_Controller;
 use App\Http\Controllers\Lopi\Notif_Controller;
 use App\Http\Controllers\Lopi\Profile_Controller;
@@ -27,6 +28,11 @@ Route::get('/login', [SSO_Controller::class, 'showLoginForm'])->name('login');
 Route::get('/sso', [SSO_Controller::class, 'sso'])->name('sso');
 Route::get('/logout', [SSO_Controller::class, 'logout'])->name('logout');
 Route::get('/sso_back', [SSO_Controller::class, 'back'])->name('logout');
+
+Route::get('/sso_new', [SSO_Controller_new::class, 'sso'])->name('sso_new');
+Route::get('/login_new', [SSO_Controller_new::class, 'showLoginForm'])->name('login_new');
+Route::get('/logout_new', [SSO_Controller_new::class, 'logout'])->name('logout_new');
+// Route::get('/sso_back', [SSO_Controller::class, 'back'])->name('logout');
 
 
 

@@ -1,11 +1,14 @@
 import AppLayout from "@/layouts/app-layout";
 import { type BreadcrumbItem } from "@/types";
-import { Head } from "@inertiajs/react";
+import { Head, usePage } from "@inertiajs/react";
 import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from "react";
 import {
     ArrowDown,
     ArrowUp,
     Building2,
+    ChevronLeft,
+    ChevronRight,
+    ChevronsUpDown,
     Copy,
     Download,
     ExternalLink,
@@ -47,6 +50,8 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { useLoading } from "@/props/LoadingContext";
 import { useApi } from "@/lib/API/useApi";
 import { toast } from "sonner";
@@ -59,10 +64,33 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 type OneTapAccess = "public" | "private";
+type OneTapVisibilitas = "publik" | "internal" | "privat";
+type VisibilitasFilter = "all" | "internal" | "privat";
 type OneTapTheme = "orange" | "blue" | "green";
 type OneTapItemType = "link" | "divider";
 type MainView = "list" | "trash";
 type EditorMode = "add" | "edit";
+
+type AuthUser = {
+    id: number;
+    username: string;
+    nama: string;
+};
+
+type OneTapUser = {
+    username: string;
+    nama: string;
+};
+
+type OneTapTim = {
+    id: string;
+    nama: string;
+    anggota: string[];
+};
+
+type SharedProps = {
+    auth: { user: AuthUser | null };
+};
 
 interface OneTapButton {
     id?: string;
@@ -75,12 +103,18 @@ interface OneTapButton {
     urutan: number;
 }
 
+interface OneTapPengguna {
+    id?: number;
+    pengguna_username: string;
+}
+
 interface OneTapPage {
     id: string;
     judul: string;
     slug: string;
     deskripsi: string;
     akses: OneTapAccess;
+    visibilitas: OneTapVisibilitas;
     tema: OneTapTheme;
     foto_url: string;
     warna_latar: string;
@@ -90,6 +124,7 @@ interface OneTapPage {
     updated_at?: string;
     deleted_at?: string | null;
     buttons: OneTapButton[];
+    pengguna?: OneTapPengguna[];
     jumlah_tombol?: number;
 }
 
@@ -99,15 +134,20 @@ interface OneTapFormData {
     slug: string;
     deskripsi: string;
     akses: OneTapAccess;
+    visibilitas: OneTapVisibilitas;
     tema: OneTapTheme;
     foto_url: string;
     warna_latar: string;
     buttons: OneTapButton[];
+    pengguna: string[];
 }
 
 interface OneTapProps {
     data?: OneTapPage[];
     trash?: OneTapPage[];
+    users?: OneTapUser[];
+    userNames?: Record<string, string>;
+    tim?: OneTapTim[];
 }
 
 interface ValidationErrors {
@@ -120,11 +160,23 @@ const EMPTY_FORM: OneTapFormData = {
     slug: "",
     deskripsi: "",
     akses: "private",
+    visibilitas: "privat",
     tema: "orange",
     foto_url: "",
     warna_latar: "",
     buttons: [],
+    pengguna: [],
 };
+
+const VISIBILITAS_OPTIONS: Array<{
+    value: OneTapVisibilitas;
+    label: string;
+    description: string;
+}> = [
+    { value: "publik", label: "Publik", description: "Semua pengguna dapat melihat." },
+    { value: "internal", label: "Internal", description: "Hanya pengguna yang dipilih." },
+    { value: "privat", label: "Privat", description: "Hanya pembuat OneTap." },
+];
 
 const THEME_OPTIONS: Array<{
     value: OneTapTheme;
@@ -160,16 +212,19 @@ const ICON_OPTIONS: IconOption[] = [
     { value: "building", label: "Instansi", icon: Building2 },
 ];
 
-export default function OneTap({ data = [], trash = [] }: OneTapProps) {
+export default function OneTap({ data = [], trash = [], users = [], userNames = {}, tim = [] }: OneTapProps) {
     const axiosClient = useApi();
+    const { auth } = usePage<SharedProps>().props;
     const { setIsLoading } = useLoading();
-
+    const username = auth.user?.username;
     const [pages, setPages] = useState<OneTapPage[]>(data);
     const [trashPages, setTrashPages] = useState<OneTapPage[]>(trash);
     const [view, setView] = useState<MainView>("list");
     const [searchQuery, setSearchQuery] = useState("");
     const [accessFilter, setAccessFilter] = useState<"all" | OneTapAccess>("all");
+    const [visibilitasFilter, setVisibilitasFilter] = useState<VisibilitasFilter>("all");
     const [perPage, setPerPage] = useState<10 | 20 | 50>(10);
+    const [currentPage, setCurrentPage] = useState(1);
     const [selectedPage, setSelectedPage] = useState<OneTapPage | null>(data[0] ?? null);
     const [editorOpen, setEditorOpen] = useState(false);
     const [editorMode, setEditorMode] = useState<EditorMode>("add");
@@ -197,15 +252,38 @@ export default function OneTap({ data = [], trash = [] }: OneTapProps) {
         return [...pages]
             .sort((a, b) => new Date(b.created_at ?? "").getTime() - new Date(a.created_at ?? "").getTime())
             .filter((page) => {
-            const matchesSearch =
-                keyword === "" ||
-                page.judul.toLowerCase().includes(keyword) ||
-                page.slug.toLowerCase().includes(keyword) ||
-                page.deskripsi?.toLowerCase().includes(keyword);
-            const matchesAccess = accessFilter === "all" || page.akses === accessFilter;
-                return matchesSearch && matchesAccess;
+                const isOwner = page.pembuat_username === username;
+                const visibilitas = normalizeVisibilitas(page.visibilitas);
+                const matchesVisibilitas =
+                    visibilitasFilter === "all"
+                        ? isOwner || visibilitas === "publik"
+                        : visibilitasFilter === "internal"
+                          ? isOwner || visibilitas === "internal"
+                          : isOwner;
+                const matchesSearch =
+                    keyword === "" ||
+                    page.judul.toLowerCase().includes(keyword) ||
+                    page.slug.toLowerCase().includes(keyword) ||
+                    page.deskripsi?.toLowerCase().includes(keyword);
+                const matchesAccess = accessFilter === "all" || page.akses === accessFilter;
+                return matchesSearch && matchesAccess && matchesVisibilitas;
             });
-    }, [pages, searchQuery, accessFilter]);
+    }, [pages, searchQuery, accessFilter, visibilitasFilter, username]);
+
+    const totalPages = Math.max(1, Math.ceil(filteredPages.length / perPage));
+
+    const paginatedPages = useMemo(
+        () => filteredPages.slice((currentPage - 1) * perPage, currentPage * perPage),
+        [filteredPages, currentPage, perPage],
+    );
+
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchQuery, accessFilter, visibilitasFilter, perPage]);
+
+    useEffect(() => {
+        setCurrentPage((page) => Math.min(page, totalPages));
+    }, [totalPages]);
 
     const filteredTrash = useMemo(() => {
         const keyword = searchQuery.trim().toLowerCase();
@@ -229,6 +307,7 @@ export default function OneTap({ data = [], trash = [] }: OneTapProps) {
             slug: page.slug ?? "",
             deskripsi: page.deskripsi ?? "",
             akses: page.akses ?? "private",
+            visibilitas: normalizeVisibilitas(page.visibilitas),
             tema: page.tema ?? "orange",
             foto_url: page.foto_url ?? "",
             warna_latar: page.warna_latar ?? "",
@@ -242,6 +321,7 @@ export default function OneTap({ data = [], trash = [] }: OneTapProps) {
                 aktif: Boolean(button.aktif),
                 urutan: button.urutan ?? index + 1,
             })) ?? [],
+            pengguna: page.pengguna?.map((item) => item.pengguna_username) ?? [],
         });
         setErrors({});
         setEditorOpen(true);
@@ -269,22 +349,25 @@ export default function OneTap({ data = [], trash = [] }: OneTapProps) {
         setErrors((current) => ({ ...current, [`buttons.${index}.${String(key)}`]: undefined }));
     };
 
-    const addButton = (type: OneTapItemType) => {
-        setFormData((current) => ({
-            ...current,
-            buttons: [
-                ...current.buttons,
-                {
-                    tipe: type,
-                    judul: "",
-                    url: "",
-                    ikon: "",
-                    warna: "",
-                    aktif: true,
-                    urutan: current.buttons.length + 1,
-                },
-            ],
-        }));
+    const addButton = (type: OneTapItemType, index?: number) => {
+        setFormData((current) => {
+            const position = index ?? current.buttons.length;
+            const buttons = [...current.buttons];
+            buttons.splice(position, 0, {
+                tipe: type,
+                judul: "",
+                url: "",
+                ikon: "",
+                warna: "",
+                aktif: true,
+                urutan: position + 1,
+            });
+
+            return {
+                ...current,
+                buttons: buttons.map((button, itemIndex) => ({ ...button, urutan: itemIndex + 1 })),
+            };
+        });
     };
 
     const removeButton = (index: number) => {
@@ -309,10 +392,28 @@ export default function OneTap({ data = [], trash = [] }: OneTapProps) {
         });
     };
 
+    const addPengguna = (username: string) => {
+        setFormData((current) => current.pengguna.includes(username)
+            ? current
+            : { ...current, pengguna: [...current.pengguna, username] });
+        setErrors((current) => ({ ...current, visibilitas: undefined }));
+    };
+
+    const removePengguna = (username: string) => {
+        setFormData((current) => ({
+            ...current,
+            pengguna: current.pengguna.filter((item) => item !== username),
+        }));
+        setErrors((current) => ({ ...current, visibilitas: undefined }));
+    };
+
     const validateForm = (): boolean => {
         const nextErrors: ValidationErrors = {};
         if (!formData.judul.trim()) nextErrors.judul = "Judul wajib diisi.";
         if (!formData.slug.trim()) nextErrors.slug = "Slug wajib diisi.";
+        if (formData.visibilitas === "internal" && formData.pengguna.length === 0) {
+            nextErrors.visibilitas = "Pilih minimal satu pengguna untuk visibilitas internal.";
+        }
         formData.buttons.forEach((button, index) => {
             if (button.tipe === "link" && !button.judul.trim()) nextErrors[`buttons.${index}.judul`] = "Judul tombol wajib diisi.";
             if (button.tipe === "link" && !button.url.trim()) nextErrors[`buttons.${index}.url`] = "URL wajib diisi untuk item link.";
@@ -331,6 +432,7 @@ export default function OneTap({ data = [], trash = [] }: OneTapProps) {
         const payload = {
             ...formData,
             slug: normalizeSlug(formData.slug),
+            pengguna: formData.visibilitas === "internal" ? formData.pengguna : [],
             buttons: formData.buttons.map((button, index) => ({ ...button, urutan: index + 1 })),
         };
 
@@ -471,6 +573,14 @@ export default function OneTap({ data = [], trash = [] }: OneTapProps) {
                                             <SelectItem value="private">Private</SelectItem>
                                         </SelectContent>
                                     </Select>
+                                    <Select value={visibilitasFilter} onValueChange={(value) => setVisibilitasFilter(value as VisibilitasFilter)}>
+                                        <SelectTrigger className="w-full md:w-48"><SelectValue placeholder="Filter visibilitas" /></SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="all">Semua</SelectItem>
+                                            <SelectItem value="internal">Untuk Saya</SelectItem>
+                                            <SelectItem value="privat">Privat</SelectItem>
+                                        </SelectContent>
+                                    </Select>
                                     <Select value={String(perPage)} onValueChange={(value) => setPerPage(Number(value) as 10 | 20 | 50)}>
                                         <SelectTrigger className="w-full md:w-36"><SelectValue placeholder="Tampilkan" /></SelectTrigger>
                                         <SelectContent>
@@ -486,15 +596,23 @@ export default function OneTap({ data = [], trash = [] }: OneTapProps) {
                         <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_380px]">
                             <div className="min-w-0">
                                 {view === "list" ? (
-                                    <OneTapList
-                                        pages={filteredPages.slice(0, perPage)}
-                                        total={filteredPages.length}
-                                        selectedId={selectedPage?.id ?? null}
-                                        onSelect={setSelectedPage}
-                                        onEdit={openEdit}
-                                        onDelete={(page) => setConfirmDelete({ open: true, page, permanent: false })}
-                                        onCopy={copyPublicLink}
-                                    />
+                                    <>
+                                        <OneTapList
+                                            pages={paginatedPages}
+                                            selectedId={selectedPage?.id ?? null}
+                                            onSelect={setSelectedPage}
+                                            onEdit={openEdit}
+                                            onDelete={(page) => setConfirmDelete({ open: true, page, permanent: false })}
+                                            onCopy={copyPublicLink}
+                                        />
+                                        <PaginationFooter
+                                            currentPage={currentPage}
+                                            itemsPerPage={perPage}
+                                            totalItems={filteredPages.length}
+                                            totalPages={totalPages}
+                                            onPageChange={setCurrentPage}
+                                        />
+                                    </>
                                 ) : (
                                     <OneTapTrash
                                         pages={filteredTrash}
@@ -517,7 +635,7 @@ export default function OneTap({ data = [], trash = [] }: OneTapProps) {
             <Dialog open={editorOpen} onOpenChange={closeEditor}>
                 <DialogContent className="max-h-[95vh] !w-[96vw] !max-w-[1600px] overflow-y-auto">
                     <DialogHeader><DialogTitle>{editorMode === "add" ? "Tambah OneTap" : "Ubah OneTap"}</DialogTitle></DialogHeader>
-                    <OneTapEditor mode={editorMode} data={formData} errors={errors} saving={saving} onFieldChange={setField} onButtonChange={setButtonField} onAddButton={addButton} onRemoveButton={removeButton} onMoveButton={moveButton} onSubmit={savePage} onCancel={closeEditor} />
+                    <OneTapEditor mode={editorMode} data={formData} errors={errors} saving={saving} users={users} userNames={userNames} tim={tim} onFieldChange={setField} onButtonChange={setButtonField} onAddButton={addButton} onRemoveButton={removeButton} onMoveButton={moveButton} onAddPengguna={addPengguna} onRemovePengguna={removePengguna} onSubmit={savePage} onCancel={closeEditor} />
                 </DialogContent>
             </Dialog>
 
@@ -547,15 +665,16 @@ export default function OneTap({ data = [], trash = [] }: OneTapProps) {
     );
 }
 
-function OneTapList({ pages, total, selectedId, onSelect, onEdit, onDelete, onCopy }: {
+function OneTapList({ pages, selectedId, onSelect, onEdit, onDelete, onCopy }: {
     pages: OneTapPage[];
-    total: number;
     selectedId: string | null;
     onSelect: (page: OneTapPage) => void;
     onEdit: (page: OneTapPage) => void;
     onDelete: (page: OneTapPage) => void;
     onCopy: (page: OneTapPage) => void;
 }) {
+
+    const { auth } = usePage<SharedProps>().props;
     if (pages.length === 0) return <EmptyState icon={<LinkIcon size={34} />} title="Belum ada OneTap" description="Tambahkan OneTap pertama untuk mulai membuat halaman tautan." />;
 
     return (
@@ -589,22 +708,25 @@ function OneTapList({ pages, total, selectedId, onSelect, onEdit, onDelete, onCo
                                     <div className="min-w-0 flex-1">
                                         <div className="flex flex-wrap items-center gap-2">
                                             <h2 className="truncate text-lg font-bold text-slate-900">{page.judul}</h2>
+                                            {/* <span className={`rounded-full px-2.5 py-1 text-[10px] font-bold uppercase ${page.akses === "public" ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-600"}`}>{page.pembuat_username}</span> */}
                                             <span className={`rounded-full px-2.5 py-1 text-[10px] font-bold uppercase ${page.akses === "public" ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-600"}`}>{page.akses}</span>
+                                            <span className="rounded-full bg-sky-50 px-2.5 py-1 text-[10px] font-bold uppercase text-sky-700">{getVisibilitasLabel(page.visibilitas)}</span>
                                             <span className="rounded-full bg-orange-50 px-2.5 py-1 text-[10px] font-bold uppercase text-orange-700">{theme.label}</span>
                                         </div>
                                         <p className="mt-1 truncate text-sm font-medium text-slate-500">/ot/{page.slug}</p>
                                         
-                                        <div className="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-xs text-slate-500">
+                                        <div className="mt-3 flex flex-wrap gap-x-2 gap-y-1 text-xs text-slate-500">
                                             
-                                            <span>Dibuat {formatDate(page.created_at ?? "")}</span>
-                                            <span>Diubah {formatDate(page.updated_at ?? "")}</span>
+                                            <span className="font-medium bg-slate-500 text-white rounded-lg px-2">{page.pembuat_username}</span>
+                                            <span>{formatDate(page.updated_at ?? "")}</span>
                                         </div>
                                     </div>
                                     <div className="flex shrink-0 flex-wrap gap-2" onClick={(event) => event.stopPropagation()}>
-                                        <Button type="button" size="icon" variant="secondary" title="Ubah OneTap" aria-label={`Ubah ${page.judul}`} onClick={() => onEdit(page)}><Pencil size={15} /></Button>
+                                        {/* <Button type="button" size="icon" variant="secondary" title="Ubah OneTap" aria-label={`Ubah ${page.judul}`} onClick={() => onEdit(page)}><Pencil size={15} /></Button> */}
+                                        <Button className={`${auth.user?.username === page.pembuat_username ? 'span' : 'hidden'}`} type="button" size="icon" variant="secondary" title="Ubah OneTap" aria-label={`Ubah ${page.judul}`} onClick={() => onEdit(page)}><Pencil size={15} /></Button>
                                         <Button type="button" size="icon" variant="secondary" title="Salin tautan" aria-label={`Salin tautan ${page.judul}`} onClick={() => onCopy(page)}><Copy size={15} /></Button>
                                         <a href={`/lopi/ot/${page.slug}`} target="_blank" rel="noreferrer" title="Buka OneTap" aria-label={`Buka ${page.judul}`} className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-slate-200 bg-white text-slate-700 transition hover:bg-slate-50"><ExternalLink size={15} /></a>
-                                        <Button type="button" size="icon" variant="ghost" title="Pindahkan ke sampah" aria-label={`Hapus ${page.judul}`} className="text-red-600 hover:bg-red-50 hover:text-red-700" onClick={() => onDelete(page)}><Trash2 size={15} /></Button>
+                                        <Button type="button" size="icon" variant="ghost" title="Pindahkan ke sampah" aria-label={`Hapus ${page.judul}`} className={`${auth.user?.username === page.pembuat_username ? 'span' : 'hidden'} text-red-600 hover:bg-red-50 hover:text-red-700 transition-all duration-300`} onClick={() => onDelete(page)}><Trash2 size={15} /></Button>
                                     </div>
                                 </div>
                             </div>
@@ -612,7 +734,6 @@ function OneTapList({ pages, total, selectedId, onSelect, onEdit, onDelete, onCo
                     </article>
                 );
             })}
-            <div className="px-1 pt-2 text-sm text-slate-500">Menampilkan {pages.length} dari {total} data.</div>
         </div>
     );
 }
@@ -722,16 +843,21 @@ function ListPreview({ page, deleted = false }: { page: OneTapPage | null; delet
     );
 }
 
-function OneTapEditor({ mode, data, errors, saving, onFieldChange, onButtonChange, onAddButton, onRemoveButton, onMoveButton, onSubmit, onCancel }: {
+function OneTapEditor({ mode, data, errors, saving, users, userNames, tim, onFieldChange, onButtonChange, onAddButton, onRemoveButton, onMoveButton, onAddPengguna, onRemovePengguna, onSubmit, onCancel }: {
     mode: EditorMode;
     data: OneTapFormData;
     errors: ValidationErrors;
     saving: boolean;
+    users: OneTapUser[];
+    userNames: Record<string, string>;
+    tim: OneTapTim[];
     onFieldChange: <K extends keyof OneTapFormData>(key: K, value: OneTapFormData[K]) => void;
     onButtonChange: <K extends keyof OneTapButton>(index: number, key: K, value: OneTapButton[K]) => void;
-    onAddButton: (type: OneTapItemType) => void;
+    onAddButton: (type: OneTapItemType, index?: number) => void;
     onRemoveButton: (index: number) => void;
     onMoveButton: (index: number, direction: "up" | "down") => void;
+    onAddPengguna: (username: string) => void;
+    onRemovePengguna: (username: string) => void;
     onSubmit: (event: FormEvent<HTMLFormElement>) => void;
     onCancel: () => void;
 }) {
@@ -768,6 +894,21 @@ function OneTapEditor({ mode, data, errors, saving, onFieldChange, onButtonChang
                                 <SelectContent><SelectItem value="private">Private</SelectItem><SelectItem value="public">Public</SelectItem></SelectContent>
                             </Select>
                         </FormField>
+                        <FormField label="Visibilitas" required error={errors.visibilitas} description={VISIBILITAS_OPTIONS.find((option) => option.value === data.visibilitas)?.description}>
+                            <Select value={data.visibilitas} onValueChange={(value) => onFieldChange("visibilitas", value as OneTapVisibilitas)}>
+                                <SelectTrigger><SelectValue /></SelectTrigger>
+                                <SelectContent>
+                                    {VISIBILITAS_OPTIONS.map((option) => <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>)}
+                                </SelectContent>
+                            </Select>
+                        </FormField>
+                        {data.visibilitas === "internal" && (
+                            <div className="border-t border-slate-200 pt-4 md:col-span-2">
+                                <p className="text-sm font-medium text-slate-700">Pengguna yang Dapat Melihat</p>
+                                <p className="mb-2 mt-1 text-xs text-slate-500">Pilih akun atau tim kerja yang boleh melihat OneTap ini.</p>
+                                <PenggunaPicker users={users} userNames={userNames} tim={tim} selected={data.pengguna} onAdd={onAddPengguna} onRemove={onRemovePengguna} />
+                            </div>
+                        )}
                         <FormField label="URL Foto Profil" error={errors.foto_url}>
                             <Input value={data.foto_url} onChange={(event) => onFieldChange("foto_url", event.target.value)} placeholder="https://..." />
                         </FormField>
@@ -792,16 +933,25 @@ function OneTapEditor({ mode, data, errors, saving, onFieldChange, onButtonChang
                 </section>
 
                 <section className="rounded-2xl border border-slate-200 bg-white p-5">
-                    <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                        <div><h3 className="font-semibold text-slate-900">Daftar Tombol</h3><p className="mt-1 text-sm text-slate-500">Tambahkan link atau divider dan atur urutannya.</p></div>
-                        <div className="flex flex-wrap gap-2">
-                            <Button type="button" size="sm" variant="secondary" onClick={() => onAddButton("link")}><Plus size={14} /> Tambah Link</Button>
-                            <Button type="button" size="sm" variant="secondary" onClick={() => onAddButton("divider")}><Plus size={14} /> Tambah Divider</Button>
-                        </div>
+                    <div className="mb-5">
+                        <h3 className="font-semibold text-slate-900">Daftar Tombol</h3>
+                        <p className="mt-1 text-sm text-slate-500">Tambahkan link atau divider di antara tombol, lalu atur urutannya.</p>
                     </div>
                     <div className="space-y-4">
-                        {data.buttons.map((button, index) => <ButtonEditor key={button.id ?? index} button={button} index={index} total={data.buttons.length} errors={errors} onChange={onButtonChange} onRemove={onRemoveButton} onMove={onMoveButton} />)}
-                        {data.buttons.length === 0 && <div className="rounded-xl border-2 border-dashed border-slate-200 px-5 py-10 text-center"><LinkIcon size={30} className="mx-auto mb-3 text-slate-300" /><p className="text-sm font-medium text-slate-600">Belum ada tombol.</p></div>}
+                        {data.buttons.length > 0 ? (
+                            data.buttons.map((button, index) => (
+                                <div key={button.id ?? index} className="space-y-1">
+                                    <ButtonEditor button={button} index={index} total={data.buttons.length} errors={errors} onChange={onButtonChange} onRemove={onRemoveButton} onMove={onMoveButton} />
+                                    <InsertButtons onAdd={(type) => onAddButton(type, index + 1)} />
+                                </div>
+                            ))
+                        ) : (
+                            <div className="rounded-xl border-2 border-dashed border-slate-200 px-5 py-10 text-center">
+                                <LinkIcon size={30} className="mx-auto mb-3 text-slate-300" />
+                                <p className="text-sm font-medium text-slate-600">Belum ada tombol.</p>
+                                <InsertButtons empty onAdd={(type) => onAddButton(type, 0)} />
+                            </div>
+                        )}
                     </div>
                 </section>
 
@@ -834,6 +984,119 @@ function OneTapEditor({ mode, data, errors, saving, onFieldChange, onButtonChang
                 </div>
             </aside>
         </form>
+    );
+}
+
+function PenggunaPicker({ users, userNames, tim, selected, onAdd, onRemove }: {
+    users: OneTapUser[];
+    userNames: Record<string, string>;
+    tim: OneTapTim[];
+    selected: string[];
+    onAdd: (username: string) => void;
+    onRemove: (username: string) => void;
+}) {
+    const [open, setOpen] = useState(false);
+    const availableUsers = users.filter((user) => !selected.includes(user.username));
+    const availableTim = tim.filter((team) => team.anggota.some((username) => !selected.includes(username)));
+    const getUserName = (username: string) => userNames[username] ?? users.find((user) => user.username === username)?.nama ?? username;
+
+    return (
+        <div className="space-y-3">
+            <Popover open={open} onOpenChange={setOpen} modal={true}>
+                <PopoverTrigger asChild>
+                    <Button type="button" variant="outline" role="combobox" className="w-full justify-between text-slate-600">
+                        Pilih pengguna atau tim...
+                        <ChevronsUpDown className="opacity-50" />
+                    </Button>
+                </PopoverTrigger>
+                <PopoverContent className="z-[100] w-[var(--radix-popover-trigger-width)] p-0" align="start">
+                    <Command>
+                        <CommandInput placeholder="Cari pengguna atau tim..." className="h-9" />
+                        <CommandList>
+                            <CommandEmpty>Tidak ditemukan.</CommandEmpty>
+                            {availableTim.length > 0 && (
+                                <CommandGroup heading="Tim Kerja">
+                                    {availableTim.map((team) => (
+                                        <CommandItem
+                                            key={`tim-${team.id}`}
+                                            value={`tim ${team.nama}`}
+                                            onSelect={() => {
+                                                team.anggota.forEach(onAdd);
+                                                setOpen(false);
+                                            }}
+                                        >
+                                            <span className="flex-1">{team.nama}</span>
+                                            <span className="text-xs text-slate-400">Tim · {team.anggota.length}</span>
+                                        </CommandItem>
+                                    ))}
+                                </CommandGroup>
+                            )}
+                            {availableUsers.length > 0 && (
+                                <CommandGroup heading="Pengguna">
+                                    {availableUsers.map((user) => (
+                                        <CommandItem
+                                            key={user.username}
+                                            value={`${user.nama} ${user.username}`}
+                                            onSelect={() => {
+                                                onAdd(user.username);
+                                                setOpen(false);
+                                            }}
+                                        >
+                                            <span className="flex-1">{user.nama}</span>
+                                            <span className="text-xs text-slate-400">{user.username}</span>
+                                        </CommandItem>
+                                    ))}
+                                </CommandGroup>
+                            )}
+                        </CommandList>
+                    </Command>
+                </PopoverContent>
+            </Popover>
+
+            {selected.length > 0 ? (
+                <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+                    <table className="w-full text-left text-sm">
+                        <tbody className="divide-y divide-slate-100">
+                            {selected.map((username) => (
+                                <tr key={username}>
+                                    <td className="px-4 py-3">
+                                        <span className="font-medium text-slate-700">{getUserName(username)}</span>
+                                        <span className="ml-2 text-xs text-slate-400">{username}</span>
+                                    </td>
+                                    <td className="w-10 px-3 py-3 text-center">
+                                        <Button type="button" size="icon" variant="ghost" className="text-red-600 hover:bg-red-50" onClick={() => onRemove(username)}>
+                                            <Trash2 size={14} />
+                                        </Button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            ) : (
+                <p className="text-xs text-slate-500">Belum ada pengguna atau tim dipilih.</p>
+            )}
+        </div>
+    );
+}
+
+function InsertButtons({ onAdd, empty = false }: {
+    onAdd: (type: OneTapItemType) => void;
+    empty?: boolean;
+}) {
+    const buttonClass = empty
+        ? "gap-1"
+        : "h-8 gap-1 px-2 text-xs font-medium text-slate-500 hover:bg-slate-100 hover:text-slate-800 border-2 border-slate-200 rounded-lg transition cursor-pointer";
+
+    return (
+        <div className={empty ? "mt-4 flex items-center justify-center gap-2" : "flex items-center justify-center gap-1 py-1"}>
+            <Button type="button" size="sm" variant={empty ? "secondary" : "ghost"} className={buttonClass} onClick={() => onAdd("link")}>
+                <Plus size={14} /> Link
+            </Button>
+            <Button type="button" size="sm" variant={empty ? "secondary" : "ghost"} className={buttonClass} onClick={() => onAdd("divider")}>
+                <Plus size={14} /> Divider
+            </Button>
+        </div>
     );
 }
 
@@ -939,9 +1202,107 @@ function getTheme(theme: OneTapTheme) {
     return THEME_OPTIONS.find((item) => item.value === theme) ?? THEME_OPTIONS[0];
 }
 
+function normalizeVisibilitas(visibilitas: string | undefined): OneTapVisibilitas {
+    if (visibilitas === "publik" || visibilitas === "public") return "publik";
+    if (visibilitas === "internal" || visibilitas === "semi") return "internal";
+    return "privat";
+}
+
+function getVisibilitasLabel(visibilitas: OneTapVisibilitas | undefined): string {
+    return VISIBILITAS_OPTIONS.find((item) => item.value === normalizeVisibilitas(visibilitas))?.label ?? "-";
+}
+
 function formatDate(value: string): string {
     if (!value) return "-";
     const date = new Date(value);
     if (Number.isNaN(date.getTime())) return "-";
     return new Intl.DateTimeFormat("id-ID", { day: "2-digit", month: "short", year: "numeric" }).format(date);
+}
+
+function PaginationFooter({
+    currentPage,
+    itemsPerPage,
+    totalItems,
+    totalPages,
+    onPageChange,
+}: {
+    currentPage: number;
+    itemsPerPage: number;
+    totalItems: number;
+    totalPages: number;
+    onPageChange: (page: number) => void;
+}) {
+    if (totalItems === 0) return null;
+
+    const start = (currentPage - 1) * itemsPerPage + 1;
+    const end = Math.min(currentPage * itemsPerPage, totalItems);
+
+    return (
+        <div className="mt-3 flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-xs text-slate-500">
+                Menampilkan <span className="font-semibold text-slate-700">{start}</span>
+                {" - "}
+                <span className="font-semibold text-slate-700">{end}</span> dari{" "}
+                <span className="font-semibold text-slate-700">{totalItems}</span> data
+            </p>
+            <div className="flex items-center gap-1">
+                {totalPages > 1 && (
+                    <>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            className="h-8 w-8 p-0"
+                            onClick={() => onPageChange(currentPage - 1)}
+                            disabled={currentPage === 1}
+                            aria-label="Halaman sebelumnya"
+                        >
+                            <ChevronLeft size={16} />
+                        </Button>
+                        {getPageNumbers(currentPage, totalPages).map((page, index) =>
+                            page === "..." ? (
+                                <span key={`ellipsis-${index}`} className="px-1 text-xs text-slate-400">...</span>
+                            ) : (
+                                <Button
+                                    key={page}
+                                    type="button"
+                                    variant={page === currentPage ? "outline" : "ghost"}
+                                    className={`h-8 w-8 p-0 text-xs ${page === currentPage ? "border-slate-900 bg-accent" : ""}`}
+                                    onClick={() => onPageChange(page)}
+                                >
+                                    {page}
+                                </Button>
+                            ),
+                        )}
+                        <Button
+                            type="button"
+                            variant="outline"
+                            className="h-8 w-8 p-0"
+                            onClick={() => onPageChange(currentPage + 1)}
+                            disabled={currentPage === totalPages}
+                            aria-label="Halaman berikutnya"
+                        >
+                            <ChevronRight size={16} />
+                        </Button>
+                    </>
+                )}
+            </div>
+        </div>
+    );
+}
+
+function getPageNumbers(currentPage: number, totalPages: number): Array<number | "..."> {
+    if (totalPages <= 7) {
+        return Array.from({ length: totalPages }, (_, index) => index + 1);
+    }
+
+    const pages: Array<number | "..."> = [1];
+    const start = Math.max(2, currentPage - 1);
+    const end = Math.min(totalPages - 1, currentPage + 1);
+
+    if (start > 2) pages.push("...");
+    for (let page = start; page <= end; page += 1) pages.push(page);
+    if (end < totalPages - 1) pages.push("...");
+    pages.push(totalPages);
+
+    return pages;
 }
