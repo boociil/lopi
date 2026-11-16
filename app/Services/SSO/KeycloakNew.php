@@ -32,8 +32,13 @@ class KeycloakNew extends Keycloak
      */
     public function getResponse(RequestInterface $request)
     {
+        // Pasang header browser-like ke SEMUA request (token, userinfo, dll)
+        foreach ($this->getDefaultHeaders() as $name => $value) {
+            $request = $request->withHeader($name, $value);
+        }
+
         try {
-            return parent::getResponse($request);
+            $response = parent::getResponse($request);
         } catch (BadResponseException $e) {
             $response = $e->getResponse();
 
@@ -47,6 +52,20 @@ class KeycloakNew extends Keycloak
 
             throw $e;
         }
+
+        // Log kalau balasannya bukan JSON (misal halaman WAF dengan status 200)
+        $contentType = $response->getHeaderLine('Content-Type');
+        if (!Str::contains($contentType, 'json')) {
+            Log::warning('SSO response bukan JSON', [
+                'url' => (string) $request->getUri(),
+                'status' => $response->getStatusCode(),
+                'content_type' => $contentType,
+                'response_body' => Str::limit((string) $response->getBody(), 1000),
+            ]);
+            $response->getBody()->rewind();
+        }
+
+        return $response;
     }
 
     protected function getDefaultScopes()
