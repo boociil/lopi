@@ -21,10 +21,16 @@ class KeycloakNew extends Keycloak
      */
     protected function getDefaultHeaders()
     {
-        return [
+        $headers = [
             'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36',
             'Accept' => 'application/json, text/plain, */*',
         ];
+
+        if (env('SSO_COOKIE')) {
+            $headers['Cookie'] = env('SSO_COOKIE');
+        }
+
+        return $headers;
     }
 
     /**

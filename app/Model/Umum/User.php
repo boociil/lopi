@@ -26,7 +26,7 @@ class User extends Authenticatable
 
     protected $fillable = [
         'username', 'email', 'nip_baru', 'nip_lama', 'nama', 'jabatan', 'golonagan'
-        , 'photo_url_id', 'bps_photo_url', 'active'
+        , 'photo_url_id', 'bps_photo_url', 'active', 'role_buku'
     ];
 
     public function photo_url()
@@ -252,6 +252,22 @@ class User extends Authenticatable
     public function peran()
     {
         return $this->hasMany(Peran::class,'pemilik_username','username');
+    }
+
+    /**
+     * Apakah user termasuk admin fitur BUKU (admin buku atau super admin buku).
+     */
+    public function isAdminBuku(): bool
+    {
+        return in_array($this->role_buku, ['admin_buku', 'super_admin'], true);
+    }
+
+    /**
+     * Apakah user super admin fitur BUKU.
+     */
+    public function isSuperAdminBuku(): bool
+    {
+        return $this->role_buku === 'super_admin';
     }
 
     public static function getDataDict() {

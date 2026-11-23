@@ -52,14 +52,16 @@ class Profile_Controller extends Controller
         }
 
         $user = User::where('username', $username)->first();
+        if (!$user || !$user->nip_lama) {
+            abort(404, 'User or NIP not found.');
+        }
+
         // 2. Jika belum ada, definisikan URL asli di luar (yang butuh VPN)
-        // Anda bisa memetakan $filename kembali ke URL asli atau menyimpannya berdasar parameter
         $targetUrl =  "https://simpeg.bps.go.id/apis/pegawai/avatar/" . $user->nip_lama ;
 
         try {
             // 3. Ambil gambar dari server luar (pastikan server inside yang menjalankan ini memiliki akses VPN)
-            // Tambahkan timeout atau header tambahan jika diperlukan
-            $response = Http::timeout(15)->get($targetUrl);
+            $response = Http::connectTimeout(1)->timeout(2)->get($targetUrl);
 
             if ($response->failed()) {
                 abort(404, 'Image not found on remote server.');
@@ -86,7 +88,7 @@ class Profile_Controller extends Controller
                 ->header('Cache-Control', 'public, max-age=31536000'); // Cache browser 1 tahun
 
         } catch (\Exception $e) {
-            abort(500, 'Failed to fetch image: ' . $e->getMessage());
+            abort(404, 'Failed to fetch image: ' . $e->getMessage());
         }
     }
 }

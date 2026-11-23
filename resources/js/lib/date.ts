@@ -54,6 +54,27 @@ export function date_format (tanggal: string, penyesuian = 0) : string{
 
 }
 
+const BULAN_SINGKAT = [
+    "Jan", "Feb", "Mar", "Apr", "Mei", "Jun",
+    "Jul", "Agu", "Sep", "Okt", "Nov", "Des",
+];
+
+/**
+ * Format tanggal ringkas untuk badge: "20 Nov 2026".
+ */
+export function date_short(tanggal: string | null | undefined): string {
+    if (!tanggal) {
+        return "-";
+    }
+
+    const tanggal_date = new Date(tanggal);
+    if (Number.isNaN(tanggal_date.getTime())) {
+        return "-";
+    }
+
+    return `${tanggal_date.getDate()} ${BULAN_SINGKAT[tanggal_date.getMonth()]} ${tanggal_date.getFullYear()}`;
+}
+
 export function addHoursToDate(date: Date, hours: number): Date {
   return new Date(new Date(date).setHours(date.getHours() + hours));
 }

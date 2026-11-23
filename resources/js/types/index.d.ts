@@ -44,6 +44,8 @@ export interface SharedData {
     [key: string]: unknown;
 }
 
+export type RoleBuku = 'umum' | 'admin_buku' | 'super_admin';
+
 export interface User {
     id: number;
     username: string;
@@ -53,7 +55,61 @@ export interface User {
     nama: string;
     jabatan: string;
     golonagan: string;
+    role_buku?: RoleBuku;
     [key: string]: unknown; // This allows for additional properties...
+}
+
+export interface Buku {
+    id: number;
+    judul: string;
+    pengarang: string | null;
+    jumlah_halaman: number | null;
+    tahun_terbit: number | null;
+    bahasa: string | null;
+    kategori: string | null;
+    sinopsis: string | null;
+    durasi_pinjam: number;
+    stok: number;
+    cover_path: string | null;
+    cover_url: string | null;
+    created_at?: string;
+    updated_at?: string;
+}
+
+export type BukuPinjamStatus = 'menunggu' | 'dipinjam' | 'ditolak' | 'dikembalikan';
+
+export interface BukuPinjam {
+    id: number;
+    buku_id: number;
+    peminjam_username: string;
+    tanggal_pengajuan: string;
+    tanggal_persetujuan: string | null;
+    tanggal_jatuh_tempo: string | null;
+    tanggal_kembali: string | null;
+    status: BukuPinjamStatus;
+    diproses_oleh: string | null;
+    is_terlambat: boolean;
+    hari_terlambat: number;
+    sisa_hari: number | null;
+    is_kembali_terlambat: boolean;
+    hari_kembali_terlambat: number;
+    buku?: Buku;
+    peminjam?: User;
+    created_at?: string;
+    updated_at?: string;
+}
+
+export interface BukuAdminLog {
+    id: number;
+    actor_username: string;
+    actor_nama?: string;
+    target_username: string;
+    target_nama?: string;
+    aksi: string;
+    keterangan: string | null;
+    ip_address: string | null;
+    created_at?: string;
+    updated_at?: string;
 }
 
 export interface Peran {

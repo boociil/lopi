@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Lopi;
 use App\Http\Controllers\Controller;
 use App\Model\Lopi\Appreciate_Data;
 use App\Model\Lopi\Appreciate_Master;
+use App\Model\Lopi\Buku_Pinjam;
 use App\Model\Lopi\Jadwal;
 use App\Model\Lopi\Pinjam_Mobil;
 use App\Model\Lopi\Pinjam_Ruang;
@@ -23,7 +24,9 @@ class Notif_Controller extends Controller
         $nip_lama = Auth::user()->nip_lama;
         try {
             Cache::flexible('cuti_'.$nip_lama, [2*60*60, 6*60*60], function () use ($nip_lama) {
-                $client = new Client();
+                // Batasi waktu tunggu supaya layanan eksternal yang lambat
+                // tidak menahan request badge (dan worker server).
+                $client = new Client(['connect_timeout' => 2, 'timeout' => 3]);
                 $response = $client->get('https://sipecut.bps.go.id/api/v1/cuti_rwusul/bynip/id/'.$nip_lama);
 
                 if ($response->getStatusCode() == 200) {
@@ -44,8 +47,16 @@ class Notif_Controller extends Controller
                 }
             });
          } catch (Exception $e) {
-
-        }
+            // Jika layanan sedang lambat/tidak tersedia, jangan coba lagi
+            // di setiap request; beri jeda sebelum mencoba kembali.
+            // Simpan juga penanda waktu agar Cache::flexible tidak mengulang.
+            if (!Cache::has('cuti_'.$nip_lama)) {
+                Cache::putMany([
+                    'cuti_'.$nip_lama => [],
+                    'illuminate:cache:flexible:created:cuti_'.$nip_lama => Carbon::now()->getTimestamp(),
+                ], 10*60);
+            }
+         }
 
         $satuan_kerja_tahun_kode = [];
         $peran_satuan_kerja = Peran::get_my_peran_satuan_kerja_kerja_tahun();
@@ -63,6 +74,7 @@ class Notif_Controller extends Controller
         $count_pinjam_ruang = 0;
         $count_pinjam_zoom = 0;
         $count_pinjam_mobil = 0;
+        $count_buku_master = 0;
 
         if($peran->contains('peran', 'appreciate')){
             $satuan_kerja_tahun_kode = [];
@@ -95,12 +107,21 @@ class Notif_Controller extends Controller
             $count_pinjam_mobil = Pinjam_Mobil::where('status', 'menunggu')->count();
         }
 
+        if(in_array(Auth::user()->role_buku ?? 'umum', ['admin_buku', 'super_admin'], true)){
+            $count_buku_master = Buku_Pinjam::where('status', 'menunggu')->count()
+                + Buku_Pinjam::where('status', 'dipinjam')
+                    ->whereNotNull('tanggal_jatuh_tempo')
+                    ->whereDate('tanggal_jatuh_tempo', '<', Carbon::today())
+                    ->count();
+        }
+
         return[
            '-lopi-appreciate-aproval' => $count_appreciate,
            '-lopi-pinjam-jadwal' => $count_jadwal,
            '-lopi-pinjam-mobil' => $count_pinjam_mobil,
            '-lopi-pinjam-ruang' => $count_pinjam_ruang,
            '-lopi-pinjam-zoom' => $count_pinjam_zoom,
+           '-lopi-buku-master' => $count_buku_master,
         ];
     }
 
