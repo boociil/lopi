@@ -22,15 +22,20 @@ async function apiFetch<T = any>(
 ): Promise<AxiosLikeResponse<T>> {
     const { data, headers, ...rest } = options;
 
+    // FormData (upload file) tidak boleh di-JSON.stringify dan
+    // Content-Type harus dibiarkan browser agar boundary-nya benar.
+    const isFormData =
+        typeof FormData !== "undefined" && data instanceof FormData;
+
     const config: RequestInit = {
         credentials: "include",
         headers: {
             "X-CSRF-TOKEN": csrf,
             Accept: "application/json",
-            "Content-Type": "application/json",
+            ...(isFormData ? {} : { "Content-Type": "application/json" }),
             ...headers,
         },
-        body: data ? JSON.stringify(data) : rest.body,
+        body: isFormData ? data : data ? JSON.stringify(data) : rest.body,
         ...rest,
     };
 
@@ -65,6 +70,7 @@ async function apiFetch<T = any>(
                 headers: response.headers,
                 config,
                 request: response,
+                data: responseData,
             },
         });
     }

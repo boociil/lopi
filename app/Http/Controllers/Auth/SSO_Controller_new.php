@@ -203,26 +203,4 @@ class SSO_Controller_new extends Controller
         return redirect('/');
     }
 
-    // public function back(Request $request)
-    // {
-    //     $request->session()->forget('oauth2state');
-
-    //     Auth::logout();
-
-    //     $request->session()->invalidate();
-
-    //     $request->session()->regenerateToken();
-
-    //     $request->session()->put('tahun_active', 2026);
-
-    //     $user = User::where('username', 'uhatdies')->first();
-
-    //     Log::alert($user);
-
-    //     if(Auth::loginUsingId($user->id, true)){
-    //         Log::alert('asasasasasa');
-    //         return redirect()->intended("/");
-    //     }
-    // }
-
 }

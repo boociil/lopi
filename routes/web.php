@@ -20,19 +20,13 @@ use App\Http\Controllers\WebController;
 */
 
 
-// Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
-// Route::post('/login', [LoginController::class, 'login'])->middleware('guest');
-// Route::get('/logout', [LoginController::class, 'logout'])->middleware('guest')->name('logout');
-
 Route::get('/login', [SSO_Controller::class, 'showLoginForm'])->name('login');
 Route::get('/sso', [SSO_Controller::class, 'sso'])->name('sso');
 Route::get('/logout', [SSO_Controller::class, 'logout'])->name('logout');
-Route::get('/sso_back', [SSO_Controller::class, 'back'])->name('logout');
 
 Route::get('/sso_new', [SSO_Controller_new::class, 'sso'])->name('sso_new');
 Route::get('/login_new', [SSO_Controller_new::class, 'showLoginForm'])->name('login_new');
 Route::get('/logout_new', [SSO_Controller_new::class, 'logout'])->name('logout_new');
-// Route::get('/sso_back', [SSO_Controller::class, 'back'])->name('logout');
 
 
 
@@ -44,13 +38,6 @@ Route::group(
     Route::get('/', [Profile_Controller::class, 'index'])->name('profile');
     Route::post('create_calender', [Profile_Controller::class, 'create_calender'])->name('profile-create-calender');
 });
-
-// Route::get('/login_dev', function(){
-//     Auth::logout();
-//     Auth::login(User::where('username', 'anisa.rahma')->first(),true);
-//     session()->put('tahun_active', env("TAHUN_DEFAULT"));
-//     return redirect('/');
-// });
 
 Route::get('/maintenance', function(){
     return view("maintenance");
@@ -95,5 +82,6 @@ require __DIR__.'/modul/jadwal.php';
 require __DIR__.'/modul/kesehatan.php';
 require __DIR__.'/modul/kms.php';
 require __DIR__.'/modul/peran.php';
+require __DIR__.'/modul/buku.php';
 require __DIR__.'/modul/pinjam.php';
 // require __DIR__.'/modul/timeline.php';

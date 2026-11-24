@@ -12,6 +12,8 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->prepend(\App\Http\Middleware\HandleLopiPrefix::class);
+
         $middleware->encryptCookies(except: ['appearance', 'sidebar_state']);
 
         $middleware->web(append: [
@@ -48,6 +50,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'check_maintenance' => \App\Http\Middleware\Check_Maintenance::class,
             'api_persiapan' => \App\Http\Middleware\API_Persiapan::class,
             'check_satuan_kerja' => \App\Http\Middleware\Check_Satuan_Kerja_Tahun::class,
+            'auth_admin_buku' => \App\Http\Middleware\Auth_Admin_Buku::class,
+            'auth_super_admin_buku' => \App\Http\Middleware\Auth_Super_Admin_Buku::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
